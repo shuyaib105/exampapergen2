@@ -10,12 +10,15 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Printer, CheckCircle, Circle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
+const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
   examName: string;
   examTime: string;
   totalMarks: string;
   questions: Question[];
+  setName: string;
 }) => (
   <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-6">
     <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
@@ -23,6 +26,7 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
       <p className="text-lg font-semibold print:text-base">Md Jubayer | রংপুর মেডিকেল কলেজ</p>
       <div className="flex justify-between items-center mt-2 print:mt-1 text-base print:text-sm">
         <span>পূর্ণমান: {totalMarks || "..."}</span>
+        <span className="font-bold">সেট: {setName}</span>
         <span>সময়: {examTime || "..."}</span>
       </div>
     </header>
@@ -70,16 +74,59 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
   </div>
 );
 
+const AnswerSheet = ({ questions, setName }: { questions: Question[], setName: string }) => {
+  if (questions.length === 0) return null;
+
+  const getOptionLabel = (q: Question) => {
+    const index = q.options.findIndex(opt => opt === q.answer);
+    if (index === -1) return '?';
+    return String.fromCharCode(97 + index).toUpperCase();
+  };
+
+  return (
+    <div className="p-6">
+      <DialogHeader>
+        <DialogTitle>উত্তরপত্র - সেট: {setName}</DialogTitle>
+      </DialogHeader>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 mt-4 text-sm">
+        {questions.map((q, index) => (
+          <div key={index} className="flex">
+            <span className="font-bold w-8">{index + 1}.</span>
+            <span>{getOptionLabel(q)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 export default function ExamPage() {
   const [examName, setExamName] = useState("মডেল টেস্ট");
   const [examTime, setExamTime] = useState("২ ঘন্টা");
   const [totalMarks, setTotalMarks] = useState("১০০");
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [displayQuestions, setDisplayQuestions] = useState<Question[]>([]);
   const [jsonInput, setJsonInput] = useState("");
   const [previewAnswers, setPreviewAnswers] = useState(false);
+  const [selectedSet, setSelectedSet] = useState("A");
+  const [isAnswerSheetOpen, setIsAnswerSheetOpen] = useState(false);
 
   const { toast } = useToast();
+  
+  const shuffleArray = (array: Question[], seed: string): Question[] => {
+    const newArr = [...array];
+    let aSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const random = () => {
+      var x = Math.sin(aSeed++) * 10000;
+      return x - Math.floor(x);
+    };
+    for (let i = newArr.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+  };
 
   useEffect(() => {
     document.body.setAttribute('data-preview-answers', String(previewAnswers));
@@ -94,6 +141,18 @@ export default function ExamPage() {
       window.removeEventListener('afterprint', handleAfterPrint);
     };
   }, []);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      if (selectedSet === "A") {
+        setDisplayQuestions(questions);
+      } else {
+        setDisplayQuestions(shuffleArray(questions, selectedSet));
+      }
+    } else {
+      setDisplayQuestions([]);
+    }
+  }, [questions, selectedSet]);
 
   const handleGenerate = () => {
     if (!jsonInput.trim()) {
@@ -128,7 +187,7 @@ export default function ExamPage() {
 
 
   const handleExport = (withAnswers: boolean) => {
-    if(questions.length === 0){
+    if(displayQuestions.length === 0){
         toast({
             variant: "destructive",
             title: "ত্রুটি",
@@ -165,6 +224,21 @@ export default function ExamPage() {
                 </div>
               </div>
 
+               <div className="space-y-2">
+                <Label htmlFor="set">সেট</Label>
+                <Select value={selectedSet} onValueChange={setSelectedSet}>
+                  <SelectTrigger id="set">
+                    <SelectValue placeholder="সেট নির্বাচন করুন" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A">A</SelectItem>
+                    <SelectItem value="B">B</SelectItem>
+                    <SelectItem value="C">C</SelectItem>
+                    <SelectItem value="D">D</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="jsonInput">প্রশ্নপত্র (JSON)</Label>
                 <Textarea
@@ -176,8 +250,7 @@ export default function ExamPage() {
     "question": "আপনার প্রশ্ন এখানে লিখুন",
     "options": ["বিকল্প ১", "বিকল্প ২", "বিকল্প ৩", "বিকল্প ৪"],
     "answer": "সঠিক উত্তর",
-    "explanation": "ঐচ্ছিক ব্যাখ্যা",
-    "type": "mcq"
+    "explanation": "ঐচ্ছিক ব্যাখ্যা"
   }
 ]`}
                   className="h-40 font-code text-xs"
@@ -193,13 +266,25 @@ export default function ExamPage() {
                 <Switch id="preview-answers" checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-2">
-              <Button className="w-full" onClick={() => handleExport(true)}>
-                <Printer className="mr-2" /> উত্তরসহ এক্সপোর্ট
-              </Button>
-              <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
-                <Printer className="mr-2" /> উত্তর ছাড়া এক্সপোর্ট
-              </Button>
+            <CardFooter className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                    <Button className="w-full" onClick={() => handleExport(true)}>
+                        <Printer className="mr-2" /> উত্তরসহ এক্সপোর্ট
+                    </Button>
+                    <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
+                        <Printer className="mr-2" /> উত্তর ছাড়া এক্সপোর্ট
+                    </Button>
+                </div>
+                 <Dialog open={isAnswerSheetOpen} onOpenChange={setIsAnswerSheetOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full" disabled={displayQuestions.length === 0}>
+                            উত্তরপত্র দেখুন
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                        <AnswerSheet questions={displayQuestions} setName={selectedSet} />
+                    </DialogContent>
+                </Dialog>
             </CardFooter>
           </Card>
         </div>
@@ -210,7 +295,8 @@ export default function ExamPage() {
           examName={examName}
           examTime={examTime}
           totalMarks={totalMarks}
-          questions={questions}
+          questions={displayQuestions}
+          setName={selectedSet}
         />
       </main>
     </div>

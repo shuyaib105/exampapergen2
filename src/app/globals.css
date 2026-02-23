@@ -112,20 +112,6 @@ body:not([data-preview-answers="true"]) .answer-content {
   #printable-area, #printable-area * {
     visibility: visible;
   }
-
-  /* Style the printable area */
-  #printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: none;
-    box-shadow: none;
-    background: white !important;
-    color: black !important;
-  }
   
   .no-print {
     display: none !important;
@@ -142,11 +128,7 @@ body:not([data-preview-answers="true"]) .answer-content {
   }
 
   /* Print-specific answer visibility */
-  .answer-content {
+  body:not([data-print-with-answers="true"]) .answer-content {
     display: none !important;
-  }
-
-  body[data-print-with-answers="true"] .answer-content {
-    display: block !important;
   }
 }

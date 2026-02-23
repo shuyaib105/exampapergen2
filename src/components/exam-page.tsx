@@ -33,7 +33,7 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
           {questions.map((q, index) => (
             <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
               <p className="font-bold text-base print:text-sm mb-1">{index + 1}. {q.question}</p>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
+              <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
                 {q.options.map((option, optIndex) => {
                   const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
                   const isCorrect = option === q.answer;

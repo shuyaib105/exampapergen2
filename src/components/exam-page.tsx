@@ -17,42 +17,42 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
   totalMarks: string;
   questions: Question[];
 }) => (
-  <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none">
-    <header className="text-center pb-8 border-b-2 border-gray-200 print:border-black exam-header-print">
-      <h1 className="text-3xl font-bold font-headline">{examName || "পরীক্ষার নাম"}</h1>
-      <div className="flex justify-between items-center mt-4 text-lg">
+  <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-6">
+    <header className="text-center pb-8 print:pb-4 border-b-2 border-gray-200 print:border-black exam-header-print">
+      <h1 className="text-3xl print:text-2xl font-bold font-headline">{examName || "পরীক্ষার নাম"}</h1>
+      <div className="flex justify-between items-center mt-4 print:mt-2 text-lg print:text-base">
         <span>পূর্ণমান: {totalMarks || "..."}</span>
         <span>সময়: {examTime || "..."}</span>
       </div>
     </header>
 
-    <section className="mt-8">
+    <section className="mt-8 print:mt-4">
       {questions.length > 0 ? (
-        <div className="md:columns-2 md:gap-x-12 print:columns-2 print:gap-x-12">
+        <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-8">
           {questions.map((q, index) => (
-            <article key={index} className="mb-8 question-item-print break-inside-avoid">
-              <p className="font-bold text-lg mb-4">{index + 1}. {q.question}</p>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 pl-4">
+            <article key={index} className="mb-8 print:mb-3 question-item-print break-inside-avoid">
+              <p className="font-bold text-lg print:text-base mb-4 print:mb-2">{index + 1}. {q.question}</p>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 print:gap-x-4 gap-y-2 print:gap-y-1 pl-4 print:pl-2">
                 {q.options.map((option, optIndex) => {
                   const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
                   const isCorrect = option === q.answer;
 
                   return (
-                    <li key={optIndex} className="flex items-start space-x-3">
+                    <li key={optIndex} className="flex items-start space-x-3 print:space-x-2 print:text-sm">
                       <div className="answer-content text-green-600 print:text-green-600 mt-1">
-                        {isCorrect ? <CheckCircle className="h-5 w-5" /> : <Circle className="h-5 w-5 text-gray-300 print:text-gray-300" />}
+                        {isCorrect ? <CheckCircle className="h-5 w-5 print:h-4 print:w-4" /> : <Circle className="h-5 w-5 print:h-4 print:w-4 text-gray-300 print:text-gray-300" />}
                       </div>
                        <div className="flex items-start">
-                         <span className="font-medium mr-2">{optionLabel})</span>
+                         <span className="font-medium mr-2 print:mr-1">{optionLabel})</span>
                          <p>{option}</p>
                        </div>
                     </li>
                   );
                 })}
               </ul>
-              <div className="answer-content mt-4 pl-4">
+              <div className="answer-content mt-4 print:mt-2 pl-4 print:pl-2">
                 {q.explanation && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm print:bg-gray-100 print:border-gray-300">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 print:p-1 text-sm print:text-xs print:bg-gray-100 print:border-gray-300">
                     <p><span className="font-bold">ব্যাখ্যা:</span> {q.explanation}</p>
                   </div>
                 )}

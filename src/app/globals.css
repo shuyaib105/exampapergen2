@@ -96,7 +96,7 @@ body:not([data-preview-answers="true"]) .answer-content {
 @media print {
   @page {
     size: A4;
-    margin: 1.5cm;
+    margin: 1cm;
   }
 
   body {
@@ -137,8 +137,8 @@ body:not([data-preview-answers="true"]) .answer-content {
   
   .exam-header-print {
      border-bottom: 2px solid black;
-     margin-bottom: 1rem;
-     padding-bottom: 1rem;
+     margin-bottom: 0.5rem;
+     padding-bottom: 0.5rem;
   }
 
   /* Print-specific answer visibility */

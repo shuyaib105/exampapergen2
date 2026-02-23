@@ -3,5 +3,4 @@ export type Question = {
   options: string[];
   answer: string;
   explanation?: string;
-  type?: string;
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import type { Question } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Printer, CheckCircle, Circle } from "lucide-react";
+import { Printer, CheckCircle, Circle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const PaperPreview = ({ examName, examTime, totalMarks, questions }: {
   examName: string;
@@ -74,10 +75,9 @@ export default function ExamPage() {
   const [examTime, setExamTime] = useState("২ ঘন্টা");
   const [totalMarks, setTotalMarks] = useState("১০০");
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [fileName, setFileName] = useState("");
+  const [jsonInput, setJsonInput] = useState("");
   const [previewAnswers, setPreviewAnswers] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -94,45 +94,44 @@ export default function ExamPage() {
     };
   }, []);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const data = JSON.parse(content);
-          if (Array.isArray(data)) {
-            setQuestions(data);
-            toast({
-              title: "সফল!",
-              description: `${data.length}টি প্রশ্ন সফলভাবে লোড করা হয়েছে।`,
-            });
-          } else {
-            throw new Error("JSON is not an array.");
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-          toast({
-            variant: "destructive",
-            title: "ত্রুটি",
-            description: "অবৈধ JSON ফাইল। অনুগ্রহ করে সঠিক ফরম্যাটের ফাইল আপলোড করুন।",
-          });
-          setFileName("");
-          setQuestions([]);
-        }
-      };
-      reader.readAsText(file);
+  const handleGenerate = () => {
+    if (!jsonInput.trim()) {
+      toast({
+        variant: "destructive",
+        title: "ত্রুটি",
+        description: "JSON ইনপুট খালি হতে পারে না।",
+      });
+      return;
+    }
+    try {
+      const data = JSON.parse(jsonInput);
+      if (Array.isArray(data)) {
+        setQuestions(data);
+        toast({
+          title: "সফল!",
+          description: `${data.length}টি প্রশ্ন সফলভাবে লোড করা হয়েছে।`,
+        });
+      } else {
+        throw new Error("JSON is not an array.");
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      toast({
+        variant: "destructive",
+        title: "ত্রুটি",
+        description: "অবৈধ JSON ফরম্যাট। অনুগ্রহ করে আপনার ইনপুট চেক করুন।",
+      });
+      setQuestions([]);
     }
   };
+
 
   const handleExport = (withAnswers: boolean) => {
     if(questions.length === 0){
         toast({
             variant: "destructive",
             title: "ত্রুটি",
-            description: "প্রথমে একটি প্রশ্নপত্র আপলোড করুন।",
+            description: "প্রথমে একটি প্রশ্নপত্র জেনারেট করুন।",
         });
         return;
     }
@@ -165,20 +164,27 @@ export default function ExamPage() {
                 </div>
               </div>
 
-              <div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".json"
-                  className="hidden"
+              <div className="space-y-2">
+                <Label htmlFor="jsonInput">প্রশ্নপত্র (JSON)</Label>
+                <Textarea
+                  id="jsonInput"
+                  value={jsonInput}
+                  onChange={(e) => setJsonInput(e.target.value)}
+                  placeholder={`[
+  {
+    "question": "আপনার প্রশ্ন এখানে লিখুন",
+    "options": ["বিকল্প ১", "বিকল্প ২", "বিকল্প ৩", "বিকল্প ৪"],
+    "answer": "সঠিক উত্তর",
+    "explanation": "ঐচ্ছিক ব্যাখ্যা"
+  }
+]`}
+                  className="h-40 font-code text-xs"
                 />
-                <Button variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2" />
-                  প্রশ্ন আপলোড করুন (.json)
-                </Button>
-                {fileName && <p className="text-xs text-muted-foreground mt-2 text-center">Loaded: {fileName}</p>}
               </div>
+
+              <Button className="w-full" onClick={handleGenerate}>
+                জেনারেট করুন
+              </Button>
 
               <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
                 <Label htmlFor="preview-answers">প্রিভিউতে উত্তর দেখান</Label>

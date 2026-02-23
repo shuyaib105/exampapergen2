@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -103,17 +104,20 @@ body:not([data-preview-answers="true"]) .answer-content {
     color-adjust: exact;
   }
 
-  /* Hide controls and other non-printable elements */
-  body > *:not(#printable-area) {
-    display: none;
+  /* Hide everything and then only show the printable area */
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-area, #printable-area * {
+    visibility: visible;
   }
 
   /* Style the printable area */
   #printable-area {
-    display: block;
     position: absolute;
-    top: 0;
     left: 0;
+    top: 0;
     width: 100%;
     margin: 0;
     padding: 0;

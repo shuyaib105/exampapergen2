@@ -20,7 +20,7 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
   questions: Question[];
   setName: string;
 }) => (
-  <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-6">
+  <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-4">
     <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
       <h1 className="text-2xl print:text-xl font-bold font-headline">{examName || "পরীক্ষার নাম"}</h1>
       <p className="text-lg font-semibold print:text-base">Md Jubayer | রংপুর মেডিকেল কলেজ</p>

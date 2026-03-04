@@ -96,7 +96,7 @@ body:not([data-preview-answers="true"]) .answer-content {
 @media print {
   @page {
     size: A4;
-    margin: 1cm;
+    margin: 0.5cm;
   }
 
   body {

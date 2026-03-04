@@ -12,6 +12,7 @@ import { Printer, CheckCircle, Circle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
   examName: string;
@@ -22,9 +23,9 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
 }) => (
   <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1">
     <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
-      <h1 className="text-2xl print:text-xl font-bold font-headline">{examName || "পরীক্ষার নাম"}</h1>
-      <p className="text-lg font-semibold print:text-base">Md Jubayer | রংপুর মেডিকেল কলেজ</p>
-      <div className="flex justify-between items-center mt-2 print:mt-1 text-base print:text-sm">
+      <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
+      <p className="text-lg font-semibold print-header-p">Md Jubayer | রংপুর মেডিকেল কলেজ</p>
+      <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div">
         <span>পূর্ণমান: {totalMarks || "..."}</span>
         <span className="font-bold">সেট: {setName}</span>
         <span>সময়: {examTime || "..."}</span>
@@ -36,14 +37,14 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
         <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6">
           {questions.map((q, index) => (
             <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
-              <p className="font-bold text-base print:text-sm mb-1">{index + 1}. {q.question}</p>
+              <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
               <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
                 {q.options.map((option, optIndex) => {
                   const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
                   const isCorrect = option === q.answer;
 
                   return (
-                    <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print:text-xs">
+                    <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
                       <div className="answer-content text-green-600 print:text-green-600 mt-1">
                         {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                       </div>
@@ -57,7 +58,7 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
               </ul>
               <div className="answer-content mt-1 pl-3 print:pl-2">
                 {q.explanation && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-1 text-xs print:bg-gray-100 print:border-gray-300">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-1 text-xs print:bg-gray-100 print:border-gray-300 print-explanation-div">
                     <p><span className="font-bold">ব্যাখ্যা:</span> {q.explanation}</p>
                   </div>
                 )}
@@ -111,9 +112,22 @@ export default function ExamPage() {
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [isAnswerSheetOpen, setIsAnswerSheetOpen] = useState(false);
+  const [printFontSize, setPrintFontSize] = useState(11);
+
 
   const { toast } = useToast();
   
+  const dynamicPrintStyles = `
+    @media print {
+      #printable-area .print-h1 { font-size: ${printFontSize * 1.25}px !important; }
+      #printable-area .print-header-p { font-size: ${printFontSize * 1.15}px !important; }
+      #printable-area .print-header-div { font-size: ${printFontSize}px !important; }
+      #printable-area .print-question-p { font-size: ${printFontSize}px !important; }
+      #printable-area .print-option-li { font-size: ${printFontSize * 0.95}px !important; }
+      #printable-area .print-explanation-div { font-size: ${printFontSize * 0.85}px !important; }
+    }
+  `;
+
   const shuffleArray = (array: Question[], seed: string): Question[] => {
     const newArr = [...array];
     let aSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -200,52 +214,66 @@ export default function ExamPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
-      <aside className="w-full lg:w-[380px] lg:min-w-[380px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print">
-        <div className="lg:sticky lg:top-6">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-3xl font-headline">ExamPaperGen</CardTitle>
-              <CardDescription>আপনার পরীক্ষার প্রশ্নপত্র তৈরি করুন।</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="examName">পরীক্ষার নাম</Label>
-                <Input id="examName" value={examName} onChange={(e) => setExamName(e.target.value)} placeholder="e.g., মডেল টেস্ট" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+    <>
+      <style>{dynamicPrintStyles}</style>
+      <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
+        <aside className="w-full lg:w-[380px] lg:min-w-[380px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print">
+          <div className="lg:sticky lg:top-6">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-3xl font-headline">ExamPaperGen</CardTitle>
+                <CardDescription>আপনার পরীক্ষার প্রশ্নপত্র তৈরি করুন।</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="examTime">সময়</Label>
-                  <Input id="examTime" value={examTime} onChange={(e) => setExamTime(e.target.value)} placeholder="e.g., ২ ঘন্টা" />
+                  <Label htmlFor="examName">পরীক্ষার নাম</Label>
+                  <Input id="examName" value={examName} onChange={(e) => setExamName(e.target.value)} placeholder="e.g., মডেল টেস্ট" />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="examTime">সময়</Label>
+                    <Input id="examTime" value={examTime} onChange={(e) => setExamTime(e.target.value)} placeholder="e.g., ২ ঘন্টা" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="totalMarks">পূর্ণমান</Label>
+                    <Input id="totalMarks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} placeholder="e.g., ১০০" />
+                  </div>
+                </div>
+
+                 <div className="space-y-2">
+                  <Label htmlFor="set">সেট</Label>
+                  <Select value={selectedSet} onValueChange={setSelectedSet}>
+                    <SelectTrigger id="set">
+                      <SelectValue placeholder="সেট নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">A</SelectItem>
+                      <SelectItem value="B">B</SelectItem>
+                      <SelectItem value="C">C</SelectItem>
+                      <SelectItem value="D">D</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="totalMarks">পূর্ণমান</Label>
-                  <Input id="totalMarks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} placeholder="e.g., ১০০" />
+                  <Label htmlFor="printFontSize">প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
+                  <Slider
+                    id="printFontSize"
+                    min={8}
+                    max={16}
+                    step={0.5}
+                    value={[printFontSize]}
+                    onValueChange={(value) => setPrintFontSize(value[0])}
+                  />
                 </div>
-              </div>
 
-               <div className="space-y-2">
-                <Label htmlFor="set">সেট</Label>
-                <Select value={selectedSet} onValueChange={setSelectedSet}>
-                  <SelectTrigger id="set">
-                    <SelectValue placeholder="সেট নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A">A</SelectItem>
-                    <SelectItem value="B">B</SelectItem>
-                    <SelectItem value="C">C</SelectItem>
-                    <SelectItem value="D">D</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="jsonInput">প্রশ্নপত্র (JSON)</Label>
-                <Textarea
-                  id="jsonInput"
-                  value={jsonInput}
-                  onChange={(e) => setJsonInput(e.target.value)}
-                  placeholder={`[
+                <div className="space-y-2">
+                  <Label htmlFor="jsonInput">প্রশ্নপত্র (JSON)</Label>
+                  <Textarea
+                    id="jsonInput"
+                    value={jsonInput}
+                    onChange={(e) => setJsonInput(e.target.value)}
+                    placeholder={`[
   {
     "question": "আপনার প্রশ্ন এখানে লিখুন",
     "options": ["বিকল্প ১", "বিকল্প ২", "বিকল্প ৩", "বিকল্প ৪"],
@@ -253,52 +281,53 @@ export default function ExamPage() {
     "explanation": "ঐচ্ছিক ব্যাখ্যা"
   }
 ]`}
-                  className="h-40 font-code text-xs"
-                />
-              </div>
-
-              <Button className="w-full" onClick={handleGenerate}>
-                জেনারেট করুন
-              </Button>
-
-              <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                <Label htmlFor="preview-answers">প্রিভিউতে উত্তর দেখান</Label>
-                <Switch id="preview-answers" checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-2">
-                <div className="flex flex-col sm:flex-row gap-2 w-full">
-                    <Button className="w-full" onClick={() => handleExport(true)}>
-                        <Printer className="mr-2" /> উত্তরসহ এক্সপোর্ট
-                    </Button>
-                    <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
-                        <Printer className="mr-2" /> উত্তর ছাড়া এক্সপোর্ট
-                    </Button>
+                    className="h-40 font-code text-xs"
+                  />
                 </div>
-                 <Dialog open={isAnswerSheetOpen} onOpenChange={setIsAnswerSheetOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full" disabled={displayQuestions.length === 0}>
-                            উত্তরপত্র দেখুন
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                        <AnswerSheet questions={displayQuestions} setName={selectedSet} />
-                    </DialogContent>
-                </Dialog>
-            </CardFooter>
-          </Card>
-        </div>
-      </aside>
 
-      <main className="flex-1 p-4 sm:p-6">
-        <PaperPreview
-          examName={examName}
-          examTime={examTime}
-          totalMarks={totalMarks}
-          questions={displayQuestions}
-          setName={selectedSet}
-        />
-      </main>
-    </div>
+                <Button className="w-full" onClick={handleGenerate}>
+                  জেনারেট করুন
+                </Button>
+
+                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                  <Label htmlFor="preview-answers">প্রিভিউতে উত্তর দেখান</Label>
+                  <Switch id="preview-answers" checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
+                      <Button className="w-full" onClick={() => handleExport(true)}>
+                          <Printer className="mr-2" /> উত্তরসহ এক্সপোর্ট
+                      </Button>
+                      <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
+                          <Printer className="mr-2" /> উত্তর ছাড়া এক্সপোর্ট
+                      </Button>
+                  </div>
+                   <Dialog open={isAnswerSheetOpen} onOpenChange={setIsAnswerSheetOpen}>
+                      <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full" disabled={displayQuestions.length === 0}>
+                              উত্তরপত্র দেখুন
+                          </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                          <AnswerSheet questions={displayQuestions} setName={selectedSet} />
+                      </DialogContent>
+                  </Dialog>
+              </CardFooter>
+            </Card>
+          </div>
+        </aside>
+
+        <main className="flex-1 p-4 sm:p-6">
+          <PaperPreview
+            examName={examName}
+            examTime={examTime}
+            totalMarks={totalMarks}
+            questions={displayQuestions}
+            setName={selectedSet}
+          />
+        </main>
+      </div>
+    </>
   );
 }

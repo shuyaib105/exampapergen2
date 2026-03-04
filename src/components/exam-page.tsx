@@ -36,14 +36,14 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
         <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6">
           {questions.map((q, index) => (
             <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
-              <p className="font-bold text-base mb-1">{index + 1}. {q.question}</p>
+              <p className="font-bold text-base print:text-sm mb-1">{index + 1}. {q.question}</p>
               <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
                 {q.options.map((option, optIndex) => {
                   const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
                   const isCorrect = option === q.answer;
 
                   return (
-                    <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print:text-sm">
+                    <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print:text-xs">
                       <div className="answer-content text-green-600 print:text-green-600 mt-1">
                         {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                       </div>

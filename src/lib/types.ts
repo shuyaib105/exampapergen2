@@ -5,3 +5,13 @@ export type Question = {
   explanation?: string;
   type?: string;
 };
+
+export type CQQuestion = {
+  stimulus: string;
+  parts: {
+    a: string;
+    b: string;
+    c: string;
+    d: string;
+  };
+};

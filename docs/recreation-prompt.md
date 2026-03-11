@@ -11,6 +11,7 @@ Copy and paste the following prompt into an AI like ChatGPT, Claude, or Gemini t
 1. **Layout**: A sidebar for controls and a main preview area for the exam paper. Use 'Noto Serif Bengali' from Google Fonts.
 2. **Inputs**:
    - Exam Name (default: 'মডেল টেস্ট')
+   - Author/Institution Name (default: 'Md Jubayer | রংপুর মেডিকেল কলেজ')
    - Time (default: '২ ঘন্টা')
    - Total Marks (default: '১০০')
    - Set Selection (A, B, C, D)
@@ -21,7 +22,7 @@ Copy and paste the following prompt into an AI like ChatGPT, Claude, or Gemini t
    - **Shuffle System**: When a set (B, C, or D) is selected, shuffle the questions using a seed-based random function so the order is consistent for that set. Set A remains original.
    - **Answer Toggle**: A switch to show/hide correct answers in the live preview.
 4. **Preview & Print UI**:
-   - **Header**: Centered title, then 'Md Jubayer | রংপুর মেডিকেল কলেজ' underneath. Below that, a row with 'Total Marks', 'Set Name', and 'Time'.
+   - **Header**: Centered title, then the editable Author/Institution name underneath. Below that, a row with 'Total Marks', 'Set Name', and 'Time'.
    - **Questions**: Display questions in a **two-column layout** (`column-count: 2`).
    - **Options**: Options for each question must be in a **2x2 grid** (two options per line).
    - **Styling**: Minimal gaps between questions to fit maximum content (target ~25 questions per page).

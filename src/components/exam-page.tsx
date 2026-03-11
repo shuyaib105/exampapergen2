@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 
-const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
+const PaperPreview = ({ examName, authorName, examTime, totalMarks, questions, setName }: {
   examName: string;
+  authorName: string;
   examTime: string;
   totalMarks: string;
   questions: Question[];
@@ -24,7 +25,7 @@ const PaperPreview = ({ examName, examTime, totalMarks, questions, setName }: {
   <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1">
     <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
       <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
-      <p className="text-lg font-semibold print-header-p">Md Jubayer | রংপুর মেডিকেল কলেজ</p>
+      <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
       <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div">
         <span>পূর্ণমান: {totalMarks || "..."}</span>
         <span className="font-bold">সেট: {setName}</span>
@@ -104,6 +105,7 @@ const AnswerSheet = ({ questions, setName }: { questions: Question[], setName: s
 
 export default function ExamPage() {
   const [examName, setExamName] = useState("মডেল টেস্ট");
+  const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২ ঘন্টা");
   const [totalMarks, setTotalMarks] = useState("১০০");
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -229,6 +231,10 @@ export default function ExamPage() {
                   <Label htmlFor="examName">পরীক্ষার নাম</Label>
                   <Input id="examName" value={examName} onChange={(e) => setExamName(e.target.value)} placeholder="e.g., মডেল টেস্ট" />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="authorName">পরিচালনায় (নাম ও প্রতিষ্ঠান)</Label>
+                  <Input id="authorName" value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="e.g., Md Jubayer | রংপুর মেডিকেল কলেজ" />
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="examTime">সময়</Label>
@@ -321,6 +327,7 @@ export default function ExamPage() {
         <main className="flex-1 p-4 sm:p-6">
           <PaperPreview
             examName={examName}
+            authorName={authorName}
             examTime={examTime}
             totalMarks={totalMarks}
             questions={displayQuestions}

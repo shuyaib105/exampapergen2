@@ -3,11 +3,13 @@ export type Question = {
   options: string[];
   answer: string;
   explanation?: string;
+  image?: string;
   type?: string;
 };
 
 export type CQQuestion = {
-  stimulus: string;
+  stimulus?: string;
+  stimulusImage?: string;
   parts: {
     a: string;
     b: string;

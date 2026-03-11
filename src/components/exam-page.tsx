@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Question, CQQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Printer, CheckCircle, Circle, FileText, ListChecks, ArrowLeft } from "lucide-react";
+import { Printer, CheckCircle, Circle, FileText, ListChecks, ArrowLeft, Image as ImageIcon, Plus, Trash2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type AppMode = "MCQ" | "CQ" | null;
 
@@ -53,6 +54,11 @@ const PaperPreview = ({
             {mcqQuestions.map((q, index) => (
               <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
                 <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
+                {q.image && (
+                  <div className="mb-2 max-w-full h-auto flex justify-center">
+                    <img src={q.image} alt="Question" className="max-h-32 object-contain" />
+                  </div>
+                )}
                 <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
                   {q.options.map((option, optIndex) => {
                     const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
@@ -92,9 +98,16 @@ const PaperPreview = ({
             {cqQuestions.map((q, index) => (
               <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
                 <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
-                <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
-                  {q.stimulus}
-                </div>
+                {q.stimulusImage && (
+                  <div className="mb-3 print:mb-2 flex justify-center">
+                    <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
+                  </div>
+                )}
+                {q.stimulus && (
+                  <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
+                    {q.stimulus}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
                   <p><span className="font-bold">ক)</span> {q.parts.a}</p>
                   <p><span className="font-bold">খ)</span> {q.parts.b}</p>
@@ -156,7 +169,22 @@ export default function ExamPage() {
   const [isAnswerSheetOpen, setIsAnswerSheetOpen] = useState(false);
   const [printFontSize, setPrintFontSize] = useState(11);
 
+  // CQ Manual Inputs
+  const [cqStimulus, setCqStimulus] = useState("");
+  const [cqStimulusImage, setCqStimulusImage] = useState<string | null>(null);
+  const [cqPartA, setCqPartA] = useState("");
+  const [cqPartB, setCqPartB] = useState("");
+  const [cqPartC, setCqPartC] = useState("");
+  const [cqPartD, setCqPartD] = useState("");
+
+  // MCQ Manual Inputs
+  const [mcqQuestion, setMcqQuestion] = useState("");
+  const [mcqImage, setMcqImage] = useState<string | null>(null);
+  const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
+  const [mcqAnswer, setMcqAnswer] = useState("");
+
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const dynamicPrintStyles = `
     @media print {
@@ -210,50 +238,81 @@ export default function ExamPage() {
     }
   }, [mcqQuestions, selectedSet]);
 
-  const handleGenerate = () => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string | null) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setter(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddCq = () => {
+    if (!cqPartA || !cqPartB || !cqPartC || !cqPartD) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "ক, খ, গ, ঘ প্রশ্নগুলো অবশ্যই পূরণ করতে হবে।" });
+      return;
+    }
+    const newQ: CQQuestion = {
+      stimulus: cqStimulus,
+      stimulusImage: cqStimulusImage || undefined,
+      parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD }
+    };
+    setCqQuestions([...cqQuestions, newQ]);
+    // Reset
+    setCqStimulus("");
+    setCqStimulusImage(null);
+    setCqPartA("");
+    setCqPartB("");
+    setCqPartC("");
+    setCqPartD("");
+    toast({ title: "সফল", description: "সৃজনশীল প্রশ্ন যুক্ত করা হয়েছে।" });
+  };
+
+  const handleAddMcq = () => {
+    if (!mcqQuestion || mcqOptions.some(o => !o) || !mcqAnswer) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "প্রশ্ন, বিকল্প এবং সঠিক উত্তর অবশ্যই পূরণ করতে হবে।" });
+      return;
+    }
+    const newQ: Question = {
+      question: mcqQuestion,
+      image: mcqImage || undefined,
+      options: mcqOptions,
+      answer: mcqAnswer,
+    };
+    setMcqQuestions([...mcqQuestions, newQ]);
+    // Reset
+    setMcqQuestion("");
+    setMcqImage(null);
+    setMcqOptions(["", "", "", ""]);
+    setMcqAnswer("");
+    toast({ title: "সফল", description: "MCQ প্রশ্ন যুক্ত করা হয়েছে।" });
+  };
+
+  const handleJsonGenerate = () => {
     if (!jsonInput.trim()) {
-      toast({
-        variant: "destructive",
-        title: "ত্রুটি",
-        description: "JSON ইনপুট খালি হতে পারে না।",
-      });
+      toast({ variant: "destructive", title: "ত্রুটি", description: "JSON ইনপুট খালি হতে পারে না।" });
       return;
     }
     try {
       const data = JSON.parse(jsonInput);
       if (Array.isArray(data)) {
-        if (mode === "MCQ") {
-          setMcqQuestions(data);
-        } else {
-          setCqQuestions(data);
-        }
-        toast({
-          title: "সফল!",
-          description: `${data.length}টি প্রশ্ন সফলভাবে লোড করা হয়েছে।`,
-        });
+        if (mode === "MCQ") setMcqQuestions(data);
+        else setCqQuestions(data);
+        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন সফলভাবে লোড করা হয়েছে।` });
       } else {
         throw new Error("JSON is not an array.");
       }
     } catch (error) {
-      console.error("Error parsing JSON:", error);
-      toast({
-        variant: "destructive",
-        title: "ত্রুটি",
-        description: "অবৈধ JSON ফরম্যাট। অনুগ্রহ করে আপনার ইনপুট চেক করুন।",
-      });
-      if (mode === "MCQ") setMcqQuestions([]);
-      else setCqQuestions([]);
+      toast({ variant: "destructive", title: "ত্রুটি", description: "অবৈধ JSON ফরম্যাট।" });
     }
   };
 
   const handleExport = (withAnswers: boolean) => {
     const count = mode === "MCQ" ? displayMcqQuestions.length : cqQuestions.length;
     if(count === 0){
-        toast({
-            variant: "destructive",
-            title: "ত্রুটি",
-            description: "প্রথমে একটি প্রশ্নপত্র জেনারেট করুন।",
-        });
+        toast({ variant: "destructive", title: "ত্রুটি", description: "প্রথমে প্রশ্ন যুক্ত করুন।" });
         return;
     }
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
@@ -298,8 +357,8 @@ export default function ExamPage() {
     <>
       <style>{dynamicPrintStyles}</style>
       <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
-        <aside className="w-full lg:w-[380px] lg:min-w-[380px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print">
-          <div className="lg:sticky lg:top-6">
+        <aside className="w-full lg:w-[420px] lg:min-w-[420px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print overflow-y-auto max-h-screen">
+          <div className="">
             <Button 
               variant="ghost" 
               className="mb-4 pl-0 hover:bg-transparent" 
@@ -308,130 +367,180 @@ export default function ExamPage() {
               <ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন করুন
             </Button>
             
-            <Card className="shadow-lg">
+            <Card className="shadow-lg mb-6">
               <CardHeader>
-                <CardTitle className="text-3xl font-headline">ExamPaperGen</CardTitle>
-                <CardDescription>
-                  {mode === "MCQ" ? "MCQ প্রশ্নপত্র তৈরি করুন" : "সৃজনশীল (CQ) প্রশ্নপত্র তৈরি করুন"}
-                </CardDescription>
+                <CardTitle className="text-2xl font-headline">ExamPaperGen</CardTitle>
+                <CardDescription>বেসিক সেটিংস</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="examName">পরীক্ষার নাম</Label>
-                  <Input id="examName" value={examName} onChange={(e) => setExamName(e.target.value)} placeholder="e.g., মডেল টেস্ট" />
+              <CardContent className="space-y-4">
+                <div className="space-y-1">
+                  <Label>পরীক্ষার নাম</Label>
+                  <Input value={examName} onChange={(e) => setExamName(e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="authorName">পরিচালনায় (নাম ও প্রতিষ্ঠান)</Label>
-                  <Input id="authorName" value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="e.g., Md Jubayer | রংপুর মেডিকেল কলেজ" />
+                <div className="space-y-1">
+                  <Label>পরিচালনায়</Label>
+                  <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="examTime">সময়</Label>
-                    <Input id="examTime" value={examTime} onChange={(e) => setExamTime(e.target.value)} placeholder="e.g., ২ ঘন্টা" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label>সময়</Label>
+                    <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="totalMarks">পূর্ণমান</Label>
-                    <Input id="totalMarks" value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} placeholder="e.g., ১০০" />
+                  <div className="space-y-1">
+                    <Label>পূর্ণমান</Label>
+                    <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
                   </div>
                 </div>
+                <div className="space-y-1">
+                  <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
+                  <Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} />
+                </div>
+              </CardContent>
+            </Card>
 
+            <Tabs defaultValue="manual" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="manual">আলাদা ইনপুট</TabsTrigger>
+                <TabsTrigger value="json">JSON ইনপুট</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="manual">
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg">প্রশ্ন যুক্ত করুন</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {mode === "CQ" ? (
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label>উদ্দীপক (টেক্সট)</Label>
+                          <Textarea value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} className="h-20" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>উদ্দীপক ছবি</Label>
+                          <div className="flex items-center gap-2">
+                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} className="text-xs" />
+                            {cqStimulusImage && <Button variant="outline" size="icon" onClick={() => setCqStimulusImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                          </div>
+                          {cqStimulusImage && <img src={cqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
+                        </div>
+                        <div className="grid grid-cols-1 gap-2">
+                          <Input placeholder="ক) জ্ঞানমূলক" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
+                          <Input placeholder="খ) অনুধাবনমূলক" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
+                          <Input placeholder="গ) প্রয়োগমূলক" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
+                          <Input placeholder="ঘ) উচ্চতর দক্ষতামূলক" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                        </div>
+                        <Button className="w-full" onClick={handleAddCq}><Plus className="mr-2" /> প্রশ্ন যুক্ত করুন</Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label>প্রশ্ন</Label>
+                          <Input value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>প্রশ্ন ছবি (ঐচ্ছিক)</Label>
+                          <div className="flex items-center gap-2">
+                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqImage)} className="text-xs" />
+                            {mcqImage && <Button variant="outline" size="icon" onClick={() => setMcqImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {mcqOptions.map((opt, i) => (
+                            <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => {
+                              const newOpts = [...mcqOptions];
+                              newOpts[i] = e.target.value;
+                              setMcqOptions(newOpts);
+                            }} />
+                          ))}
+                        </div>
+                        <div className="space-y-1">
+                          <Label>সঠিক উত্তর (বিকল্পের সাথে হুবহু মিলতে হবে)</Label>
+                          <Select value={mcqAnswer} onValueChange={setMcqAnswer}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="সঠিক উত্তর বেছে নিন" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mcqOptions.map((opt, i) => (
+                                opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button className="w-full" onClick={handleAddMcq}><Plus className="mr-2" /> প্রশ্ন যুক্ত করুন</Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="json">
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg">JSON ইনপুট</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Textarea 
+                      className="h-40 text-xs font-mono" 
+                      value={jsonInput} 
+                      onChange={(e) => setJsonInput(e.target.value)} 
+                      placeholder="JSON ডেটা এখানে পেস্ট করুন..."
+                    />
+                    <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+
+            <div className="mt-6 space-y-4">
+              <div className="flex flex-col gap-2">
+                <Button className="w-full" onClick={() => handleExport(true)}>
+                  <Printer className="mr-2 h-4 w-4" /> {mode === "MCQ" ? "উত্তরসহ এক্সপোর্ট" : "পিডিএফ এক্সপোর্ট"}
+                </Button>
                 {mode === "MCQ" && (
-                   <div className="space-y-2">
-                    <Label htmlFor="set">সেট</Label>
+                  <>
+                    <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
+                      <Printer className="mr-2 h-4 w-4" /> উত্তর ছাড়া এক্সপোর্ট
+                    </Button>
+                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
+                      <Label>প্রিভিউতে উত্তর দেখান</Label>
+                      <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
+                    </div>
+                  </>
+                )}
+                {mode === "MCQ" && (
+                  <div className="space-y-1">
+                    <Label>সেট নির্বাচন</Label>
                     <Select value={selectedSet} onValueChange={setSelectedSet}>
-                      <SelectTrigger id="set">
-                        <SelectValue placeholder="সেট নির্বাচন করুন" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                        <SelectItem value="C">C</SelectItem>
-                        <SelectItem value="D">D</SelectItem>
+                        <SelectItem value="A">Set A</SelectItem>
+                        <SelectItem value="B">Set B</SelectItem>
+                        <SelectItem value="C">Set C</SelectItem>
+                        <SelectItem value="D">Set D</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="printFontSize">প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
-                  <Slider
-                    id="printFontSize"
-                    min={8}
-                    max={16}
-                    step={0.5}
-                    value={[printFontSize]}
-                    onValueChange={(value) => setPrintFontSize(value[0])}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="jsonInput">প্রশ্নপত্র (JSON)</Label>
-                  <Textarea
-                    id="jsonInput"
-                    value={jsonInput}
-                    onChange={(e) => setJsonInput(e.target.value)}
-                    placeholder={mode === "MCQ" ? `[
-  {
-    "question": "আপনার প্রশ্ন এখানে লিখুন",
-    "options": ["বিকল্প ১", "বিকল্প ২", "বিকল্প ৩", "বিকল্প ৪"],
-    "answer": "সঠিক উত্তর",
-    "explanation": "ঐচ্ছিক ব্যাখ্যা"
-  }
-]` : `[
-  {
-    "stimulus": "উদ্দীপক এখানে লিখুন...",
-    "parts": {
-      "a": "জ্ঞানমূলক প্রশ্ন",
-      "b": "অনুধাবনমূলক প্রশ্ন",
-      "c": "প্রয়োগমূলক প্রশ্ন",
-      "d": "উচ্চতর দক্ষতামূলক প্রশ্ন"
-    }
-  }
-]`}
-                    className="h-40 font-code text-xs"
-                  />
-                </div>
-
-                <Button className="w-full" onClick={handleGenerate}>
-                  জেনারেট করুন
-                </Button>
-
-                {mode === "MCQ" && (
-                  <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <Label htmlFor="preview-answers">প্রিভিউতে উত্তর দেখান</Label>
-                    <Switch id="preview-answers" checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex flex-col gap-2">
-                  <div className="flex flex-col sm:flex-row gap-2 w-full">
-                      <Button className="w-full" onClick={() => handleExport(true)}>
-                          <Printer className="mr-2" /> {mode === "MCQ" ? "উত্তরসহ এক্সপোর্ট" : "এক্সপোর্ট"}
-                      </Button>
-                      {mode === "MCQ" && (
-                        <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
-                            <Printer className="mr-2" /> উত্তর ছাড়া এক্সপোর্ট
-                        </Button>
-                      )}
-                  </div>
-                   {mode === "MCQ" && (
-                     <Dialog open={isAnswerSheetOpen} onOpenChange={setIsAnswerSheetOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full" disabled={displayMcqQuestions.length === 0}>
-                                উত্তরপত্র দেখুন
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                            <AnswerSheet questions={displayMcqQuestions} setName={selectedSet} />
-                        </DialogContent>
-                    </Dialog>
-                   )}
-              </CardFooter>
-            </Card>
+              </div>
+              
+              <Button 
+                variant="destructive" 
+                className="w-full" 
+                onClick={() => {
+                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান?")){
+                    setMcqQuestions([]);
+                    setCqQuestions([]);
+                  }
+                }}
+              >
+                সব প্রশ্ন মুছুন
+              </Button>
+            </div>
           </div>
         </aside>
 
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 p-4 sm:p-6 bg-gray-100 overflow-y-auto">
           <PaperPreview
             examName={examName}
             authorName={authorName}

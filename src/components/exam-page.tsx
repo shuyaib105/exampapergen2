@@ -184,7 +184,6 @@ export default function ExamPage() {
   const [mcqAnswer, setMcqAnswer] = useState("");
 
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const dynamicPrintStyles = `
     @media print {
@@ -298,9 +297,15 @@ export default function ExamPage() {
     try {
       const data = JSON.parse(jsonInput);
       if (Array.isArray(data)) {
-        if (mode === "MCQ") setMcqQuestions(data);
-        else setCqQuestions(data);
-        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন সফলভাবে লোড করা হয়েছে।` });
+        if (mode === "MCQ") {
+          // Append new questions to existing ones
+          setMcqQuestions(prev => [...prev, ...data]);
+        } else {
+          // Append new questions to existing ones
+          setCqQuestions(prev => [...prev, ...data]);
+        }
+        setJsonInput(""); // Clear JSON input after success
+        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন আগেরগুলোর সাথে যুক্ত করা হয়েছে।` });
       } else {
         throw new Error("JSON is not an array.");
       }

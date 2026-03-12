@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -22,13 +21,15 @@ import {
   Save, 
   Search,
   CheckSquare,
-  Square
+  Square,
+  ChevronDown
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useFirestore, useCollection } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, where, orderBy, deleteDoc, doc } from "firebase/firestore";
 import { errorEmitter } from "@/firebase/error-emitter";
@@ -195,7 +196,7 @@ export default function ExamPage() {
     q.chapterName.toLowerCase().includes(searchChapter.toLowerCase()) && q.type === mode
   );
 
-  const chapters = Array.from(new Set(storedQuestions.filter(q => q.type === mode).map(q => q.chapterName)));
+  const chapters = Array.from(new Set(filteredStoredQuestions.map(q => q.chapterName)));
 
   const dynamicPrintStyles = `
     @media print {
@@ -451,64 +452,70 @@ export default function ExamPage() {
                       </Button>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-2">
                       {chapters.length > 0 ? (
-                        chapters.map(chapter => {
-                          const chapterQuestions = filteredStoredQuestions.filter(q => q.chapterName === chapter);
-                          if (chapterQuestions.length === 0) return null;
-                          return (
-                            <div key={chapter} className="space-y-2">
-                              <h3 className="font-bold text-lg border-b pb-1 flex items-center justify-between">
-                                {chapter}
-                                <span className="text-sm font-normal text-muted-foreground">{chapterQuestions.length}টি প্রশ্ন</span>
-                              </h3>
-                              <div className="grid grid-cols-1 gap-3">
-                                {chapterQuestions.map((q) => (
-                                  <div 
-                                    key={q.id} 
-                                    className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${selectedStoredQuestions.includes(q.id) ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`}
-                                    onClick={() => toggleStoredQuestionSelection(q.id)}
-                                  >
-                                    <div className="mt-1">
-                                      {selectedStoredQuestions.includes(q.id) ? (
-                                        <CheckSquare className="h-5 w-5 text-primary" />
-                                      ) : (
-                                        <Square className="h-5 w-5 text-gray-300" />
-                                      )}
-                                    </div>
-                                    <div className="flex-1">
-                                      {q.type === 'MCQ' ? (
-                                        <div>
-                                          <p className="font-medium">{(q.content as Question).question}</p>
-                                          <p className="text-xs text-muted-foreground mt-1">সঠিক উত্তর: {(q.content as Question).answer}</p>
-                                        </div>
-                                      ) : (
-                                        <div>
-                                          <p className="font-medium line-clamp-2">{(q.content as CQQuestion).stimulus}</p>
-                                          <div className="grid grid-cols-2 gap-x-4 mt-1 text-xs text-muted-foreground">
-                                            <span>ক) {(q.content as CQQuestion).parts.a}</span>
-                                            <span>খ) {(q.content as CQQuestion).parts.b}</span>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if(confirm("সংগ্রহশালা থেকে মুছে ফেলতে চান?")) deleteStoredQuestion(q.id);
-                                      }}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                        <Accordion type="multiple" className="w-full">
+                          {chapters.map((chapter, idx) => {
+                            const chapterQuestions = filteredStoredQuestions.filter(q => q.chapterName === chapter);
+                            if (chapterQuestions.length === 0) return null;
+                            return (
+                              <AccordionItem key={chapter + idx} value={`chapter-${idx}`} className="border rounded-lg mb-2 px-2">
+                                <AccordionTrigger className="hover:no-underline py-3">
+                                  <div className="flex items-center justify-between w-full pr-4">
+                                    <span className="font-bold text-lg">{chapter}</span>
+                                    <span className="text-sm font-normal text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">{chapterQuestions.length}টি প্রশ্ন</span>
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <div className="grid grid-cols-1 gap-3 py-3">
+                                    {chapterQuestions.map((q) => (
+                                      <div 
+                                        key={q.id} 
+                                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${selectedStoredQuestions.includes(q.id) ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`}
+                                        onClick={() => toggleStoredQuestionSelection(q.id)}
+                                      >
+                                        <div className="mt-1">
+                                          {selectedStoredQuestions.includes(q.id) ? (
+                                            <CheckSquare className="h-5 w-5 text-primary" />
+                                          ) : (
+                                            <Square className="h-5 w-5 text-gray-300" />
+                                          )}
+                                        </div>
+                                        <div className="flex-1">
+                                          {q.type === 'MCQ' ? (
+                                            <div>
+                                              <p className="font-medium">{(q.content as Question).question}</p>
+                                              <p className="text-xs text-muted-foreground mt-1">সঠিক উত্তর: {(q.content as Question).answer}</p>
+                                            </div>
+                                          ) : (
+                                            <div>
+                                              <p className="font-medium line-clamp-2">{(q.content as CQQuestion).stimulus}</p>
+                                              <div className="grid grid-cols-2 gap-x-4 mt-1 text-xs text-muted-foreground">
+                                                <span>ক) {(q.content as CQQuestion).parts.a}</span>
+                                                <span>খ) {(q.content as CQQuestion).parts.b}</span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if(confirm("সংগ্রহশালা থেকে মুছে ফেলতে চান?")) deleteStoredQuestion(q.id);
+                                          }}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            );
+                          })}
+                        </Accordion>
                       ) : (
                         <div className="text-center py-20 text-gray-400">
                           <Database className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -719,4 +726,3 @@ export default function ExamPage() {
     </>
   );
 }
-

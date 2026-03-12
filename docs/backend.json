@@ -1,0 +1,42 @@
+
+{
+  "entities": {
+    "StoredQuestion": {
+      "title": "StoredQuestion",
+      "description": "A question stored in the database for future use.",
+      "type": "object",
+      "properties": {
+        "chapterName": {
+          "type": "string",
+          "description": "The name of the chapter this question belongs to."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["MCQ", "CQ"],
+          "description": "The type of the question."
+        },
+        "content": {
+          "type": "object",
+          "description": "The actual question data (MCQ or CQ structure)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the question was saved."
+        }
+      },
+      "required": ["chapterName", "type", "content"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/questions/{questionId}": {
+      "schema": {
+        "$ref": "#/backend/entities/StoredQuestion"
+      },
+      "description": "Collection of all stored questions categorized by chapter."
+    }
+  }
+}

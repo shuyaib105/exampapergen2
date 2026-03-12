@@ -1,4 +1,6 @@
+
 export type Question = {
+  id?: string;
   question: string;
   options: string[];
   answer: string;
@@ -8,6 +10,7 @@ export type Question = {
 };
 
 export type CQQuestion = {
+  id?: string;
   stimulus?: string;
   stimulusImage?: string;
   parts: {
@@ -16,4 +19,12 @@ export type CQQuestion = {
     c: string;
     d: string;
   };
+};
+
+export type StoredQuestion = {
+  id: string;
+  chapterName: string;
+  type: 'MCQ' | 'CQ';
+  content: Question | CQQuestion;
+  createdAt: any;
 };

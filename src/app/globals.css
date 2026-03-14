@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,40 +42,6 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
 }
 
 @layer base {
@@ -86,6 +51,14 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* On-screen answer visibility */
@@ -104,7 +77,6 @@ body:not([data-preview-answers="true"]) .answer-content {
     color-adjust: exact;
   }
 
-  /* Hide everything and then only show the printable area */
   body * {
     visibility: hidden;
   }
@@ -117,17 +89,24 @@ body:not([data-preview-answers="true"]) .answer-content {
     display: none !important;
   }
 
+  /* Force MCQ column-fill: auto to ensure vertical filling before moving to next col */
+  #printable-area .md\:columns-2, #printable-area .print\:columns-2 {
+    column-fill: auto !important;
+    height: auto;
+  }
+
   .question-item-print {
     page-break-inside: avoid;
+    break-inside: avoid-column;
+    margin-bottom: 0.2rem;
   }
   
   .exam-header-print {
      border-bottom: 2px solid black;
      margin-bottom: 0.5rem;
-     padding-bottom: 0.5rem;
+     padding-bottom: 0.2rem;
   }
 
-  /* Print-specific answer visibility */
   body:not([data-print-with-answers="true"]) .answer-content {
     display: none !important;
   }

@@ -70,9 +70,9 @@ const PaperPreview = ({
     <section className="mt-4 print:mt-2">
       {mode === "MCQ" ? (
         mcqQuestions.length > 0 ? (
-          <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6">
+          <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
             {mcqQuestions.map((q, index) => (
-              <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
+              <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
                 <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
                 {q.image && (
                   <div className="mb-2 max-w-full h-auto flex justify-center">
@@ -278,7 +278,8 @@ export default function ExamPage() {
       stimulusImage: cqStimulusImage || undefined,
       parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD }
     };
-    setCqQuestions([...cqQuestions, newQ]);
+    const updated = [...cqQuestions, newQ];
+    setCqQuestions(updated);
     saveQuestionToFirestore('CQ', newQ);
     
     // Reset
@@ -288,7 +289,7 @@ export default function ExamPage() {
     setCqPartB("");
     setCqPartC("");
     setCqPartD("");
-    toast({ title: "সফল", description: "সৃজনশীল প্রশ্ন যুক্ত এবং সংরক্ষিত করা হয়েছে।" });
+    toast({ title: "সফল", description: `সৃজনশীল প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
   };
 
   const handleAddMcq = () => {
@@ -302,7 +303,8 @@ export default function ExamPage() {
       options: mcqOptions,
       answer: mcqAnswer,
     };
-    setMcqQuestions([...mcqQuestions, newQ]);
+    const updated = [...mcqQuestions, newQ];
+    setMcqQuestions(updated);
     saveQuestionToFirestore('MCQ', newQ);
 
     // Reset
@@ -310,7 +312,7 @@ export default function ExamPage() {
     setMcqImage(null);
     setMcqOptions(["", "", "", ""]);
     setMcqAnswer("");
-    toast({ title: "সফল", description: "MCQ প্রশ্ন যুক্ত এবং সংরক্ষিত করা হয়েছে।" });
+    toast({ title: "সফল", description: `MCQ প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
   };
 
   const handleJsonGenerate = () => {
@@ -321,15 +323,20 @@ export default function ExamPage() {
     try {
       const data = JSON.parse(jsonInput);
       if (Array.isArray(data)) {
+        let currentTotal = 0;
         if (mode === "MCQ") {
-          setMcqQuestions(prev => [...prev, ...data]);
+          const updated = [...mcqQuestions, ...data];
+          setMcqQuestions(updated);
           data.forEach(q => saveQuestionToFirestore('MCQ', q));
+          currentTotal = updated.length;
         } else {
-          setCqQuestions(prev => [...prev, ...data]);
+          const updated = [...cqQuestions, ...data];
+          setCqQuestions(updated);
           data.forEach(q => saveQuestionToFirestore('CQ', q));
+          currentTotal = updated.length;
         }
         setJsonInput("");
-        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন যুক্ত এবং সংরক্ষিত করা হয়েছে।` });
+        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${currentTotal}টি` });
       } else {
         throw new Error("JSON is not an array.");
       }
@@ -356,20 +363,25 @@ export default function ExamPage() {
 
   const addSelectedStoredToExam = () => {
     const selected = storedQuestions.filter(q => selectedStoredQuestions.includes(q.id));
+    let currentTotal = 0;
     if (mode === "MCQ") {
-      setMcqQuestions(prev => [...prev, ...selected.map(s => s.content as Question)]);
+      const updated = [...mcqQuestions, ...selected.map(s => s.content as Question)];
+      setMcqQuestions(updated);
+      currentTotal = updated.length;
     } else {
-      setCqQuestions(prev => [...prev, ...selected.map(s => s.content as CQQuestion)]);
+      const updated = [...cqQuestions, ...selected.map(s => s.content as CQQuestion)];
+      setCqQuestions(updated);
+      currentTotal = updated.length;
     }
     setSelectedStoredQuestions([]);
     setIsStorageOpen(false);
-    toast({ title: "সফল", description: "নির্বাচিত প্রশ্নগুলো আপনার বর্তমান তালিকায় যুক্ত করা হয়েছে।" });
+    toast({ title: "সফল", description: `${selected.length}টি প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${currentTotal}টি` });
   };
 
   const deleteStoredQuestion = (id: string) => {
     if (!db) return;
     deleteDoc(doc(db, "questions", id)).then(() => {
-      toast({ title: "সফল", description: "প্রশ্নটি সংগ্রহশালা থেকে মুছে ফেলা হয়েছে।" });
+      toast({ title: "সফল", description: "প্রশ্নটি স্টোরেজ থেকে মুছে ফেলা হয়েছে।" });
     });
   };
 
@@ -411,7 +423,7 @@ export default function ExamPage() {
     <>
       <style>{dynamicPrintStyles}</style>
       <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
-        <aside className="w-full lg:w-[420px] lg:min-w-[420px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print overflow-y-auto max-h-screen">
+        <aside className="w-full lg:w-[420px] lg:min-w-[420px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <Button 
@@ -424,13 +436,13 @@ export default function ExamPage() {
               <Dialog open={isStorageOpen} onOpenChange={setIsStorageOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="gap-2">
-                    <Database className="h-4 w-4" /> সংগ্রহশালা
+                    <Database className="h-4 w-4" /> প্রশ্ন স্টোরেজ
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-xl flex items-center gap-2">
-                      <Database className="h-5 w-5" /> আপনার প্রশ্ন সংগ্রহশালা ({mode})
+                      <Database className="h-5 w-5" /> আপনার প্রশ্ন স্টোরেজ ({mode})
                     </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
@@ -503,7 +515,7 @@ export default function ExamPage() {
                                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            if(confirm("সংগ্রহশালা থেকে মুছে ফেলতে চান?")) deleteStoredQuestion(q.id);
+                                            if(confirm("স্টোরেজ থেকে মুছে ফেলতে চান?")) deleteStoredQuestion(q.id);
                                           }}
                                         >
                                           <Trash2 className="h-4 w-4" />
@@ -519,7 +531,7 @@ export default function ExamPage() {
                       ) : (
                         <div className="text-center py-20 text-gray-400">
                           <Database className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                          <p>আপনার সংগ্রহশালায় কোনো প্রশ্ন নেই।</p>
+                          <p>আপনার প্রশ্ন স্টোরেজে কোনো প্রশ্ন নেই।</p>
                         </div>
                       )}
                     </div>
@@ -565,7 +577,7 @@ export default function ExamPage() {
                     value={currentChapter} 
                     onChange={(e) => setCurrentChapter(e.target.value)} 
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">এই চ্যাপ্টারের নামেই প্রশ্নগুলো আপনার সংগ্রহশালায় জমা হবে।</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">এই চ্যাপ্টারের নামেই প্রশ্নগুলো আপনার প্রশ্ন স্টোরেজে জমা হবে।</p>
                 </div>
               </CardContent>
             </Card>
@@ -698,7 +710,7 @@ export default function ExamPage() {
                 variant="destructive" 
                 className="w-full" 
                 onClick={() => {
-                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান? এটি শুধুমাত্র বর্তমান তালিকা থেকে মুছবে, সংগ্রহশালা থেকে নয়।")){
+                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান? এটি শুধুমাত্র বর্তমান তালিকা থেকে মুছবে, স্টোরেজ থেকে নয়।")){
                     setMcqQuestions([]);
                     setCqQuestions([]);
                   }
@@ -710,7 +722,7 @@ export default function ExamPage() {
           </div>
         </aside>
 
-        <main className="flex-1 p-4 sm:p-6 bg-gray-100 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 bg-gray-100 overflow-y-auto scrollbar-hide">
           <PaperPreview
             examName={examName}
             authorName={authorName}

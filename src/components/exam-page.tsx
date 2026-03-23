@@ -58,102 +58,147 @@ const PaperPreview = ({
   cqQuestions: CQQuestion[];
   setName: string;
   mode: AppMode;
-}) => (
-  <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1 min-h-[11in]">
-    <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
-      <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
-      <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
-      <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div">
-        <span>পূর্ণমান: {totalMarks || "..."}</span>
-        {mode === "MCQ" && <span className="font-bold">সেট: {setName}</span>}
-        <span>সময়: {examTime || "..."}</span>
-      </div>
-    </header>
+}) => {
+  // Helper to determine stimulus grouping for MCQ
+  const getMcqStimulusDisplay = (currentIndex: number) => {
+    const q = mcqQuestions[currentIndex];
+    if (!q.stimulus && !q.stimulusImage) return null;
 
-    <section className="mt-4 print:mt-2">
-      {mode === "MCQ" ? (
-        mcqQuestions.length > 0 ? (
-          <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
-            {mcqQuestions.map((q, index) => (
-              <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
-                {/* MCQ Stimulus Rendering */}
-                {q.stimulus && (
-                  <div className="mb-2 italic text-sm border-l-2 border-gray-300 pl-2 bg-gray-50/50 print:bg-transparent">
-                    {q.stimulus}
-                  </div>
-                )}
-                {q.stimulusImage && (
-                  <div className="mb-2 flex justify-center">
-                    <img src={q.stimulusImage} alt="Stimulus" className="max-h-32 object-contain rounded" />
-                  </div>
-                )}
+    // Check if this stimulus is the same as the previous one
+    if (currentIndex > 0) {
+      const prevQ = mcqQuestions[currentIndex - 1];
+      if (prevQ.stimulus === q.stimulus && prevQ.stimulusImage === q.stimulusImage) {
+        return "SKIP"; // Don't render again
+      }
+    }
+
+    // Find how many subsequent questions share this exact stimulus
+    let endIdx = currentIndex;
+    for (let i = currentIndex + 1; i < mcqQuestions.length; i++) {
+      if (mcqQuestions[i].stimulus === q.stimulus && mcqQuestions[i].stimulusImage === q.stimulusImage) {
+        endIdx = i;
+      } else {
+        break;
+      }
+    }
+
+    const rangeText = endIdx > currentIndex 
+      ? `${currentIndex + 1}-${endIdx + 1}` 
+      : `${currentIndex + 1}`;
+
+    return {
+      header: `নিচের উদ্দীপকটি পড় এবং ${rangeText} নং প্রশ্নের উত্তর দাও:`,
+      stimulus: q.stimulus,
+      image: q.stimulusImage
+    };
+  };
+
+  return (
+    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1 min-h-[11in]">
+      <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
+        <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
+        <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
+        <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div">
+          <span>পূর্ণমান: {totalMarks || "..."}</span>
+          {mode === "MCQ" && <span className="font-bold">সেট: {setName}</span>}
+          <span>সময়: {examTime || "..."}</span>
+        </div>
+      </header>
+
+      <section className="mt-4 print:mt-2">
+        {mode === "MCQ" ? (
+          mcqQuestions.length > 0 ? (
+            <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
+              {mcqQuestions.map((q, index) => {
+                const stimulusData = getMcqStimulusDisplay(index);
                 
-                <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
-                {q.image && (
-                  <div className="mb-2 max-w-full h-auto flex justify-center">
-                    <img src={q.image} alt="Question" className="max-h-32 object-contain" />
-                  </div>
-                )}
-                <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
-                  {q.options.map((option, optIndex) => {
-                    const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
-                    const isCorrect = option === q.answer;
-
-                    return (
-                      <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
-                        <div className="answer-content text-green-600 print:text-green-600 mt-1">
-                          {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
+                return (
+                  <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
+                    {/* Render stimulus if it's the start of a group */}
+                    {stimulusData && stimulusData !== "SKIP" && (
+                      <div className="mb-3 p-2 bg-gray-50 border-l-4 border-primary/30 print:bg-white print:border-black print:p-0 print:mb-2">
+                        <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
+                        {stimulusData.image && (
+                          <div className="mb-2 flex justify-center">
+                            <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
+                          </div>
+                        )}
+                        {stimulusData.stimulus && (
+                          <p className="italic text-sm leading-relaxed">{stimulusData.stimulus}</p>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="mt-1">
+                      <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
+                      {q.image && (
+                        <div className="mb-2 max-w-full h-auto flex justify-center">
+                          <img src={q.image} alt="Question" className="max-h-32 object-contain" />
                         </div>
-                         <div className="flex items-start">
-                           <span className="font-medium mr-1">{optionLabel})</span>
-                           <p>{option}</p>
-                         </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </article>
-            ))}
-          </div>
+                      )}
+                      <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
+                        {q.options.map((option, optIndex) => {
+                          const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
+                          const isCorrect = option === q.answer;
+
+                          return (
+                            <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
+                              <div className="answer-content text-green-600 print:text-green-600 mt-1">
+                                {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
+                              </div>
+                               <div className="flex items-start">
+                                 <span className="font-medium mr-1">{optionLabel})</span>
+                                 <p>{option}</p>
+                               </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-20">
+              <p>এখানে আপনার পরীক্ষার প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
+            </div>
+          )
         ) : (
-          <div className="text-center text-gray-500 py-20">
-            <p>এখানে আপনার পরীক্ষার প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-          </div>
-        )
-      ) : (
-        cqQuestions.length > 0 ? (
-          <div className="space-y-6 print:space-y-4">
-            {cqQuestions.map((q, index) => (
-              <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
-                <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
-                {q.stimulusImage && (
-                  <div className="mb-3 print:mb-2 flex justify-center">
-                    <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
+          cqQuestions.length > 0 ? (
+            <div className="space-y-6 print:space-y-4">
+              {cqQuestions.map((q, index) => (
+                <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
+                  <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
+                  {q.stimulusImage && (
+                    <div className="mb-3 print:mb-2 flex justify-center">
+                      <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
+                    </div>
+                  )}
+                  {q.stimulus && (
+                    <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
+                      {q.stimulus}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
+                    <p><span className="font-bold">ক)</span> {q.parts.a}</p>
+                    <p><span className="font-bold">খ)</span> {q.parts.b}</p>
+                    <p><span className="font-bold">গ)</span> {q.parts.c}</p>
+                    <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
                   </div>
-                )}
-                {q.stimulus && (
-                  <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
-                    {q.stimulus}
-                  </div>
-                )}
-                <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
-                  <p><span className="font-bold">ক)</span> {q.parts.a}</p>
-                  <p><span className="font-bold">খ)</span> {q.parts.b}</p>
-                  <p><span className="font-bold">গ)</span> {q.parts.c}</p>
-                  <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-20">
-            <p>এখানে আপনার সৃজনশীল (CQ) প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-          </div>
-        )
-      )}
-    </section>
-  </div>
-);
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-20">
+              <p>এখানে আপনার সৃজনশীল (CQ) প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
+            </div>
+          )
+        )}
+      </section>
+    </div>
+  );
+};
 
 export default function ExamPage() {
   const [mode, setMode] = useState<AppMode>(null);

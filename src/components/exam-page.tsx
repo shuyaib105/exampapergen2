@@ -25,7 +25,8 @@ import {
   Square,
   Edit2,
   XCircle,
-  ChevronDown
+  ChevronDown,
+  Info
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -37,6 +38,8 @@ import { useFirestore, useCollection } from "@/firebase";
 import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc } from "firebase/firestore";
 import { errorEmitter } from "@/firebase/error-emitter";
 import { FirestorePermissionError } from "@/firebase/errors";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type AppMode = "MCQ" | "CQ" | null;
 
@@ -225,6 +228,7 @@ export default function ExamPage() {
   const [mcqStimulusImage, setMcqStimulusImage] = useState<string | null>(null);
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
+  const [keepStimulus, setKeepStimulus] = useState(false);
 
   // CQ Manual Inputs
   const [cqStimulus, setCqStimulus] = useState("");
@@ -392,8 +396,10 @@ export default function ExamPage() {
     // Reset
     setMcqQuestion("");
     setMcqImage(null);
-    setMcqStimulus("");
-    setMcqStimulusImage(null);
+    if (!keepStimulus) {
+      setMcqStimulus("");
+      setMcqStimulusImage(null);
+    }
     setMcqOptions(["", "", "", ""]);
     setMcqAnswer("");
   };
@@ -762,29 +768,46 @@ export default function ExamPage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <Accordion type="single" collapsible className="w-full">
-                          <AccordionItem value="stimulus" className="border-none">
-                            <AccordionTrigger className="py-2 hover:no-underline text-xs bg-gray-50 px-2 rounded">
-                              উদ্দীপক যোগ করুন (ঐচ্ছিক)
+                        <Accordion type="single" collapsible className="w-full" defaultValue={(mcqStimulus || mcqStimulusImage) ? "stimulus" : undefined}>
+                          <AccordionItem value="stimulus" className="border rounded-md bg-gray-50/50">
+                            <AccordionTrigger className="py-2 hover:no-underline text-xs px-3">
+                              <div className="flex items-center gap-2">
+                                <Info className="h-3 w-3 text-primary" />
+                                {mcqStimulus || mcqStimulusImage ? "উদ্দীপক যুক্ত করা হয়েছে" : "উদ্দীপক যোগ করুন (ঐচ্ছিক)"}
+                              </div>
                             </AccordionTrigger>
-                            <AccordionContent className="pt-2 space-y-2">
+                            <AccordionContent className="pt-2 px-3 pb-3 space-y-3">
                                <Textarea 
                                  placeholder="উদ্দীপক টেক্সট..." 
                                  value={mcqStimulus} 
                                  onChange={(e) => setMcqStimulus(e.target.value)} 
-                                 className="h-20 text-xs"
+                                 className="h-20 text-xs bg-white"
                                />
                                <div className="flex items-center gap-2">
-                                  <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs" />
+                                  <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs bg-white" />
                                   {mcqStimulusImage && <Button variant="outline" size="icon" onClick={() => setMcqStimulusImage(null)}><Trash2 className="h-4 w-4" /></Button>}
                                </div>
                                {mcqStimulusImage && <img src={mcqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
+                               
+                               <div className="flex items-center space-x-2 pt-2 border-t">
+                                 <Checkbox 
+                                   id="keepStimulus" 
+                                   checked={keepStimulus} 
+                                   onCheckedChange={(checked) => setKeepStimulus(!!checked)} 
+                                 />
+                                 <label htmlFor="keepStimulus" className="text-[10px] font-medium leading-none cursor-pointer">
+                                   এই উদ্দীপকটি পরবর্তী প্রশ্নের জন্যও রাখুন
+                                 </label>
+                               </div>
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>
                         
                         <div className="space-y-1">
-                          <Label>প্রশ্ন</Label>
+                          <Label className="flex justify-between">
+                            প্রশ্ন 
+                            {(mcqStimulus || mcqStimulusImage) && <Badge variant="secondary" className="text-[9px] h-4">উদ্দীপকের অধীনে</Badge>}
+                          </Label>
                           <Input value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
                         </div>
                         <div className="space-y-1">
@@ -856,9 +879,14 @@ export default function ExamPage() {
                     <div className="divide-y">
                        {(mode === "MCQ" ? mcqQuestions : cqQuestions).map((q, i) => (
                          <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors group">
-                            <span className="text-sm truncate flex-1">
-                              {i+1}. {mode === "MCQ" ? (q as Question).question : (q as CQQuestion).stimulus?.slice(0, 30) + "..."}
-                            </span>
+                            <div className="flex flex-col flex-1 truncate mr-2">
+                              <span className="text-sm truncate">
+                                {i+1}. {mode === "MCQ" ? (q as Question).question : (q as CQQuestion).stimulus?.slice(0, 30) + "..."}
+                              </span>
+                              {mode === "MCQ" && ((q as Question).stimulus || (q as Question).stimulusImage) && (
+                                <span className="text-[9px] text-blue-500 font-medium">উদ্দীপকসহ</span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1">
                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit(i)}>
                                  <Edit2 className="h-4 w-4" />
@@ -937,3 +965,4 @@ export default function ExamPage() {
     </>
   );
 }
+

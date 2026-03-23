@@ -118,7 +118,7 @@ const PaperPreview = ({
                   <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
                     {/* Render stimulus if it's the start of a group */}
                     {stimulusData && stimulusData !== "SKIP" && (
-                      <div className="mb-3 p-2 bg-gray-50 print:bg-white print:p-0 print:mb-2">
+                      <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
                         <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
                         {stimulusData.image && (
                           <div className="mb-2 flex justify-center">
@@ -126,7 +126,7 @@ const PaperPreview = ({
                           </div>
                         )}
                         {stimulusData.stimulus && (
-                          <p className="italic text-sm leading-relaxed">{stimulusData.stimulus}</p>
+                          <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>
                         )}
                       </div>
                     )}
@@ -274,7 +274,8 @@ export default function ExamPage() {
     }
   `;
 
-  const shuffleArray = (array: Question[], seed: string): Question[] => {
+  // Seeded shuffle function
+  const shuffleArraySeeded = <T,>(array: T[], seed: string): T[] => {
     const newArr = [...array];
     let aSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const random = () => {
@@ -288,17 +289,45 @@ export default function ExamPage() {
     return newArr;
   };
 
+  // Improved shuffle that keeps same-stimulus questions together
+  const shuffleGroupedQuestions = (questions: Question[], seed: string): Question[] => {
+    if (seed === "A") return questions;
+
+    // 1. Group questions by consecutive same stimulus
+    const groups: Question[][] = [];
+    if (questions.length === 0) return [];
+
+    let currentGroup: Question[] = [questions[0]];
+    for (let i = 1; i < questions.length; i++) {
+      const q = questions[i];
+      const prevQ = questions[i - 1];
+      
+      const hasSameStimulus = 
+        (q.stimulus === prevQ.stimulus && q.stimulusImage === prevQ.stimulusImage);
+
+      if (hasSameStimulus && (q.stimulus || q.stimulusImage)) {
+        currentGroup.push(q);
+      } else {
+        groups.push(currentGroup);
+        currentGroup = [q];
+      }
+    }
+    groups.push(currentGroup);
+
+    // 2. Shuffle the groups
+    const shuffledGroups = shuffleArraySeeded(groups, seed);
+
+    // 3. Flatten back
+    return shuffledGroups.flat();
+  };
+
   useEffect(() => {
     document.body.setAttribute('data-preview-answers', String(previewAnswers));
   }, [previewAnswers]);
   
   useEffect(() => {
     if (mcqQuestions.length > 0) {
-      if (selectedSet === "A") {
-        setDisplayMcqQuestions(mcqQuestions);
-      } else {
-        setDisplayMcqQuestions(shuffleArray(mcqQuestions, selectedSet));
-      }
+      setDisplayMcqQuestions(shuffleGroupedQuestions(mcqQuestions, selectedSet));
     } else {
       setDisplayMcqQuestions([]);
     }
@@ -413,6 +442,8 @@ export default function ExamPage() {
       setMcqStimulusImage(q.stimulusImage || null);
       setMcqOptions(q.options);
       setMcqAnswer(q.answer);
+      // Auto-set keepStimulus if it has content
+      setKeepStimulus(!!(q.stimulus || q.stimulusImage));
     } else {
       const q = cqQuestions[index];
       setCqStimulus(q.stimulus || "");
@@ -421,6 +452,11 @@ export default function ExamPage() {
       setCqPartB(q.parts.b);
       setCqPartC(q.parts.c);
       setCqPartD(q.parts.d);
+    }
+    // Scroll to form
+    const formElement = document.getElementById('input-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -697,7 +733,7 @@ export default function ExamPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label>সময়</Label>
+                    <Label>সময়</Label>
                     <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
                   </div>
                   <div className="space-y-1">
@@ -729,15 +765,13 @@ export default function ExamPage() {
               </TabsList>
               
               <TabsContent value="manual">
-                <Card className="shadow-lg">
+                <Card id="input-form" className={`shadow-lg transition-all duration-300 ${editingIndex !== null ? 'ring-2 ring-primary bg-primary/5' : ''}`}>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-lg">
                       {editingIndex !== null ? "প্রশ্ন এডিট করুন" : "নতুন প্রশ্ন"}
                     </CardTitle>
                     {editingIndex !== null && (
-                      <Button variant="ghost" size="icon" onClick={cancelEdit}>
-                        <XCircle className="h-5 w-5 text-destructive" />
-                      </Button>
+                      <Badge variant="outline" className="text-primary border-primary animate-pulse">সম্পাদনা মোড সক্রিয়</Badge>
                     )}
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -761,9 +795,14 @@ export default function ExamPage() {
                           <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
                           <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
                         </div>
-                        <Button className="w-full" onClick={handleAddCq}>
-                          {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button className="flex-1" onClick={handleAddCq}>
+                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
+                          </Button>
+                          {editingIndex !== null && (
+                            <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -838,9 +877,14 @@ export default function ExamPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button className="w-full" onClick={handleAddMcq}>
-                          {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button className="flex-1" onClick={handleAddMcq}>
+                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
+                          </Button>
+                          {editingIndex !== null && (
+                            <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -874,16 +918,16 @@ export default function ExamPage() {
                      <span className="bg-accent px-2 py-0.5 rounded text-[10px]">{mode === "MCQ" ? mcqQuestions.length : cqQuestions.length}টি</span>
                    </CardTitle>
                  </CardHeader>
-                 <CardContent className="p-0 max-h-60 overflow-y-auto">
+                 <CardContent className="p-0 max-h-60 overflow-y-auto scrollbar-hide">
                     <div className="divide-y">
                        {(mode === "MCQ" ? mcqQuestions : cqQuestions).map((q, i) => (
-                         <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors group">
+                         <div key={i} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
                             <div className="flex flex-col flex-1 truncate mr-2">
-                              <span className="text-sm truncate">
+                              <span className="text-sm truncate font-medium">
                                 {i+1}. {mode === "MCQ" ? (q as Question).question : (q as CQQuestion).stimulus?.slice(0, 30) + "..."}
                               </span>
                               {mode === "MCQ" && ((q as Question).stimulus || (q as Question).stimulusImage) && (
-                                <span className="text-[9px] text-blue-500 font-medium">উদ্দীপকসহ</span>
+                                <span className="text-[9px] text-blue-500 font-bold">উদ্দীপকসহ</span>
                               )}
                             </div>
                             <div className="flex items-center gap-1">

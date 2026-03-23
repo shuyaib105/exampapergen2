@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import type { Question, CQQuestion, StoredQuestion } from "@/lib/types";
+import type { Question, CQQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,26 +17,14 @@ import {
   ArrowLeft, 
   Plus, 
   Trash2, 
-  Database, 
-  Save, 
-  Search,
-  CheckSquare,
-  Square,
   Edit2,
-  XCircle,
-  ChevronDown,
   Info
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, addDoc, serverTimestamp, query, orderBy, deleteDoc, doc } from "firebase/firestore";
-import { errorEmitter } from "@/firebase/error-emitter";
-import { FirestorePermissionError } from "@/firebase/errors";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -61,20 +49,17 @@ const PaperPreview = ({
   setName: string;
   mode: AppMode;
 }) => {
-  // Helper to determine stimulus grouping for MCQ
   const getMcqStimulusDisplay = (currentIndex: number) => {
     const q = mcqQuestions[currentIndex];
     if (!q.stimulus && !q.stimulusImage) return null;
 
-    // Check if this stimulus is the same as the previous one
     if (currentIndex > 0) {
       const prevQ = mcqQuestions[currentIndex - 1];
       if (prevQ.stimulus === q.stimulus && prevQ.stimulusImage === q.stimulusImage) {
-        return "SKIP"; // Don't render again
+        return "SKIP";
       }
     }
 
-    // Find how many subsequent questions share this exact stimulus
     let endIdx = currentIndex;
     for (let i = currentIndex + 1; i < mcqQuestions.length; i++) {
       if (mcqQuestions[i].stimulus === q.stimulus && mcqQuestions[i].stimulusImage === q.stimulusImage) {
@@ -116,7 +101,6 @@ const PaperPreview = ({
                 
                 return (
                   <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
-                    {/* Render stimulus if it's the start of a group */}
                     {stimulusData && stimulusData !== "SKIP" && (
                       <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
                         <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
@@ -140,7 +124,7 @@ const PaperPreview = ({
                       )}
                       <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
                         {q.options.map((option, optIndex) => {
-                          const optionLabel = String.fromCharCode(97 + optIndex); // a, b, c, d
+                          const optionLabel = String.fromCharCode(97 + optIndex);
                           const isCorrect = option === q.answer;
 
                           return (
@@ -215,12 +199,9 @@ export default function ExamPage() {
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
-  const [currentChapter, setCurrentChapter] = useState("সাধারণ");
 
-  // Editing State
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // MCQ Manual Inputs
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -229,7 +210,6 @@ export default function ExamPage() {
   const [mcqAnswer, setMcqAnswer] = useState("");
   const [keepStimulus, setKeepStimulus] = useState(false);
 
-  // CQ Manual Inputs
   const [cqStimulus, setCqStimulus] = useState("");
   const [cqStimulusImage, setCqStimulusImage] = useState<string | null>(null);
   const [cqPartA, setCqPartA] = useState("");
@@ -238,26 +218,6 @@ export default function ExamPage() {
   const [cqPartD, setCqPartD] = useState("");
 
   const { toast } = useToast();
-  const db = useFirestore();
-
-  // Storage related states
-  const [isStorageOpen, setIsStorageOpen] = useState(false);
-  const [searchChapter, setSearchChapter] = useState("");
-  const [selectedStoredQuestions, setSelectedStoredQuestions] = useState<string[]>([]);
-
-  const questionsQuery = useMemo(() => {
-    if (!db) return null;
-    return query(collection(db, "questions"), orderBy("createdAt", "desc"));
-  }, [db]);
-
-  const { data: storedQuestionsData, loading: storageLoading } = useCollection(questionsQuery);
-  const storedQuestions = (storedQuestionsData || []) as StoredQuestion[];
-
-  const filteredStoredQuestions = storedQuestions.filter(q => 
-    q.chapterName.toLowerCase().includes(searchChapter.toLowerCase()) && q.type === mode
-  );
-
-  const chapters = Array.from(new Set(filteredStoredQuestions.map(q => q.chapterName)));
 
   const dynamicPrintStyles = `
     @media print {
@@ -274,7 +234,6 @@ export default function ExamPage() {
     }
   `;
 
-  // Seeded shuffle function
   const shuffleArraySeeded = <T,>(array: T[], seed: string): T[] => {
     const newArr = [...array];
     let aSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -289,11 +248,9 @@ export default function ExamPage() {
     return newArr;
   };
 
-  // Improved shuffle that keeps same-stimulus questions together
   const shuffleGroupedQuestions = (questions: Question[], seed: string): Question[] => {
     if (seed === "A") return questions;
 
-    // 1. Group questions by consecutive same stimulus
     const groups: Question[][] = [];
     if (questions.length === 0) return [];
 
@@ -314,10 +271,7 @@ export default function ExamPage() {
     }
     groups.push(currentGroup);
 
-    // 2. Shuffle the groups
     const shuffledGroups = shuffleArraySeeded(groups, seed);
-
-    // 3. Flatten back
     return shuffledGroups.flat();
   };
 
@@ -332,23 +286,6 @@ export default function ExamPage() {
       setDisplayMcqQuestions([]);
     }
   }, [mcqQuestions, selectedSet]);
-
-  const saveQuestionToFirestore = (type: 'MCQ' | 'CQ', content: any) => {
-    if (!db) return;
-    addDoc(collection(db, "questions"), {
-      chapterName: currentChapter || "সাধারণ",
-      type,
-      content,
-      createdAt: serverTimestamp()
-    }).catch(async (err) => {
-      const permissionError = new FirestorePermissionError({
-        path: "questions",
-        operation: "create",
-        requestResourceData: { type, chapterName: currentChapter }
-      });
-      errorEmitter.emit("permission-error", permissionError);
-    });
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string | null) => void) => {
     const file = e.target.files?.[0];
@@ -381,11 +318,9 @@ export default function ExamPage() {
     } else {
       const updated = [...cqQuestions, newQ];
       setCqQuestions(updated);
-      saveQuestionToFirestore('CQ', newQ);
       toast({ title: "সফল", description: `সৃজনশীল প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
     }
     
-    // Reset
     setCqStimulus("");
     setCqStimulusImage(null);
     setCqPartA("");
@@ -417,11 +352,9 @@ export default function ExamPage() {
     } else {
       const updated = [...mcqQuestions, newQ];
       setMcqQuestions(updated);
-      saveQuestionToFirestore('MCQ', newQ);
       toast({ title: "সফল", description: `MCQ প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
     }
 
-    // Reset
     setMcqQuestion("");
     setMcqImage(null);
     if (!keepStimulus) {
@@ -442,7 +375,6 @@ export default function ExamPage() {
       setMcqStimulusImage(q.stimulusImage || null);
       setMcqOptions(q.options);
       setMcqAnswer(q.answer);
-      // Auto-set keepStimulus if it has content
       setKeepStimulus(!!(q.stimulus || q.stimulusImage));
     } else {
       const q = cqQuestions[index];
@@ -453,7 +385,6 @@ export default function ExamPage() {
       setCqPartC(q.parts.c);
       setCqPartD(q.parts.d);
     }
-    // Scroll to form
     const formElement = document.getElementById('input-form');
     if (formElement) {
       formElement.scrollIntoView({ behavior: 'smooth' });
@@ -502,12 +433,10 @@ export default function ExamPage() {
         if (mode === "MCQ") {
           const updated = [...mcqQuestions, ...data];
           setMcqQuestions(updated);
-          data.forEach(q => saveQuestionToFirestore('MCQ', q));
           currentTotal = updated.length;
         } else {
           const updated = [...cqQuestions, ...data];
           setCqQuestions(updated);
-          data.forEach(q => saveQuestionToFirestore('CQ', q));
           currentTotal = updated.length;
         }
         setJsonInput("");
@@ -528,36 +457,6 @@ export default function ExamPage() {
     }
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
     window.print();
-  };
-
-  const toggleStoredQuestionSelection = (id: string) => {
-    setSelectedStoredQuestions(prev => 
-      prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
-    );
-  };
-
-  const addSelectedStoredToExam = () => {
-    const selected = storedQuestions.filter(q => selectedStoredQuestions.includes(q.id));
-    let currentTotal = 0;
-    if (mode === "MCQ") {
-      const updated = [...mcqQuestions, ...selected.map(s => s.content as Question)];
-      setMcqQuestions(updated);
-      currentTotal = updated.length;
-    } else {
-      const updated = [...cqQuestions, ...selected.map(s => s.content as CQQuestion)];
-      setCqQuestions(updated);
-      currentTotal = updated.length;
-    }
-    setSelectedStoredQuestions([]);
-    setIsStorageOpen(false);
-    toast({ title: "সফল", description: `${selected.length}টি প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${currentTotal}টি` });
-  };
-
-  const deleteStoredQuestion = (id: string) => {
-    if (!db) return;
-    deleteDoc(doc(db, "questions", id)).then(() => {
-      toast({ title: "সফল", description: "প্রশ্নটি স্টোরেজ থেকে মুছে ফেলা হয়েছে।" });
-    });
   };
 
   if (!mode) {
@@ -608,111 +507,6 @@ export default function ExamPage() {
               >
                 <ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন
               </Button>
-              <Dialog open={isStorageOpen} onOpenChange={setIsStorageOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Database className="h-4 w-4" /> প্রশ্ন স্টোরেজ
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl flex items-center gap-2">
-                      <Database className="h-5 w-5" /> আপনার প্রশ্ন স্টোরেজ ({mode})
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-2 top-3 h-4 w-4 text-gray-400" />
-                        <Input 
-                          placeholder="চ্যাপ্টারের নাম দিয়ে খুঁজুন..." 
-                          className="pl-8" 
-                          value={searchChapter}
-                          onChange={(e) => setSearchChapter(e.target.value)}
-                        />
-                      </div>
-                      <Button 
-                        disabled={selectedStoredQuestions.length === 0}
-                        onClick={addSelectedStoredToExam}
-                      >
-                        নির্বাচিতগুলো যোগ করুন ({selectedStoredQuestions.length})
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2">
-                      {chapters.length > 0 ? (
-                        <Accordion type="multiple" className="w-full">
-                          {chapters.map((chapter, idx) => {
-                            const chapterQuestions = filteredStoredQuestions.filter(q => q.chapterName === chapter);
-                            if (chapterQuestions.length === 0) return null;
-                            return (
-                              <AccordionItem key={chapter + idx} value={`chapter-${idx}`} className="border rounded-lg mb-2 px-2">
-                                <AccordionTrigger className="hover:no-underline py-3">
-                                  <div className="flex items-center justify-between w-full pr-4">
-                                    <span className="font-bold text-lg">{chapter}</span>
-                                    <span className="text-sm font-normal text-muted-foreground bg-gray-100 px-2 py-0.5 rounded-full">{chapterQuestions.length}টি প্রশ্ন</span>
-                                  </div>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                  <div className="grid grid-cols-1 gap-3 py-3">
-                                    {chapterQuestions.map((q) => (
-                                      <div 
-                                        key={q.id} 
-                                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${selectedStoredQuestions.includes(q.id) ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`}
-                                        onClick={() => toggleStoredQuestionSelection(q.id)}
-                                      >
-                                        <div className="mt-1">
-                                          {selectedStoredQuestions.includes(q.id) ? (
-                                            <CheckSquare className="h-5 w-5 text-primary" />
-                                          ) : (
-                                            <Square className="h-5 w-5 text-gray-300" />
-                                          )}
-                                        </div>
-                                        <div className="flex-1">
-                                          {q.type === 'MCQ' ? (
-                                            <div>
-                                              <p className="font-medium">{(q.content as Question).question}</p>
-                                              <p className="text-xs text-muted-foreground mt-1">সঠিক উত্তর: {(q.content as Question).answer}</p>
-                                            </div>
-                                          ) : (
-                                            <div>
-                                              <p className="font-medium line-clamp-2">{(q.content as CQQuestion).stimulus}</p>
-                                              <div className="grid grid-cols-2 gap-x-4 mt-1 text-xs text-muted-foreground">
-                                                <span>ক) {(q.content as CQQuestion).parts.a}</span>
-                                                <span>খ) {(q.content as CQQuestion).parts.b}</span>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon" 
-                                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if(confirm("স্টোরেজ থেকে মুছে ফেলতে চান?")) deleteStoredQuestion(q.id);
-                                          }}
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            );
-                          })}
-                        </Accordion>
-                      ) : (
-                        <div className="text-center py-20 text-gray-400">
-                          <Database className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                          <p>আপনার প্রশ্ন স্টোরেজে কোনো প্রশ্ন নেই।</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
             
             <Card className="shadow-lg border-primary/20">
@@ -744,16 +538,6 @@ export default function ExamPage() {
                 <div className="space-y-1">
                   <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
                   <Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} />
-                </div>
-                <div className="space-y-1 border-t pt-4">
-                  <Label className="flex items-center gap-2">
-                    <Database className="h-4 w-4" /> চ্যাপ্টারের নাম
-                  </Label>
-                  <Input 
-                    placeholder="যেমন: কোষ ও কোষের গঠন" 
-                    value={currentChapter} 
-                    onChange={(e) => setCurrentChapter(e.target.value)} 
-                  />
                 </div>
               </CardContent>
             </Card>
@@ -797,7 +581,7 @@ export default function ExamPage() {
                         </div>
                         <div className="flex gap-2">
                           <Button className="flex-1" onClick={handleAddCq}>
-                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
+                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
                           </Button>
                           {editingIndex !== null && (
                             <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
@@ -879,7 +663,7 @@ export default function ExamPage() {
                         </div>
                         <div className="flex gap-2">
                           <Button className="flex-1" onClick={handleAddMcq}>
-                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত ও সেভ করুন</>}
+                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
                           </Button>
                           {editingIndex !== null && (
                             <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
@@ -903,13 +687,12 @@ export default function ExamPage() {
                       onChange={(e) => setJsonInput(e.target.value)} 
                       placeholder="JSON ডেটা এখানে পেস্ট করুন..."
                     />
-                    <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট ও সেভ করুন</Button>
+                    <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
 
-            {/* Current List Section */}
             {(mode === "MCQ" ? mcqQuestions.length : cqQuestions.length) > 0 && (
                <Card className="shadow-lg border-accent/30">
                  <CardHeader className="py-3 px-4 bg-accent/5">
@@ -979,7 +762,7 @@ export default function ExamPage() {
                 variant="destructive" 
                 className="w-full" 
                 onClick={() => {
-                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান? এটি শুধুমাত্র বর্তমান তালিকা থেকে মুছবে, স্টোরেজ থেকে নয়।")){
+                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান?")){
                     setMcqQuestions([]);
                     setCqQuestions([]);
                     toast({ title: "সফল", description: "বর্তমান তালিকা খালি করা হয়েছে।" });

@@ -22,11 +22,3 @@ export type CQQuestion = {
     d: string;
   };
 };
-
-export type StoredQuestion = {
-  id: string;
-  chapterName: string;
-  type: 'MCQ' | 'CQ';
-  content: Question | CQQuestion;
-  createdAt: any;
-};

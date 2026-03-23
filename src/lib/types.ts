@@ -7,6 +7,8 @@ export type Question = {
   explanation?: string;
   image?: string;
   type?: string;
+  stimulus?: string;
+  stimulusImage?: string;
 };
 
 export type CQQuestion = {

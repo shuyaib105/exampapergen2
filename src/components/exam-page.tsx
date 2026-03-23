@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -119,7 +118,7 @@ const PaperPreview = ({
                   <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
                     {/* Render stimulus if it's the start of a group */}
                     {stimulusData && stimulusData !== "SKIP" && (
-                      <div className="mb-3 p-2 bg-gray-50 border-l-4 border-primary/30 print:bg-white print:border-black print:p-0 print:mb-2">
+                      <div className="mb-3 p-2 bg-gray-50 print:bg-white print:p-0 print:mb-2">
                         <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
                         {stimulusData.image && (
                           <div className="mb-2 flex justify-center">
@@ -965,4 +964,3 @@ export default function ExamPage() {
     </>
   );
 }
-

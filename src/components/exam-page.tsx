@@ -21,7 +21,8 @@ import {
   Edit2,
   Info,
   Code,
-  Image as ImageIcon
+  Image as ImageIcon,
+  LayoutGrid
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,9 +31,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-type AppMode = "MCQ" | "CQ" | null;
+type AppMode = "MCQ" | "CQ" | "BOTH" | null;
 
 const PaperPreview = ({ 
   examName, 
@@ -97,106 +97,119 @@ const PaperPreview = ({
               <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
             </div>
           )}
-          <div className="text-center px-24">
+          <div className="text-center px-10">
             <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
             <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
           </div>
         </div>
         <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
           <span>পূর্ণমান: {totalMarks || "..."}</span>
-          {mode === "MCQ" && <span className="font-bold">সেট: {setName}</span>}
+          {(mode === "MCQ" || mode === "BOTH") && <span className="font-bold">সেট: {setName}</span>}
           <span>সময়: {examTime || "..."}</span>
         </div>
       </header>
 
       <section className="mt-4 print:mt-2">
-        {mode === "MCQ" ? (
-          mcqQuestions.length > 0 ? (
-            <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
-              {mcqQuestions.map((q, index) => {
-                const stimulusData = getMcqStimulusDisplay(index);
-                
-                return (
-                  <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
-                    {stimulusData && stimulusData !== "SKIP" && (
-                      <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
-                        <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
-                        {stimulusData.image && (
-                          <div className="mb-2 flex justify-center">
-                            <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
-                          </div>
-                        )}
-                        {stimulusData.stimulus && (
-                          <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="mt-1">
-                      <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
-                      {q.image && (
-                        <div className="mb-2 max-w-full h-auto flex justify-center">
-                          <img src={q.image} alt="Question" className="max-h-32 object-contain" />
+        {/* MCQ Section */}
+        {(mode === "MCQ" || mode === "BOTH") && (
+          <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
+            {mode === "BOTH" && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
+            {mcqQuestions.length > 0 ? (
+              <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
+                {mcqQuestions.map((q, index) => {
+                  const stimulusData = getMcqStimulusDisplay(index);
+                  return (
+                    <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
+                      {stimulusData && stimulusData !== "SKIP" && (
+                        <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
+                          <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
+                          {stimulusData.image && (
+                            <div className="mb-2 flex justify-center">
+                              <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
+                            </div>
+                          )}
+                          {stimulusData.stimulus && (
+                            <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>
+                          )}
                         </div>
                       )}
-                      <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
-                        {q.options.map((option, optIndex) => {
-                          const optionLabel = String.fromCharCode(97 + optIndex);
-                          const isCorrect = option === q.answer;
+                      <div className="mt-1">
+                        <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
+                        {q.image && (
+                          <div className="mb-2 max-w-full h-auto flex justify-center">
+                            <img src={q.image} alt="Question" className="max-h-32 object-contain" />
+                          </div>
+                        )}
+                        <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
+                          {q.options.map((option, optIndex) => {
+                            const optionLabel = String.fromCharCode(97 + optIndex);
+                            const isCorrect = option === q.answer;
+                            return (
+                              <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
+                                <div className="answer-content text-green-600 print:text-green-600 mt-1">
+                                  {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
+                                </div>
+                                 <div className="flex items-start">
+                                   <span className="font-medium mr-1">{optionLabel})</span>
+                                   <p>{option}</p>
+                                 </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : mode === "MCQ" && (
+              <div className="text-center text-gray-500 py-20">
+                <p>এখানে আপনার পরীক্ষার প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
+              </div>
+            )}
+          </div>
+        )}
 
-                          return (
-                            <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
-                              <div className="answer-content text-green-600 print:text-green-600 mt-1">
-                                {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
-                              </div>
-                               <div className="flex items-start">
-                                 <span className="font-medium mr-1">{optionLabel})</span>
-                                 <p>{option}</p>
-                               </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
+        {/* CQ Section */}
+        {(mode === "CQ" || mode === "BOTH") && (
+          <div>
+            {mode === "BOTH" && cqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সৃজনশীল অংশ</h2>}
+            {cqQuestions.length > 0 ? (
+              <div className="space-y-6 print:space-y-4">
+                {cqQuestions.map((q, index) => (
+                  <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
+                    <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
+                    {q.stimulusImage && (
+                      <div className="mb-3 print:mb-2 flex justify-center">
+                        <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
+                      </div>
+                    )}
+                    {q.stimulus && (
+                      <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
+                        {q.stimulus}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
+                      <p><span className="font-bold">ক)</span> {q.parts.a}</p>
+                      <p><span className="font-bold">খ)</span> {q.parts.b}</p>
+                      <p><span className="font-bold">গ)</span> {q.parts.c}</p>
+                      <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
                     </div>
                   </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center text-gray-500 py-20">
-              <p>এখানে আপনার পরীক্ষার প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-            </div>
-          )
-        ) : (
-          cqQuestions.length > 0 ? (
-            <div className="space-y-6 print:space-y-4">
-              {cqQuestions.map((q, index) => (
-                <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
-                  <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
-                  {q.stimulusImage && (
-                    <div className="mb-3 print:mb-2 flex justify-center">
-                      <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
-                    </div>
-                  )}
-                  {q.stimulus && (
-                    <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
-                      {q.stimulus}
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
-                    <p><span className="font-bold">ক)</span> {q.parts.a}</p>
-                    <p><span className="font-bold">খ)</span> {q.parts.b}</p>
-                    <p><span className="font-bold">গ)</span> {q.parts.c}</p>
-                    <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-gray-500 py-20">
-              <p>এখানে আপনার সৃজনশীল (CQ) প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-            </div>
-          )
+                ))}
+              </div>
+            ) : mode === "CQ" && (
+              <div className="text-center text-gray-500 py-20">
+                <p>এখানে আপনার সৃজনশীল (CQ) প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode === "BOTH" && mcqQuestions.length === 0 && cqQuestions.length === 0 && (
+          <div className="text-center text-gray-500 py-20">
+            <p>এখানে আপনার সম্মিলিত প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
+          </div>
         )}
       </section>
     </div>
@@ -218,7 +231,7 @@ export default function ExamPage() {
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ', index: number} | null>(null);
 
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
@@ -331,9 +344,9 @@ export default function ExamPage() {
       parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD }
     };
 
-    if (editingIndex !== null) {
+    if (editingIndex?.type === 'CQ') {
       const updated = [...cqQuestions];
-      updated[editingIndex] = newQ;
+      updated[editingIndex.index] = newQ;
       setCqQuestions(updated);
       setEditingIndex(null);
       toast({ title: "সফল", description: "সৃজনশীল প্রশ্ন আপডেট হয়েছে।" });
@@ -365,9 +378,9 @@ export default function ExamPage() {
       answer: mcqAnswer,
     };
 
-    if (editingIndex !== null) {
+    if (editingIndex?.type === 'MCQ') {
       const updated = [...mcqQuestions];
-      updated[editingIndex] = newQ;
+      updated[editingIndex.index] = newQ;
       setMcqQuestions(updated);
       setEditingIndex(null);
       toast({ title: "সফল", description: "MCQ প্রশ্ন আপডেট হয়েছে।" });
@@ -387,9 +400,9 @@ export default function ExamPage() {
     setMcqAnswer("");
   };
 
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    if (mode === "MCQ") {
+  const handleEdit = (type: 'MCQ' | 'CQ', index: number) => {
+    setEditingIndex({type, index});
+    if (type === "MCQ") {
       const q = mcqQuestions[index];
       setMcqQuestion(q.question);
       setMcqImage(q.image || null);
@@ -415,26 +428,23 @@ export default function ExamPage() {
 
   const cancelEdit = () => {
     setEditingIndex(null);
-    if (mode === "MCQ") {
-      setMcqQuestion("");
-      setMcqImage(null);
-      setMcqStimulus("");
-      setMcqStimulusImage(null);
-      setMcqOptions(["", "", "", ""]);
-      setMcqAnswer("");
-    } else {
-      setCqStimulus("");
-      setCqStimulusImage(null);
-      setCqPartA("");
-      setCqPartB("");
-      setCqPartC("");
-      setCqPartD("");
-    }
+    setMcqQuestion("");
+    setMcqImage(null);
+    setMcqStimulus("");
+    setMcqStimulusImage(null);
+    setMcqOptions(["", "", "", ""]);
+    setMcqAnswer("");
+    setCqStimulus("");
+    setCqStimulusImage(null);
+    setCqPartA("");
+    setCqPartB("");
+    setCqPartC("");
+    setCqPartD("");
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = (type: 'MCQ' | 'CQ', index: number) => {
     if (confirm("আপনি কি নিশ্চিতভাবে এই প্রশ্নটি মুছে ফেলতে চান?")) {
-      if (mode === "MCQ") {
+      if (type === "MCQ") {
         setMcqQuestions(prev => prev.filter((_, i) => i !== index));
       } else {
         setCqQuestions(prev => prev.filter((_, i) => i !== index));
@@ -451,18 +461,29 @@ export default function ExamPage() {
     try {
       const data = JSON.parse(jsonInput);
       if (Array.isArray(data)) {
-        let currentTotal = 0;
-        if (mode === "MCQ") {
-          const updated = [...mcqQuestions, ...data];
-          setMcqQuestions(updated);
-          currentTotal = updated.length;
-        } else {
-          const updated = [...cqQuestions, ...data];
-          setCqQuestions(updated);
-          currentTotal = updated.length;
-        }
+        let mcqAdded = 0;
+        let cqAdded = 0;
+        const newMcqs: Question[] = [];
+        const newCqs: CQQuestion[] = [];
+
+        data.forEach((item: any) => {
+          if (item.options && item.answer) {
+            newMcqs.push(item);
+            mcqAdded++;
+          } else if (item.parts) {
+            newCqs.push(item);
+            cqAdded++;
+          }
+        });
+
+        if (mcqAdded > 0) setMcqQuestions(prev => [...prev, ...newMcqs]);
+        if (cqAdded > 0) setCqQuestions(prev => [...prev, ...newCqs]);
+
         setJsonInput("");
-        toast({ title: "সফল!", description: `${data.length}টি প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${currentTotal}টি` });
+        toast({ 
+          title: "সফল!", 
+          description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন যুক্ত হয়েছে।` 
+        });
       } else {
         throw new Error("JSON is not an array.");
       }
@@ -472,8 +493,8 @@ export default function ExamPage() {
   };
 
   const handleExport = (withAnswers: boolean) => {
-    const count = mode === "MCQ" ? displayMcqQuestions.length : cqQuestions.length;
-    if(count === 0){
+    const totalCount = mcqQuestions.length + cqQuestions.length;
+    if(totalCount === 0){
         toast({ variant: "destructive", title: "ত্রুটি", description: "প্রথমে প্রশ্ন যুক্ত করুন।" });
         return;
     }
@@ -481,80 +502,10 @@ export default function ExamPage() {
     window.print();
   };
 
-  const getFullHtmlCode = () => {
-    return `<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExamPaperGen - ${examName}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Noto Serif Bengali', serif; background-color: #f3f4f6; margin: 0; padding: 0; }
-        .print-area { background: white; width: 210mm; min-height: 297mm; margin: 20px auto; padding: 15mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .mcq-cols { column-count: 2; column-gap: 30px; column-fill: auto; }
-        .q-item { break-inside: avoid-column; margin-bottom: 12px; font-size: 14px; }
-        @media print {
-            body { background: white; }
-            .no-print { display: none; }
-            .print-area { margin: 0; box-shadow: none; width: 100%; padding: 5mm; }
-            @page { size: A4; margin: 0.5cm; }
-        }
-    </style>
-</head>
-<body>
-    <div class="no-print p-4 bg-blue-600 text-white flex justify-between items-center sticky top-0 z-50">
-        <h1 class="font-bold">ExamPaperGen - Single File HTML</h1>
-        <button onclick="window.print()" class="bg-white text-blue-600 px-4 py-1 rounded font-bold">Print / Export PDF</button>
-    </div>
-    <div class="print-area">
-        <header class="border-b-2 border-black pb-2 mb-4 text-center">
-            <h1 class="text-2xl font-bold">${examName}</h1>
-            <p class="text-lg font-semibold">${authorName}</p>
-            <div class="flex justify-between mt-2 font-bold px-2">
-                <span>পূর্ণমান: ${totalMarks}</span>
-                <span>সময়: ${examTime}</span>
-            </div>
-        </header>
-        <div class="${mode === 'MCQ' ? 'mcq-cols' : 'space-y-6'}">
-            ${mode === 'MCQ' ? 
-              displayMcqQuestions.map((q, i) => `
-                <div class="q-item">
-                    <p class="font-bold">${i + 1}. ${q.question}</p>
-                    <div class="grid grid-cols-2 gap-2 mt-1 ml-4">
-                        ${q.options.map((opt, oi) => `<div>${String.fromCharCode(97 + oi)}) ${opt}</div>`).join('')}
-                    </div>
-                </div>`).join('') 
-              : 
-              cqQuestions.map((q, i) => `
-                <div class="mb-6">
-                    <p class="font-bold">${i + 1}. উদ্দীপকটি পড় ও প্রশ্নগুলোর উত্তর দাও:</p>
-                    <div class="italic my-2">${q.stimulus || ''}</div>
-                    <div class="space-y-1 ml-6">
-                        <p>ক) ${q.parts.a}</p>
-                        <p>খ) ${q.parts.b}</p>
-                        <p>গ) ${q.parts.c}</p>
-                        <p>ঘ) ${q.parts.d}</p>
-                    </div>
-                </div>`).join('')
-            }
-        </div>
-    </div>
-</body>
-</html>`;
-  };
-
-  const copyCodeToClipboard = () => {
-    const code = getFullHtmlCode();
-    navigator.clipboard.writeText(code);
-    toast({ title: "সফল", description: "এইচটিএমএল কোড ক্লিপবোর্ডে কপি করা হয়েছে।" });
-  };
-
   if (!mode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
-        <div className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card 
             className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
             onClick={() => setMode("MCQ")}
@@ -576,40 +527,24 @@ export default function ExamPage() {
               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                 <FileText className="h-10 w-10" />
               </div>
-              <CardTitle className="text-2xl">CQ (সৃজনশীল) মোড</CardTitle>
+              <CardTitle className="text-2xl">CQ মোড</CardTitle>
               <CardDescription>সৃজনশীল বা লিখিত প্রশ্নপত্র তৈরি করুন</CardDescription>
             </CardHeader>
           </Card>
-        </div>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="gap-2">
-              <Code className="h-5 w-5" /> সম্পূর্ণ কোড (HTML)
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>প্রজেক্টের সম্পূর্ণ এইচটিএমএল কোড</DialogTitle>
-              <DialogDescription>
-                নিচের কোডটি কপি করে একটি .html ফাইলে সেভ করুন। এটি যেকোনো ব্রাউজারে ঠিক এই অ্যাপের মতোই কাজ করবে।
-              </DialogDescription>
-            </DialogHeader>
-            <div className="relative mt-4">
-              <Textarea 
-                readOnly 
-                className="font-mono text-xs h-[400px]" 
-                value={getFullHtmlCode()} 
-              />
-              <Button 
-                className="absolute top-2 right-2" 
-                onClick={copyCodeToClipboard}
-              >
-                কোড কপি করুন
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          <Card 
+            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
+            onClick={() => setMode("BOTH")}
+          >
+            <CardHeader className="text-center">
+              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <LayoutGrid className="h-10 w-10" />
+              </div>
+              <CardTitle className="text-2xl">MCQ + CQ মোড</CardTitle>
+              <CardDescription>এমসিকিউ এবং সৃজনশীল এক ফাইলে আনুন</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -694,118 +629,115 @@ export default function ExamPage() {
                     )}
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {mode === "CQ" ? (
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <Label>উদ্দীপক (টেক্সট)</Label>
-                          <Textarea value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} className="h-20" />
+                    <Tabs defaultValue={editingIndex?.type === 'CQ' ? "cq" : "mcq"} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsTrigger value="mcq" disabled={mode === "CQ"}>MCQ</TabsTrigger>
+                        <TabsTrigger value="cq" disabled={mode === "MCQ"}>CQ</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="mcq">
+                        <div className="space-y-3">
+                          <Accordion type="single" collapsible className="w-full" defaultValue={(mcqStimulus || mcqStimulusImage) ? "stimulus" : undefined}>
+                            <AccordionItem value="stimulus" className="border rounded-md bg-gray-50/50">
+                              <AccordionTrigger className="py-2 hover:no-underline text-xs px-3">
+                                <div className="flex items-center gap-2">
+                                  <Info className="h-3 w-3 text-primary" />
+                                  {mcqStimulus || mcqStimulusImage ? "উদ্দীপক যুক্ত করা হয়েছে" : "উদ্দীপক যোগ করুন (ঐচ্ছিক)"}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="pt-2 px-3 pb-3 space-y-3">
+                                 <Textarea 
+                                   placeholder="উদ্দীপক টেক্সট..." 
+                                   value={mcqStimulus} 
+                                   onChange={(e) => setMcqStimulus(e.target.value)} 
+                                   className="h-20 text-xs bg-white"
+                                 />
+                                 <div className="flex items-center gap-2">
+                                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs bg-white" />
+                                 </div>
+                                 {mcqStimulusImage && <img src={mcqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
+                                 <div className="flex items-center space-x-2 pt-2 border-t">
+                                   <Checkbox 
+                                     id="keepStimulus" 
+                                     checked={keepStimulus} 
+                                     onCheckedChange={(checked) => setKeepStimulus(!!checked)} 
+                                   />
+                                   <Label htmlFor="keepStimulus" className="text-[10px] font-medium leading-none cursor-pointer">
+                                     এই উদ্দীপকটি পরবর্তী প্রশ্নের জন্যও রাখুন
+                                   </Label>
+                                 </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                          <div className="space-y-1">
+                            <Label>প্রশ্ন</Label>
+                            <Input value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label>প্রশ্ন ছবি (ঐচ্ছিক)</Label>
+                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqImage)} className="text-xs" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {mcqOptions.map((opt, i) => (
+                              <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => {
+                                const newOpts = [...mcqOptions];
+                                newOpts[i] = e.target.value;
+                                setMcqOptions(newOpts);
+                              }} />
+                            ))}
+                          </div>
+                          <div className="space-y-1">
+                            <Label>সঠিক উত্তর</Label>
+                            <Select value={mcqAnswer} onValueChange={setMcqAnswer}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="সঠিক উত্তর বেছে নিন" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mcqOptions.map((opt, i) => (
+                                  opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button className="flex-1" onClick={handleAddMcq}>
+                              {editingIndex?.type === 'MCQ' ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
+                            </Button>
+                            {editingIndex !== null && (
+                              <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <Label>উদ্দীপক ছবি</Label>
-                          <div className="flex items-center gap-2">
+                      </TabsContent>
+
+                      <TabsContent value="cq">
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <Label>উদ্দীপক (টেক্সট)</Label>
+                            <Textarea value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} className="h-20" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label>উদ্দীপক ছবি</Label>
                             <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} className="text-xs" />
-                            {cqStimulusImage && <Button variant="outline" size="icon" onClick={() => setCqStimulusImage(null)}><Trash2 className="h-4 w-4" /></Button>}
                           </div>
                           {cqStimulusImage && <img src={cqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
-                        </div>
-                        <div className="grid grid-cols-1 gap-2">
-                          <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                          <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                          <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                          <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button className="flex-1" onClick={handleAddCq}>
-                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
-                          </Button>
-                          {editingIndex !== null && (
-                            <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Accordion type="single" collapsible className="w-full" defaultValue={(mcqStimulus || mcqStimulusImage) ? "stimulus" : undefined}>
-                          <AccordionItem value="stimulus" className="border rounded-md bg-gray-50/50">
-                            <AccordionTrigger className="py-2 hover:no-underline text-xs px-3">
-                              <div className="flex items-center gap-2">
-                                <Info className="h-3 w-3 text-primary" />
-                                {mcqStimulus || mcqStimulusImage ? "উদ্দীপক যুক্ত করা হয়েছে" : "উদ্দীপক যোগ করুন (ঐচ্ছিক)"}
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="pt-2 px-3 pb-3 space-y-3">
-                               <Textarea 
-                                 placeholder="উদ্দীপক টেক্সট..." 
-                                 value={mcqStimulus} 
-                                 onChange={(e) => setMcqStimulus(e.target.value)} 
-                                 className="h-20 text-xs bg-white"
-                               />
-                               <div className="flex items-center gap-2">
-                                  <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs bg-white" />
-                                  {mcqStimulusImage && <Button variant="outline" size="icon" onClick={() => setMcqStimulusImage(null)}><Trash2 className="h-4 w-4" /></Button>}
-                               </div>
-                               {mcqStimulusImage && <img src={mcqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
-                               
-                               <div className="flex items-center space-x-2 pt-2 border-t">
-                                 <Checkbox 
-                                   id="keepStimulus" 
-                                   checked={keepStimulus} 
-                                   onCheckedChange={(checked) => setKeepStimulus(!!checked)} 
-                                 />
-                                 <label htmlFor="keepStimulus" className="text-[10px] font-medium leading-none cursor-pointer">
-                                   এই উদ্দীপকটি পরবর্তী প্রশ্নের জন্যও রাখুন
-                                 </label>
-                               </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                        
-                        <div className="space-y-1">
-                          <Label className="flex justify-between">
-                            প্রশ্ন 
-                            {(mcqStimulus || mcqStimulusImage) && <Badge variant="secondary" className="text-[9px] h-4">উদ্দীপকের অধীনে</Badge>}
-                          </Label>
-                          <Input value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label>প্রশ্ন ছবি (ঐচ্ছিক)</Label>
-                          <div className="flex items-center gap-2">
-                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqImage)} className="text-xs" />
-                            {mcqImage && <Button variant="outline" size="icon" onClick={() => setMcqImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                          <div className="grid grid-cols-1 gap-2">
+                            <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
+                            <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
+                            <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
+                            <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button className="flex-1" onClick={handleAddCq}>
+                              {editingIndex?.type === 'CQ' ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
+                            </Button>
+                            {editingIndex !== null && (
+                              <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
+                            )}
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {mcqOptions.map((opt, i) => (
-                            <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => {
-                              const newOpts = [...mcqOptions];
-                              newOpts[i] = e.target.value;
-                              setMcqOptions(newOpts);
-                            }} />
-                          ))}
-                        </div>
-                        <div className="space-y-1">
-                          <Label>সঠিক উত্তর</Label>
-                          <Select value={mcqAnswer} onValueChange={setMcqAnswer}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="সঠিক উত্তর বেছে নিন" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {mcqOptions.map((opt, i) => (
-                                opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button className="flex-1" onClick={handleAddMcq}>
-                            {editingIndex !== null ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
-                          </Button>
-                          {editingIndex !== null && (
-                            <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -820,7 +752,7 @@ export default function ExamPage() {
                       className="h-40 text-xs font-mono" 
                       value={jsonInput} 
                       onChange={(e) => setJsonInput(e.target.value)} 
-                      placeholder="JSON ডেটা এখানে পেস্ট করুন..."
+                      placeholder='[{"question":"...","options":["..."],"answer":"..."},{"stimulus":"...","parts":{"a":"...","b":"...","c":"...","d":"..."}}]'
                     />
                     <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
                   </CardContent>
@@ -828,31 +760,41 @@ export default function ExamPage() {
               </TabsContent>
             </Tabs>
 
-            {(mode === "MCQ" ? mcqQuestions.length : cqQuestions.length) > 0 && (
+            {(mcqQuestions.length + cqQuestions.length) > 0 && (
                <Card className="shadow-lg border-accent/30">
                  <CardHeader className="py-3 px-4 bg-accent/5">
                    <CardTitle className="text-sm font-bold flex items-center justify-between">
                      বর্তমান প্রশ্নসমূহ
-                     <span className="bg-accent px-2 py-0.5 rounded text-[10px]">{mode === "MCQ" ? mcqQuestions.length : cqQuestions.length}টি</span>
+                     <span className="bg-accent px-2 py-0.5 rounded text-[10px]">{mcqQuestions.length + cqQuestions.length}টি</span>
                    </CardTitle>
                  </CardHeader>
                  <CardContent className="p-0 max-h-60 overflow-y-auto scrollbar-hide">
                     <div className="divide-y">
-                       {(mode === "MCQ" ? mcqQuestions : cqQuestions).map((q, i) => (
-                         <div key={i} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
+                       {mcqQuestions.map((q, i) => (
+                         <div key={`mcq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'MCQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
                             <div className="flex flex-col flex-1 truncate mr-2">
-                              <span className="text-sm truncate font-medium">
-                                {i+1}. {mode === "MCQ" ? (q as Question).question : (q as CQQuestion).stimulus?.slice(0, 30) + "..."}
-                              </span>
-                              {mode === "MCQ" && ((q as Question).stimulus || (q as Question).stimulusImage) && (
-                                <span className="text-[9px] text-blue-500 font-bold">উদ্দীপকসহ</span>
-                              )}
+                              <span className="text-xs truncate font-medium">MCQ {i+1}. {q.question}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit(i)}>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('MCQ', i)}>
                                  <Edit2 className="h-4 w-4" />
                                </Button>
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(i)}>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete('MCQ', i)}>
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                            </div>
+                         </div>
+                       ))}
+                       {cqQuestions.map((q, i) => (
+                         <div key={`cq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'CQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
+                            <div className="flex flex-col flex-1 truncate mr-2">
+                              <span className="text-xs truncate font-medium">CQ {i+1}. {q.stimulus?.slice(0, 30)}...</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('CQ', i)}>
+                                 <Edit2 className="h-4 w-4" />
+                               </Button>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete('CQ', i)}>
                                  <Trash2 className="h-4 w-4" />
                                </Button>
                             </div>
@@ -866,13 +808,13 @@ export default function ExamPage() {
             <div className="mt-6 space-y-4">
               <div className="flex flex-col gap-2">
                 <Button className="w-full h-12 text-lg font-bold" onClick={() => handleExport(true)}>
-                  <Printer className="mr-2 h-5 w-5" /> {mode === "MCQ" ? "উত্তরসহ পিডিএফ" : "পিডিএফ এক্সপোর্ট"}
+                  <Printer className="mr-2 h-5 w-5" /> উত্তরসহ পিডিএফ
                 </Button>
-                {mode === "MCQ" && (
+                <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
+                  <Printer className="mr-2 h-4 w-4" /> উত্তর ছাড়া পিডিএফ
+                </Button>
+                {(mode === "MCQ" || mode === "BOTH") && (
                   <>
-                    <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
-                      <Printer className="mr-2 h-4 w-4" /> উত্তর ছাড়া পিডিএফ
-                    </Button>
                     <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
                       <Label>প্রিভিউতে উত্তর দেখান</Label>
                       <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />

@@ -20,8 +20,6 @@ import {
   Trash2, 
   Edit2,
   Info,
-  Code,
-  Image as ImageIcon,
   LayoutGrid
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -110,11 +108,10 @@ const PaperPreview = ({
       </header>
 
       <section className="mt-4 print:mt-2">
-        {/* MCQ Section */}
         {(mode === "MCQ" || mode === "BOTH") && (
           <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
             {mode === "BOTH" && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
-            {mcqQuestions.length > 0 ? (
+            {mcqQuestions.length > 0 && (
               <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
                 {mcqQuestions.map((q, index) => {
                   const stimulusData = getMcqStimulusDisplay(index);
@@ -162,19 +159,14 @@ const PaperPreview = ({
                   );
                 })}
               </div>
-            ) : mode === "MCQ" && (
-              <div className="text-center text-gray-500 py-20">
-                <p>এখানে আপনার পরীক্ষার প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-              </div>
             )}
           </div>
         )}
 
-        {/* CQ Section */}
         {(mode === "CQ" || mode === "BOTH") && (
           <div>
             {mode === "BOTH" && cqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সৃজনশীল অংশ</h2>}
-            {cqQuestions.length > 0 ? (
+            {cqQuestions.length > 0 && (
               <div className="space-y-6 print:space-y-4">
                 {cqQuestions.map((q, index) => (
                   <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
@@ -198,17 +190,7 @@ const PaperPreview = ({
                   </article>
                 ))}
               </div>
-            ) : mode === "CQ" && (
-              <div className="text-center text-gray-500 py-20">
-                <p>এখানে আপনার সৃজনশীল (CQ) প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
-              </div>
             )}
-          </div>
-        )}
-
-        {mode === "BOTH" && mcqQuestions.length === 0 && cqQuestions.length === 0 && (
-          <div className="text-center text-gray-500 py-20">
-            <p>এখানে আপনার সম্মিলিত প্রশ্নপত্রের প্রিভিউ দেখা যাবে।</p>
           </div>
         )}
       </section>
@@ -239,6 +221,7 @@ export default function ExamPage() {
   const [mcqStimulusImage, setMcqStimulusImage] = useState<string | null>(null);
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
+  const [mcqExplanation, setMcqExplanation] = useState("");
   const [keepStimulus, setKeepStimulus] = useState(false);
 
   const [cqStimulus, setCqStimulus] = useState("");
@@ -262,10 +245,6 @@ export default function ExamPage() {
       #printable-area .print-question-p { font-size: ${printFontSize}px !important; }
       #printable-area .print-option-li { font-size: ${printFontSize * 0.95}px !important; }
       #printable-area .question-item-print { font-size: ${printFontSize}px !important; }
-      #printable-area .md\\:columns-2, #printable-area .print\\:columns-2 {
-        column-fill: auto !important;
-        height: auto;
-      }
     }
   `;
 
@@ -376,6 +355,7 @@ export default function ExamPage() {
       stimulusImage: mcqStimulusImage || undefined,
       options: mcqOptions,
       answer: mcqAnswer,
+      explanation: mcqExplanation || undefined
     };
 
     if (editingIndex?.type === 'MCQ') {
@@ -398,6 +378,7 @@ export default function ExamPage() {
     }
     setMcqOptions(["", "", "", ""]);
     setMcqAnswer("");
+    setMcqExplanation("");
   };
 
   const handleEdit = (type: 'MCQ' | 'CQ', index: number) => {
@@ -410,6 +391,7 @@ export default function ExamPage() {
       setMcqStimulusImage(q.stimulusImage || null);
       setMcqOptions(q.options);
       setMcqAnswer(q.answer);
+      setMcqExplanation(q.explanation || "");
       setKeepStimulus(!!(q.stimulus || q.stimulusImage));
     } else {
       const q = cqQuestions[index];
@@ -434,6 +416,7 @@ export default function ExamPage() {
     setMcqStimulusImage(null);
     setMcqOptions(["", "", "", ""]);
     setMcqAnswer("");
+    setMcqExplanation("");
     setCqStimulus("");
     setCqStimulusImage(null);
     setCqPartA("");
@@ -482,7 +465,7 @@ export default function ExamPage() {
         setJsonInput("");
         toast({ 
           title: "সফল!", 
-          description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন যুক্ত হয়েছে।` 
+          description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন যুক্ত হয়েছে। মোট প্রশ্ন: ${mcqQuestions.length + cqQuestions.length + mcqAdded + cqAdded}টি` 
         });
       } else {
         throw new Error("JSON is not an array.");
@@ -699,6 +682,10 @@ export default function ExamPage() {
                               </SelectContent>
                             </Select>
                           </div>
+                          <div className="space-y-1">
+                            <Label>ব্যাখ্যা (ঐচ্ছিক)</Label>
+                            <Textarea value={mcqExplanation} onChange={(e) => setMcqExplanation(e.target.value)} className="h-16 text-xs" placeholder="সঠিক উত্তরের কারণ বা ব্যাখ্যা..." />
+                          </div>
                           <div className="flex gap-2">
                             <Button className="flex-1" onClick={handleAddMcq}>
                               {editingIndex?.type === 'MCQ' ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
@@ -752,7 +739,14 @@ export default function ExamPage() {
                       className="h-40 text-xs font-mono" 
                       value={jsonInput} 
                       onChange={(e) => setJsonInput(e.target.value)} 
-                      placeholder='[{"question":"...","options":["..."],"answer":"..."},{"stimulus":"...","parts":{"a":"...","b":"...","c":"...","d":"..."}}]'
+                      placeholder='[
+  {
+    "question": "আপনার প্রশ্ন এখানে লিখুন?",
+    "options": ["অপশন ১", "অপশন ২", "অপশন ৩", "অপশন ৪"],
+    "answer": "অপশন ১",
+    "explanation": "ব্যাখ্যা (ঐচ্ছিক)"
+  }
+]'
                     />
                     <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
                   </CardContent>
@@ -774,6 +768,7 @@ export default function ExamPage() {
                          <div key={`mcq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'MCQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
                             <div className="flex flex-col flex-1 truncate mr-2">
                               <span className="text-xs truncate font-medium">MCQ {i+1}. {q.question}</span>
+                              {(q.stimulus || q.stimulusImage) && <Badge variant="secondary" className="w-fit text-[8px] h-3 mt-1 px-1 bg-blue-100 text-blue-700">উদ্দীপকসহ</Badge>}
                             </div>
                             <div className="flex items-center gap-1">
                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('MCQ', i)}>

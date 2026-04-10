@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { Question, CQQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -18,7 +19,9 @@ import {
   Plus, 
   Trash2, 
   Edit2,
-  Info
+  Info,
+  Code,
+  Image as ImageIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 type AppMode = "MCQ" | "CQ" | null;
 
@@ -38,7 +42,9 @@ const PaperPreview = ({
   mcqQuestions, 
   cqQuestions, 
   setName, 
-  mode 
+  mode,
+  logoImage,
+  showLogo
 }: {
   examName: string;
   authorName: string;
@@ -48,6 +54,8 @@ const PaperPreview = ({
   cqQuestions: CQQuestion[];
   setName: string;
   mode: AppMode;
+  logoImage: string | null;
+  showLogo: boolean;
 }) => {
   const getMcqStimulusDisplay = (currentIndex: number) => {
     const q = mcqQuestions[currentIndex];
@@ -82,10 +90,19 @@ const PaperPreview = ({
 
   return (
     <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1 min-h-[11in]">
-      <header className="text-center pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
-        <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
-        <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
-        <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div">
+      <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
+        <div className="flex items-center justify-center relative min-h-[80px]">
+          {showLogo && logoImage && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center">
+              <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
+            </div>
+          )}
+          <div className="text-center px-24">
+            <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
+            <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
+          </div>
+        </div>
+        <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
           <span>পূর্ণমান: {totalMarks || "..."}</span>
           {mode === "MCQ" && <span className="font-bold">সেট: {setName}</span>}
           <span>সময়: {examTime || "..."}</span>
@@ -189,9 +206,11 @@ const PaperPreview = ({
 export default function ExamPage() {
   const [mode, setMode] = useState<AppMode>(null);
   const [examName, setExamName] = useState("মডেল টেস্ট");
-  const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
+  const [authorName, setAuthorName] = useState(" Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২ ঘন্টা");
   const [totalMarks, setTotalMarks] = useState("১০০");
+  const [logoImage, setLogoImage] = useState<string | null>(null);
+  const [showLogo, setShowLogo] = useState(true);
   const [mcqQuestions, setMcqQuestions] = useState<Question[]>([]);
   const [displayMcqQuestions, setDisplayMcqQuestions] = useState<Question[]>([]);
   const [cqQuestions, setCqQuestions] = useState<CQQuestion[]>([]);
@@ -199,7 +218,6 @@ export default function ExamPage() {
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
-
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const [mcqQuestion, setMcqQuestion] = useState("");
@@ -218,6 +236,10 @@ export default function ExamPage() {
   const [cqPartD, setCqPartD] = useState("");
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    document.title = examName || "ExamPaperGen";
+  }, [examName]);
 
   const dynamicPrintStyles = `
     @media print {
@@ -459,9 +481,79 @@ export default function ExamPage() {
     window.print();
   };
 
+  const getFullHtmlCode = () => {
+    return `<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamPaperGen - ${examName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Noto Serif Bengali', serif; background-color: #f3f4f6; margin: 0; padding: 0; }
+        .print-area { background: white; width: 210mm; min-height: 297mm; margin: 20px auto; padding: 15mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .mcq-cols { column-count: 2; column-gap: 30px; column-fill: auto; }
+        .q-item { break-inside: avoid-column; margin-bottom: 12px; font-size: 14px; }
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .print-area { margin: 0; box-shadow: none; width: 100%; padding: 5mm; }
+            @page { size: A4; margin: 0.5cm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print p-4 bg-blue-600 text-white flex justify-between items-center sticky top-0 z-50">
+        <h1 class="font-bold">ExamPaperGen - Single File HTML</h1>
+        <button onclick="window.print()" class="bg-white text-blue-600 px-4 py-1 rounded font-bold">Print / Export PDF</button>
+    </div>
+    <div class="print-area">
+        <header class="border-b-2 border-black pb-2 mb-4 text-center">
+            <h1 class="text-2xl font-bold">${examName}</h1>
+            <p class="text-lg font-semibold">${authorName}</p>
+            <div class="flex justify-between mt-2 font-bold px-2">
+                <span>পূর্ণমান: ${totalMarks}</span>
+                <span>সময়: ${examTime}</span>
+            </div>
+        </header>
+        <div class="${mode === 'MCQ' ? 'mcq-cols' : 'space-y-6'}">
+            ${mode === 'MCQ' ? 
+              displayMcqQuestions.map((q, i) => `
+                <div class="q-item">
+                    <p class="font-bold">${i + 1}. ${q.question}</p>
+                    <div class="grid grid-cols-2 gap-2 mt-1 ml-4">
+                        ${q.options.map((opt, oi) => `<div>${String.fromCharCode(97 + oi)}) ${opt}</div>`).join('')}
+                    </div>
+                </div>`).join('') 
+              : 
+              cqQuestions.map((q, i) => `
+                <div class="mb-6">
+                    <p class="font-bold">${i + 1}. উদ্দীপকটি পড় ও প্রশ্নগুলোর উত্তর দাও:</p>
+                    <div class="italic my-2">${q.stimulus || ''}</div>
+                    <div class="space-y-1 ml-6">
+                        <p>ক) ${q.parts.a}</p>
+                        <p>খ) ${q.parts.b}</p>
+                        <p>গ) ${q.parts.c}</p>
+                        <p>ঘ) ${q.parts.d}</p>
+                    </div>
+                </div>`).join('')
+            }
+        </div>
+    </div>
+</body>
+</html>`;
+  };
+
+  const copyCodeToClipboard = () => {
+    const code = getFullHtmlCode();
+    navigator.clipboard.writeText(code);
+    toast({ title: "সফল", description: "এইচটিএমএল কোড ক্লিপবোর্ডে কপি করা হয়েছে।" });
+  };
+
   if (!mode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
         <div className="max-w-2xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card 
             className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
@@ -489,6 +581,35 @@ export default function ExamPage() {
             </CardHeader>
           </Card>
         </div>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="lg" className="gap-2">
+              <Code className="h-5 w-5" /> সম্পূর্ণ কোড (HTML)
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>প্রজেক্টের সম্পূর্ণ এইচটিএমএল কোড</DialogTitle>
+              <DialogDescription>
+                নিচের কোডটি কপি করে একটি .html ফাইলে সেভ করুন। এটি যেকোনো ব্রাউজারে ঠিক এই অ্যাপের মতোই কাজ করবে।
+              </DialogDescription>
+            </DialogHeader>
+            <div className="relative mt-4">
+              <Textarea 
+                readOnly 
+                className="font-mono text-xs h-[400px]" 
+                value={getFullHtmlCode()} 
+              />
+              <Button 
+                className="absolute top-2 right-2" 
+                onClick={copyCodeToClipboard}
+              >
+                কোড কপি করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -534,6 +655,20 @@ export default function ExamPage() {
                     <Label>পূর্ণমান</Label>
                     <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
                   </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="flex items-center justify-between">
+                    লোগো আপলোড (ঐচ্ছিক)
+                    <div className="flex items-center gap-1 scale-75 origin-right">
+                      <span className="text-[10px] text-muted-foreground">দেখাবেন?</span>
+                      <Switch checked={showLogo} onCheckedChange={setShowLogo} />
+                    </div>
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} className="text-xs" />
+                    {logoImage && <Button variant="outline" size="icon" onClick={() => setLogoImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                  </div>
+                  {logoImage && <img src={logoImage} className="mt-2 h-12 object-contain rounded border" />}
                 </div>
                 <div className="space-y-1">
                   <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
@@ -785,6 +920,8 @@ export default function ExamPage() {
             cqQuestions={cqQuestions}
             setName={selectedSet}
             mode={mode}
+            logoImage={logoImage}
+            showLogo={showLogo}
           />
         </main>
       </div>

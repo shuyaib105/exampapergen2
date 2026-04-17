@@ -24,7 +24,9 @@ import {
   Youtube,
   Facebook,
   Type,
-  Send
+  Send,
+  FileSpreadsheet,
+  FileSignature
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type AppMode = "MCQ" | "CQ" | "BOTH" | null;
+type FlowType = "SHEET" | "EXAM" | null;
 
 const PaperPreview = ({ 
   examName, 
@@ -45,6 +48,7 @@ const PaperPreview = ({
   cqQuestions, 
   setName, 
   mode,
+  flowType,
   logoImage,
   showLogo,
   watermarkText,
@@ -64,6 +68,7 @@ const PaperPreview = ({
   cqQuestions: CQQuestion[];
   setName: string;
   mode: AppMode;
+  flowType: FlowType;
   logoImage: string | null;
   showLogo: boolean;
   watermarkText: string;
@@ -140,9 +145,9 @@ const PaperPreview = ({
           </div>
         </div>
         <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
-          <span>পূর্ণমান: {totalMarks || "..."}</span>
+          {flowType === 'EXAM' && <span>পূর্ণমান: {totalMarks || "..."}</span>}
           {(mode === "MCQ" || mode === "BOTH") && <span className="font-bold">সেট: {setName}</span>}
-          <span>সময়: {examTime || "..."}</span>
+          {flowType === 'EXAM' && <span>সময়: {examTime || "..."}</span>}
         </div>
       </header>
 
@@ -298,6 +303,7 @@ const PaperPreview = ({
 };
 
 export default function ExamPage() {
+  const [flowType, setFlowType] = useState<FlowType>(null);
   const [mode, setMode] = useState<AppMode>(null);
   const [examName, setExamName] = useState("মডেল টেস্ট");
   const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
@@ -558,7 +564,7 @@ export default function ExamPage() {
       if (type === "MCQ") {
         setMcqQuestions(prev => prev.filter((_, i) => i !== index));
       } else {
-        setCqQuestions(prev => prev.filter((_, i) => i !== index));
+        cqQuestions(prev => prev.filter((_, i) => i !== index));
       }
       toast({ title: "সফল", description: "প্রশ্নটি বর্তমান তালিকা থেকে মুছে ফেলা হয়েছে।" });
     }
@@ -618,9 +624,67 @@ export default function ExamPage() {
     }, 100);
   };
 
+  // Step 1: Flow Selection (SHEET vs EXAM)
+  if (!flowType) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
+        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card 
+            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
+            onClick={() => setFlowType("SHEET")}
+          >
+            <CardHeader className="text-center">
+              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <FileSpreadsheet className="h-12 w-12" />
+              </div>
+              <CardTitle className="text-2xl">PDF Sheet</CardTitle>
+              <CardDescription>সময় ও পূর্ণমান ছাড়া শুধুমাত্র প্রশ্ন সাজান</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card 
+            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
+            onClick={() => setFlowType("EXAM")}
+          >
+            <CardHeader className="text-center">
+              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <FileSignature className="h-12 w-12" />
+              </div>
+              <CardTitle className="text-2xl">প্রশ্নপত্র তৈরি</CardTitle>
+              <CardDescription>পরীক্ষার নাম, সময় ও পূর্ণমান সহ প্রফেশনাল প্রশ্ন</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
+        <div className="mt-8 text-sm text-muted-foreground flex flex-col items-center gap-2">
+          <div className="flex items-center gap-1">
+            Developed By 
+            <a 
+              href="https://t.me/shu_yaib" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              <Send className="h-3 w-3" /> Md.Shuyaib Islam
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Mode Selection (MCQ, CQ, BOTH)
   if (!mode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
+        <Button 
+          variant="ghost" 
+          onClick={() => setFlowType(null)} 
+          className="self-start md:self-center"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান
+        </Button>
+
         <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card 
             className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
@@ -709,16 +773,20 @@ export default function ExamPage() {
                     <Label>পরিচালনায়</Label>
                     <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label>সময়</Label>
-                      <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
+                  
+                  {flowType === 'EXAM' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label>সময়</Label>
+                        <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>পূর্ণমান</Label>
+                        <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <Label>পূর্ণমান</Label>
-                      <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
-                    </div>
-                  </div>
+                  )}
+
                   <div className="space-y-1">
                     <Label className="flex items-center justify-between">
                       লোগো আপলোড
@@ -1097,6 +1165,7 @@ export default function ExamPage() {
             cqQuestions={cqQuestions}
             setName={selectedSet}
             mode={mode}
+            flowType={flowType}
             logoImage={logoImage}
             showLogo={showLogo}
             watermarkText={watermarkText}

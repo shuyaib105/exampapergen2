@@ -61,6 +61,29 @@ body {
   scrollbar-width: none;
 }
 
+/* Watermark styles */
+.watermark-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.watermark-text {
+  font-size: 8rem;
+  font-weight: bold;
+  transform: rotate(-45deg);
+  white-space: nowrap;
+  user-select: none;
+}
+
 /* On-screen answer visibility */
 body:not([data-preview-answers="true"]) .answer-content {
   display: none;
@@ -69,7 +92,7 @@ body:not([data-preview-answers="true"]) .answer-content {
 @media print {
   @page {
     size: A4;
-    margin: 0.1cm;
+    margin: 0.5cm;
   }
 
   body {
@@ -89,7 +112,6 @@ body:not([data-preview-answers="true"]) .answer-content {
     display: none !important;
   }
 
-  /* Force MCQ column-fill: auto to ensure vertical filling before moving to next col */
   #printable-area .md\:columns-2, #printable-area .print\:columns-2 {
     column-fill: auto !important;
     height: auto;
@@ -98,7 +120,7 @@ body:not([data-preview-answers="true"]) .answer-content {
   .question-item-print {
     page-break-inside: avoid;
     break-inside: avoid-column;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
   }
   
   .exam-header-print {
@@ -109,5 +131,15 @@ body:not([data-preview-answers="true"]) .answer-content {
 
   body:not([data-print-with-answers="true"]) .answer-content {
     display: none !important;
+  }
+
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    background: white;
   }
 }

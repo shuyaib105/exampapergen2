@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +19,10 @@ import {
   Trash2, 
   Edit2,
   Info,
-  LayoutGrid
+  LayoutGrid,
+  Youtube,
+  Facebook,
+  Type
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,7 +44,13 @@ const PaperPreview = ({
   setName, 
   mode,
   logoImage,
-  showLogo
+  showLogo,
+  watermarkText,
+  watermarkOpacity,
+  youtubeText,
+  youtubeUrl,
+  facebookText,
+  facebookUrl
 }: {
   examName: string;
   authorName: string;
@@ -54,6 +62,12 @@ const PaperPreview = ({
   mode: AppMode;
   logoImage: string | null;
   showLogo: boolean;
+  watermarkText: string;
+  watermarkOpacity: number;
+  youtubeText: string;
+  youtubeUrl: string;
+  facebookText: string;
+  facebookUrl: string;
 }) => {
   const getMcqStimulusDisplay = (currentIndex: number) => {
     const q = mcqQuestions[currentIndex];
@@ -87,8 +101,20 @@ const PaperPreview = ({
   };
 
   return (
-    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-1 min-h-[11in]">
-      <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print">
+    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
+      {/* Watermark */}
+      {watermarkText && (
+        <div className="watermark-container">
+          <div 
+            className="watermark-text" 
+            style={{ opacity: watermarkOpacity / 100 }}
+          >
+            {watermarkText}
+          </div>
+        </div>
+      )}
+
+      <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print relative z-10">
         <div className="flex items-center justify-center relative min-h-[80px]">
           {showLogo && logoImage && (
             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center">
@@ -107,7 +133,7 @@ const PaperPreview = ({
         </div>
       </header>
 
-      <section className="mt-4 print:mt-2">
+      <section className="mt-4 print:mt-2 relative z-10">
         {(mode === "MCQ" || mode === "BOTH") && (
           <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
             {mode === "BOTH" && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
@@ -143,7 +169,7 @@ const PaperPreview = ({
                             const isCorrect = option === q.answer;
                             return (
                               <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
-                                <div className="answer-content text-green-600 print:text-green-600 mt-1">
+                                <div className="answer-content text-blue-600 print:text-blue-600 mt-1">
                                   {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                                 </div>
                                  <div className="flex items-start">
@@ -154,6 +180,11 @@ const PaperPreview = ({
                             );
                           })}
                         </ul>
+                        {q.explanation && (
+                          <div className="answer-content mt-1 pl-6 text-xs italic text-gray-600 border-l-2 border-blue-200">
+                            ব্যাখ্যা: {q.explanation}
+                          </div>
+                        )}
                       </div>
                     </article>
                   );
@@ -194,6 +225,26 @@ const PaperPreview = ({
           </div>
         )}
       </section>
+
+      {/* Footer Links */}
+      <footer className="mt-8 pt-4 border-t print:mt-auto print-footer flex justify-between items-center text-xs text-gray-500 relative z-10">
+        <div className="flex items-center gap-1">
+          {youtubeUrl && (
+            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-red-600 transition-colors">
+              <Youtube className="h-4 w-4 text-red-600" />
+              <span>{youtubeText || "YouTube"}</span>
+            </a>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {facebookUrl && (
+            <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+              <Facebook className="h-4 w-4 text-blue-600" />
+              <span>{facebookText || "Facebook"}</span>
+            </a>
+          )}
+        </div>
+      </footer>
     </div>
   );
 };
@@ -201,7 +252,7 @@ const PaperPreview = ({
 export default function ExamPage() {
   const [mode, setMode] = useState<AppMode>(null);
   const [examName, setExamName] = useState("মডেল টেস্ট");
-  const [authorName, setAuthorName] = useState(" Md Jubayer | রংপুর মেডিকেল কলেজ");
+  const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২ ঘন্টা");
   const [totalMarks, setTotalMarks] = useState("১০০");
   const [logoImage, setLogoImage] = useState<string | null>(null);
@@ -214,6 +265,16 @@ export default function ExamPage() {
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
   const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ', index: number} | null>(null);
+
+  // Watermark state
+  const [watermarkText, setWatermarkText] = useState("");
+  const [watermarkOpacity, setWatermarkOpacity] = useState(10);
+
+  // Social Footer state
+  const [youtubeText, setYoutubeText] = useState("আমাদের ইউটিউব চ্যানেল");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [facebookText, setFacebookText] = useState("আমাদের ফেসবুক পেজ");
+  const [facebookUrl, setFacebookUrl] = useState("");
 
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
@@ -488,7 +549,7 @@ export default function ExamPage() {
   if (!mode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
-        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card 
             className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
             onClick={() => setMode("MCQ")}
@@ -548,52 +609,104 @@ export default function ExamPage() {
               </Button>
             </div>
             
-            <Card className="shadow-lg border-primary/20">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-2xl font-headline flex items-center gap-2">
-                   ExamPaperGen
-                </CardTitle>
-                <CardDescription>বেসিক সেটিংস</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <Label>পরীক্ষার নাম</Label>
-                  <Input value={examName} onChange={(e) => setExamName(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label>পরিচালনায়</Label>
-                  <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
+            <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
+              <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
+                   বেসিক সেটিংস
+                </AccordionTrigger>
+                <AccordionContent className="p-4 pt-0 space-y-4">
                   <div className="space-y-1">
-                    <Label>সময়</Label>
-                    <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
+                    <Label>পরীক্ষার নাম</Label>
+                    <Input value={examName} onChange={(e) => setExamName(e.target.value)} />
                   </div>
                   <div className="space-y-1">
-                    <Label>পূর্ণমান</Label>
-                    <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
+                    <Label>পরিচালনায়</Label>
+                    <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} />
                   </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="flex items-center justify-between">
-                    লোগো আপলোড (ঐচ্ছিক)
-                    <div className="flex items-center gap-1 scale-75 origin-right">
-                      <span className="text-[10px] text-muted-foreground">দেখাবেন?</span>
-                      <Switch checked={showLogo} onCheckedChange={setShowLogo} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label>সময়</Label>
+                      <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
                     </div>
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} className="text-xs" />
-                    {logoImage && <Button variant="outline" size="icon" onClick={() => setLogoImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                    <div className="space-y-1">
+                      <Label>পূর্ণমান</Label>
+                      <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
+                    </div>
                   </div>
-                  {logoImage && <img src={logoImage} className="mt-2 h-12 object-contain rounded border" />}
-                </div>
-                <div className="space-y-1">
-                  <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
-                  <Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} />
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="space-y-1">
+                    <Label className="flex items-center justify-between">
+                      লোগো আপলোড
+                      <div className="flex items-center gap-1 scale-75 origin-right">
+                        <span className="text-[10px] text-muted-foreground">দেখাবেন?</span>
+                        <Switch checked={showLogo} onCheckedChange={setShowLogo} />
+                      </div>
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} className="text-xs" />
+                      {logoImage && <Button variant="outline" size="icon" onClick={() => setLogoImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
+                    <Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
+                  <div className="flex items-center gap-2">
+                    <Type className="h-5 w-5" /> ওয়াটারমার্ক
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="p-4 pt-0 space-y-4">
+                  <div className="space-y-1">
+                    <Label>ওয়াটারমার্ক টেক্সট</Label>
+                    <Input 
+                      placeholder="যেমন: Confidential, My Institution" 
+                      value={watermarkText} 
+                      onChange={(e) => setWatermarkText(e.target.value)} 
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>স্বচ্ছতা (Transparency: {watermarkOpacity}%)</Label>
+                    <Slider min={0} max={50} step={1} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
+                  <div className="flex items-center gap-2">
+                    <Youtube className="h-5 w-5" /> সোশ্যাল লিঙ্ক
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="p-4 pt-0 space-y-4">
+                  <div className="space-y-3 border-b pb-3">
+                    <h4 className="font-bold text-sm text-red-600 flex items-center gap-1"><Youtube className="h-4 w-4" /> ইউটিউব সেটিংস</h4>
+                    <div className="space-y-1">
+                      <Label>ডিসপ্লে টেক্সট</Label>
+                      <Input value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} placeholder="ইউটিউব ওয়ার্ড..." />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>লিঙ্ক (URL)</Label>
+                      <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-sm text-blue-600 flex items-center gap-1"><Facebook className="h-4 w-4" /> ফেসবুক সেটিংস</h4>
+                    <div className="space-y-1">
+                      <Label>ডিসপ্লে টেক্সট</Label>
+                      <Input value={facebookText} onChange={(e) => setFacebookText(e.target.value)} placeholder="ফেসবুক ওয়ার্ড..." />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>লিঙ্ক (URL)</Label>
+                      <Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -638,7 +751,6 @@ export default function ExamPage() {
                                  <div className="flex items-center gap-2">
                                     <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs bg-white" />
                                  </div>
-                                 {mcqStimulusImage && <img src={mcqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
                                  <div className="flex items-center space-x-2 pt-2 border-t">
                                    <Checkbox 
                                      id="keepStimulus" 
@@ -707,7 +819,6 @@ export default function ExamPage() {
                             <Label>উদ্দীপক ছবি</Label>
                             <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} className="text-xs" />
                           </div>
-                          {cqStimulusImage && <img src={cqStimulusImage} className="mt-2 h-20 object-contain rounded border" />}
                           <div className="grid grid-cols-1 gap-2">
                             <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
                             <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
@@ -733,6 +844,9 @@ export default function ExamPage() {
                 <Card className="shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-lg">JSON ইনপুট</CardTitle>
+                    <CardDescription className="text-[10px]">
+                       নিচের ফরম্যাটটি অনুসরণ করুন: [ {"{"} "question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..." {"}"} ]
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Textarea 
@@ -768,7 +882,7 @@ export default function ExamPage() {
                          <div key={`mcq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'MCQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
                             <div className="flex flex-col flex-1 truncate mr-2">
                               <span className="text-xs truncate font-medium">MCQ {i+1}. {q.question}</span>
-                              {(q.stimulus || q.stimulusImage) && <Badge variant="secondary" className="w-fit text-[8px] h-3 mt-1 px-1 bg-blue-100 text-blue-700">উদ্দীপকসহ</Badge>}
+                              {(q.stimulus || q.stimulusImage) && <Badge variant="secondary" className="w-fit text-[10px] h-4 mt-1 px-2 bg-blue-100 text-blue-700 font-bold border-blue-200">উদ্দীপকসহ</Badge>}
                             </div>
                             <div className="flex items-center gap-1">
                                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('MCQ', i)}>
@@ -859,6 +973,12 @@ export default function ExamPage() {
             mode={mode}
             logoImage={logoImage}
             showLogo={showLogo}
+            watermarkText={watermarkText}
+            watermarkOpacity={watermarkOpacity}
+            youtubeText={youtubeText}
+            youtubeUrl={youtubeUrl}
+            facebookText={facebookText}
+            facebookUrl={facebookUrl}
           />
         </main>
       </div>

@@ -78,12 +78,13 @@ body {
 
 .watermark-text {
   font-family: 'Noto Serif Bengali', serif;
-  font-size: 8rem;
+  font-size: 7rem;
   font-weight: bold;
   transform: rotate(-45deg);
   white-space: nowrap;
   user-select: none;
   color: #000;
+  text-align: center;
 }
 
 /* Answer content visibility */
@@ -120,16 +121,24 @@ body[data-preview-answers="true"] .answer-content {
     display: none !important;
   }
 
-  /* Fixed watermark to repeat on every page */
+  /* Watermark fix for print - repeats on every page */
   .watermark-container {
     position: fixed !important;
-    z-index: -1 !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: -10 !important;
     visibility: visible !important;
-    opacity: 1 !important; /* Opacity controlled by inline style */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   
   .watermark-text {
     visibility: visible !important;
+    display: block !important;
   }
 
   #printable-area {
@@ -140,6 +149,7 @@ body[data-preview-answers="true"] .answer-content {
     padding: 0;
     margin: 0;
     box-shadow: none;
+    z-index: 1;
   }
 
   /* Show answers if data-print-with-answers is true */
@@ -173,6 +183,8 @@ body[data-preview-answers="true"] .answer-content {
     border-top: 1px solid #ccc;
     background: white;
     visibility: visible !important;
+    display: grid !important;
+    z-index: 10;
   }
   
   .print-footer * {

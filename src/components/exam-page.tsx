@@ -122,9 +122,21 @@ const PaperPreview = ({
 
   return (
     <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
-      {/* Watermark - repeating on fixed position for print */}
+      {/* Watermark Container */}
       {watermarkText && (
-        <div className="watermark-container">
+        <div className="watermark-container no-print">
+          <div 
+            className="watermark-text" 
+            style={{ opacity: watermarkOpacity / 100 }}
+          >
+            {watermarkText}
+          </div>
+        </div>
+      )}
+      
+      {/* Repeating Watermark for Print */}
+      {watermarkText && (
+        <div className="watermark-container hidden print:flex" style={{ display: 'none' }}>
           <div 
             className="watermark-text" 
             style={{ opacity: watermarkOpacity / 100 }}

@@ -21,4 +21,10 @@ export type CQQuestion = {
     c: string;
     d: string;
   };
+  answers?: {
+    a?: string;
+    b?: string;
+    c?: string;
+    d?: string;
+  };
 };

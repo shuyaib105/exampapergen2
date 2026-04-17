@@ -220,11 +220,23 @@ const PaperPreview = ({
                         {q.stimulus}
                       </div>
                     )}
-                    <div className="grid grid-cols-1 gap-y-1 pl-4 print:pl-2">
-                      <p><span className="font-bold">ক)</span> {q.parts.a}</p>
-                      <p><span className="font-bold">খ)</span> {q.parts.b}</p>
-                      <p><span className="font-bold">গ)</span> {q.parts.c}</p>
-                      <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
+                    <div className="grid grid-cols-1 gap-y-2 pl-4 print:pl-2">
+                      <div className="flex flex-col">
+                        <p><span className="font-bold">ক)</span> {q.parts.a}</p>
+                        {q.answers?.a && <p className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2">উত্তর: {q.answers.a}</p>}
+                      </div>
+                      <div className="flex flex-col">
+                        <p><span className="font-bold">খ)</span> {q.parts.b}</p>
+                        {q.answers?.b && <p className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2">উত্তর: {q.answers.b}</p>}
+                      </div>
+                      <div className="flex flex-col">
+                        <p><span className="font-bold">গ)</span> {q.parts.c}</p>
+                        {q.answers?.c && <p className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2">উত্তর: {q.answers.c}</p>}
+                      </div>
+                      <div className="flex flex-col">
+                        <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
+                        {q.answers?.d && <p className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2">উত্তর: {q.answers.d}</p>}
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -309,6 +321,10 @@ export default function ExamPage() {
   const [cqPartB, setCqPartB] = useState("");
   const [cqPartC, setCqPartC] = useState("");
   const [cqPartD, setCqPartD] = useState("");
+  const [cqAnsA, setCqAnsA] = useState("");
+  const [cqAnsB, setCqAnsB] = useState("");
+  const [cqAnsC, setCqAnsC] = useState("");
+  const [cqAnsD, setCqAnsD] = useState("");
 
   const { toast } = useToast();
 
@@ -399,7 +415,8 @@ export default function ExamPage() {
     const newQ: CQQuestion = {
       stimulus: cqStimulus,
       stimulusImage: cqStimulusImage || undefined,
-      parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD }
+      parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD },
+      answers: { a: cqAnsA, b: cqAnsB, c: cqAnsC, d: cqAnsD }
     };
 
     if (editingIndex?.type === 'CQ') {
@@ -420,6 +437,10 @@ export default function ExamPage() {
     setCqPartB("");
     setCqPartC("");
     setCqPartD("");
+    setCqAnsA("");
+    setCqAnsB("");
+    setCqAnsC("");
+    setCqAnsD("");
   };
 
   const handleAddMcq = () => {
@@ -480,6 +501,10 @@ export default function ExamPage() {
       setCqPartB(q.parts.b);
       setCqPartC(q.parts.c);
       setCqPartD(q.parts.d);
+      setCqAnsA(q.answers?.a || "");
+      setCqAnsB(q.answers?.b || "");
+      setCqAnsC(q.answers?.c || "");
+      setCqAnsD(q.answers?.d || "");
     }
     const formElement = document.getElementById('input-form');
     if (formElement) {
@@ -502,6 +527,10 @@ export default function ExamPage() {
     setCqPartB("");
     setCqPartC("");
     setCqPartD("");
+    setCqAnsA("");
+    setCqAnsB("");
+    setCqAnsC("");
+    setCqAnsD("");
   };
 
   const handleDelete = (type: 'MCQ' | 'CQ', index: number) => {
@@ -833,7 +862,7 @@ export default function ExamPage() {
                       </TabsContent>
 
                       <TabsContent value="cq">
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <div className="space-y-1">
                             <Label>উদ্দীপক (টেক্সট)</Label>
                             <Textarea value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} className="h-20" />
@@ -842,11 +871,27 @@ export default function ExamPage() {
                             <Label>উদ্দীপক ছবি</Label>
                             <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} className="text-xs" />
                           </div>
-                          <div className="grid grid-cols-1 gap-2">
-                            <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                            <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                            <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                            <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                          <div className="space-y-4">
+                            <div className="space-y-2 border-l-2 border-primary pl-3">
+                              <Label className="text-xs font-bold text-primary">ক নং প্রশ্ন ও উত্তর</Label>
+                              <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
+                              <Textarea placeholder="ক এর উত্তর (ঐচ্ছিক)" value={cqAnsA} onChange={(e) => setCqAnsA(e.target.value)} className="h-12 text-xs" />
+                            </div>
+                            <div className="space-y-2 border-l-2 border-primary pl-3">
+                              <Label className="text-xs font-bold text-primary">খ নং প্রশ্ন ও উত্তর</Label>
+                              <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
+                              <Textarea placeholder="খ এর উত্তর (ঐচ্ছিক)" value={cqAnsB} onChange={(e) => setCqAnsB(e.target.value)} className="h-12 text-xs" />
+                            </div>
+                            <div className="space-y-2 border-l-2 border-primary pl-3">
+                              <Label className="text-xs font-bold text-primary">গ নং প্রশ্ন ও উত্তর</Label>
+                              <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
+                              <Textarea placeholder="গ এর উত্তর (ঐচ্ছিক)" value={cqAnsC} onChange={(e) => setCqAnsC(e.target.value)} className="h-12 text-xs" />
+                            </div>
+                            <div className="space-y-2 border-l-2 border-primary pl-3">
+                              <Label className="text-xs font-bold text-primary">ঘ নং প্রশ্ন ও উত্তর</Label>
+                              <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                              <Textarea placeholder="ঘ এর উত্তর (ঐচ্ছিক)" value={cqAnsD} onChange={(e) => setCqAnsD(e.target.value)} className="h-12 text-xs" />
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <Button className="flex-1" onClick={handleAddCq}>
@@ -868,7 +913,7 @@ export default function ExamPage() {
                   <CardHeader>
                     <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
                     <CardDescription className="text-[10px]">
-                       নিচের ফরম্যাটটি অনুসরণ করুন: [ {"{"} "question": "...", "options": [...], "answer": "..." {"}"}, {"{"} "stimulus": "...", "parts": {"{"} "a": "...", "b": "...", "c": "...", "d": "..." {"}"} {"}"} ]
+                       নিচের ফরম্যাটটি অনুসরণ করুন (CQ উত্তরের জন্য "answers" ফিল্ড ব্যবহার করুন):
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -890,6 +935,12 @@ export default function ExamPage() {
       "b": "খ নং প্রশ্ন",
       "c": "গ নং প্রশ্ন",
       "d": "ঘ নং প্রশ্ন"
+    },
+    "answers": {
+      "a": "ক উত্তর",
+      "b": "খ উত্তর",
+      "c": "গ উত্তর",
+      "d": "ঘ উত্তর"
     }
   }
 ]'
@@ -954,25 +1005,23 @@ export default function ExamPage() {
                 <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
                   <Printer className="mr-2 h-4 w-4" /> উত্তর ছাড়া পিডিএফ
                 </Button>
+                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
+                  <Label>প্রিভিউতে উত্তর দেখান</Label>
+                  <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
+                </div>
                 {(mode === "MCQ" || mode === "BOTH") && (
-                  <>
-                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
-                      <Label>প্রিভিউতে উত্তর দেখান</Label>
-                      <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>সেট নির্বাচন</Label>
-                      <Select value={selectedSet} onValueChange={setSelectedSet}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="A">Set A</SelectItem>
-                          <SelectItem value="B">Set B</SelectItem>
-                          <SelectItem value="C">Set C</SelectItem>
-                          <SelectItem value="D">Set D</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
+                  <div className="space-y-1">
+                    <Label>সেট নির্বাচন</Label>
+                    <Select value={selectedSet} onValueChange={setSelectedSet}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A">Set A</SelectItem>
+                        <SelectItem value="B">Set B</SelectItem>
+                        <SelectItem value="C">Set C</SelectItem>
+                        <SelectItem value="D">Set D</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
               </div>
               

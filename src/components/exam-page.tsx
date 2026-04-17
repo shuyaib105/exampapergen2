@@ -23,7 +23,8 @@ import {
   LayoutGrid,
   Youtube,
   Facebook,
-  Type
+  Type,
+  Send
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,7 +52,9 @@ const PaperPreview = ({
   youtubeText,
   youtubeUrl,
   facebookText,
-  facebookUrl
+  facebookUrl,
+  telegramText,
+  telegramUrl
 }: {
   examName: string;
   authorName: string;
@@ -69,6 +72,8 @@ const PaperPreview = ({
   youtubeUrl: string;
   facebookText: string;
   facebookUrl: string;
+  telegramText: string;
+  telegramUrl: string;
 }) => {
   const ensureAbsoluteUrl = (url: string) => {
     if (!url) return "";
@@ -247,8 +252,8 @@ const PaperPreview = ({
       </section>
 
       {/* Footer Links */}
-      <footer className="mt-8 pt-4 border-t print:mt-auto print-footer flex justify-between items-center text-xs text-gray-500 relative z-10">
-        <div className="flex items-center gap-1">
+      <footer className="mt-8 pt-4 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-500 relative z-10">
+        <div className="flex items-center gap-1 justify-start">
           {youtubeUrl && (
             <a 
               href={ensureAbsoluteUrl(youtubeUrl)} 
@@ -261,7 +266,20 @@ const PaperPreview = ({
             </a>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 justify-center">
+          {telegramUrl && (
+            <a 
+              href={ensureAbsoluteUrl(telegramUrl)} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+            >
+              <Send className="h-4 w-4 text-blue-500" />
+              <span>{telegramText || "Telegram"}</span>
+            </a>
+          )}
+        </div>
+        <div className="flex items-center gap-1 justify-end">
           {facebookUrl && (
             <a 
               href={ensureAbsoluteUrl(facebookUrl)} 
@@ -305,6 +323,8 @@ export default function ExamPage() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("আমাদের ফেসবুক পেজ");
   const [facebookUrl, setFacebookUrl] = useState("");
+  const [telegramText, setTelegramText] = useState("আমাদের টেলিগ্রাম চ্যানেল");
+  const [telegramUrl, setTelegramUrl] = useState("");
 
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
@@ -745,6 +765,17 @@ export default function ExamPage() {
                       <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="youtube.com/..." />
                     </div>
                   </div>
+                  <div className="space-y-3 border-b pb-3">
+                    <h4 className="font-bold text-sm text-blue-500 flex items-center gap-1"><Send className="h-4 w-4" /> টেলিগ্রাম সেটিংস</h4>
+                    <div className="space-y-1">
+                      <Label>ডিসপ্লে টেক্সট</Label>
+                      <Input value={telegramText} onChange={(e) => setTelegramText(e.target.value)} placeholder="টেলিগ্রাম ওয়ার্ড..." />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>লিঙ্ক (URL)</Label>
+                      <Input value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} placeholder="t.me/..." />
+                    </div>
+                  </div>
                   <div className="space-y-3">
                     <h4 className="font-bold text-sm text-blue-600 flex items-center gap-1"><Facebook className="h-4 w-4" /> ফেসবুক সেটিংস</h4>
                     <div className="space-y-1">
@@ -1060,6 +1091,8 @@ export default function ExamPage() {
             youtubeUrl={youtubeUrl}
             facebookText={facebookText}
             facebookUrl={facebookUrl}
+            telegramText={telegramText}
+            telegramUrl={telegramUrl}
           />
         </main>
       </div>

@@ -82,11 +82,17 @@ body {
   transform: rotate(-45deg);
   white-space: nowrap;
   user-select: none;
+  color: #000;
 }
 
-/* On-screen answer visibility */
-body:not([data-preview-answers="true"]) .answer-content {
+/* Answer content visibility */
+.answer-content {
   display: none;
+}
+
+/* Show on screen if toggled */
+body[data-preview-answers="true"] .answer-content {
+  display: flex;
 }
 
 @media print {
@@ -98,6 +104,7 @@ body:not([data-preview-answers="true"]) .answer-content {
   body {
     -webkit-print-color-adjust: exact;
     color-adjust: exact;
+    background: white !important;
   }
 
   body * {
@@ -112,9 +119,24 @@ body:not([data-preview-answers="true"]) .answer-content {
     display: none !important;
   }
 
-  #printable-area .md\:columns-2, #printable-area .print\:columns-2 {
-    column-fill: auto !important;
-    height: auto;
+  #printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  /* Show answers if data-print-with-answers is true */
+  body[data-print-with-answers="true"] .answer-content {
+    display: flex !important;
+    visibility: visible !important;
+  }
+
+  body:not([data-print-with-answers="true"]) .answer-content {
+    display: none !important;
   }
 
   .question-item-print {
@@ -127,10 +149,6 @@ body:not([data-preview-answers="true"]) .answer-content {
      border-bottom: 2px solid black;
      margin-bottom: 0.5rem;
      padding-bottom: 0.2rem;
-  }
-
-  body:not([data-print-with-answers="true"]) .answer-content {
-    display: none !important;
   }
 
   .print-footer {

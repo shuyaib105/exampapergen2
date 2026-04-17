@@ -543,7 +543,12 @@ export default function ExamPage() {
         return;
     }
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
+    const originalTitle = document.title;
+    document.title = examName || "Exam Paper";
     window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   if (!mode) {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -27,7 +28,8 @@ import {
   FileSpreadsheet,
   FileSignature,
   Sparkles,
-  Loader2
+  Loader2,
+  Copy
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -122,7 +124,7 @@ const PaperPreview = ({
 
   return (
     <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
-      {/* Watermark Container */}
+      {/* Watermark Container for Screen */}
       {watermarkText && (
         <div className="watermark-container no-print">
           <div 
@@ -134,9 +136,9 @@ const PaperPreview = ({
         </div>
       )}
       
-      {/* Repeating Watermark for Print */}
+      {/* Repeating Watermark for Print (Fixed position in CSS handles multiple pages) */}
       {watermarkText && (
-        <div className="watermark-container hidden print:flex" style={{ display: 'none' }}>
+        <div className="watermark-container-print hidden print:flex">
           <div 
             className="watermark-text" 
             style={{ opacity: watermarkOpacity / 100 }}
@@ -629,6 +631,19 @@ export default function ExamPage() {
     }
   };
 
+  const copyJsonToClipboard = () => {
+    const currentData = [
+      ...mcqQuestions,
+      ...cqQuestions
+    ];
+    if (currentData.length === 0) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "কপি করার মতো কোনো প্রশ্ন নেই।" });
+      return;
+    }
+    navigator.clipboard.writeText(JSON.stringify(currentData, null, 2));
+    toast({ title: "সফল", description: "সব প্রশ্নের JSON ক্লিপবোর্ডে কপি করা হয়েছে।" });
+  };
+
   const handleAiGenerate = async () => {
     if (!aiText.trim()) {
       toast({ variant: "destructive", title: "ত্রুটি", description: "টেক্সট ইনপুট খালি।" });
@@ -1066,11 +1081,16 @@ export default function ExamPage() {
 
               <TabsContent value="json">
                 <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
-                    <CardDescription className="text-[10px]">
-                       নিচের ফরম্যাটটি অনুসরণ করুন:
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
+                      <CardDescription className="text-[10px]">
+                         নিচের ফরম্যাটটি অনুসরণ করুন:
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="h-8 gap-1">
+                      <Copy className="h-3 w-3" /> কপি
+                    </Button>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Textarea 

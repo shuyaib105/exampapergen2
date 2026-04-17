@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -865,22 +866,31 @@ export default function ExamPage() {
               <TabsContent value="json">
                 <Card className="shadow-lg">
                   <CardHeader>
-                    <CardTitle className="text-lg">JSON ইনপুট</CardTitle>
+                    <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
                     <CardDescription className="text-[10px]">
-                       নিচের ফরম্যাটটি অনুসরণ করুন: [ {"{"} "question": "...", "options": ["...", "..."], "answer": "...", "explanation": "..." {"}"} ]
+                       নিচের ফরম্যাটটি অনুসরণ করুন: [ {"{"} "question": "...", "options": [...], "answer": "..." {"}"}, {"{"} "stimulus": "...", "parts": {"{"} "a": "...", "b": "...", "c": "...", "d": "..." {"}"} {"}"} ]
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <Textarea 
-                      className="h-40 text-xs font-mono" 
+                      className="h-60 text-xs font-mono" 
                       value={jsonInput} 
                       onChange={(e) => setJsonInput(e.target.value)} 
                       placeholder='[
   {
-    "question": "আপনার প্রশ্ন এখানে লিখুন?",
-    "options": ["অপশন ১", "অপশন ২", "অপশন ৩", "অপশন ৪"],
-    "answer": "অপশন ১",
-    "explanation": "ব্যাখ্যা (ঐচ্ছিক)"
+    "question": "MCQ প্রশ্ন এখানে?",
+    "options": ["ক", "খ", "গ", "ঘ"],
+    "answer": "ক",
+    "explanation": "ব্যাখ্যা"
+  },
+  {
+    "stimulus": "উদ্দীপক এখানে...",
+    "parts": {
+      "a": "ক নং প্রশ্ন",
+      "b": "খ নং প্রশ্ন",
+      "c": "গ নং প্রশ্ন",
+      "d": "ঘ নং প্রশ্ন"
+    }
   }
 ]'
                     />

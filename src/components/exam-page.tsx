@@ -674,7 +674,6 @@ export default function ExamPage() {
               <Send className="h-3 w-3" /> Md.Shuyaib Islam
             </a>
           </div>
-          <p className="text-[10px] opacity-50">Telegram ID: @shu_yaib</p>
         </div>
       </div>
     );

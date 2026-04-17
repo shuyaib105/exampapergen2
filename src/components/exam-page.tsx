@@ -69,6 +69,13 @@ const PaperPreview = ({
   facebookText: string;
   facebookUrl: string;
 }) => {
+  const ensureAbsoluteUrl = (url: string) => {
+    if (!url) return "";
+    const trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    return `https://${trimmed}`;
+  };
+
   const getMcqStimulusDisplay = (currentIndex: number) => {
     const q = mcqQuestions[currentIndex];
     if (!q.stimulus && !q.stimulusImage) return null;
@@ -230,7 +237,12 @@ const PaperPreview = ({
       <footer className="mt-8 pt-4 border-t print:mt-auto print-footer flex justify-between items-center text-xs text-gray-500 relative z-10">
         <div className="flex items-center gap-1">
           {youtubeUrl && (
-            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-red-600 transition-colors">
+            <a 
+              href={ensureAbsoluteUrl(youtubeUrl)} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center gap-1 hover:text-red-600 transition-colors"
+            >
               <Youtube className="h-4 w-4 text-red-600" />
               <span>{youtubeText || "YouTube"}</span>
             </a>
@@ -238,7 +250,12 @@ const PaperPreview = ({
         </div>
         <div className="flex items-center gap-1">
           {facebookUrl && (
-            <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <a 
+              href={ensureAbsoluteUrl(facebookUrl)} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+            >
               <Facebook className="h-4 w-4 text-blue-600" />
               <span>{facebookText || "Facebook"}</span>
             </a>
@@ -695,7 +712,7 @@ export default function ExamPage() {
                     </div>
                     <div className="space-y-1">
                       <Label>লিঙ্ক (URL)</Label>
-                      <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." />
+                      <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="youtube.com/..." />
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -706,7 +723,7 @@ export default function ExamPage() {
                     </div>
                     <div className="space-y-1">
                       <Label>লিঙ্ক (URL)</Label>
-                      <Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+                      <Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="facebook.com/..." />
                     </div>
                   </div>
                 </AccordionContent>

@@ -661,6 +661,21 @@ export default function ExamPage() {
             </CardHeader>
           </Card>
         </div>
+
+        <div className="mt-8 text-sm text-muted-foreground flex flex-col items-center gap-2">
+          <div className="flex items-center gap-1">
+            Developed By 
+            <a 
+              href="https://t.me/shu_yaib" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="font-bold text-primary hover:underline flex items-center gap-1"
+            >
+              <Send className="h-3 w-3" /> Md.Shuyaib Islam
+            </a>
+          </div>
+          <p className="text-[10px] opacity-50">Telegram ID: @shu_yaib</p>
+        </div>
       </div>
     );
   }

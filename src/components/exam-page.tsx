@@ -26,7 +26,9 @@ import {
   Type,
   Send,
   FileSpreadsheet,
-  FileSignature
+  FileSignature,
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -35,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { generateQuestions } from "@/ai/flows/generate-questions-flow";
 
 type AppMode = "MCQ" | "CQ" | "BOTH" | null;
 type FlowType = "SHEET" | "EXAM" | null;
@@ -332,6 +335,12 @@ export default function ExamPage() {
   const [telegramText, setTelegramText] = useState("আমাদের টেলিগ্রাম চ্যানেল");
   const [telegramUrl, setTelegramUrl] = useState("");
 
+  // AI Generator state
+  const [aiText, setAiText] = useState("");
+  const [aiCount, setAiCount] = useState(5);
+  const [aiType, setAiType] = useState<'MCQ' | 'CQ'>('MCQ');
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -564,7 +573,7 @@ export default function ExamPage() {
       if (type === "MCQ") {
         setMcqQuestions(prev => prev.filter((_, i) => i !== index));
       } else {
-        cqQuestions(prev => prev.filter((_, i) => i !== index));
+        setCqQuestions(prev => prev.filter((_, i) => i !== index));
       }
       toast({ title: "সফল", description: "প্রশ্নটি বর্তমান তালিকা থেকে মুছে ফেলা হয়েছে।" });
     }
@@ -606,6 +615,28 @@ export default function ExamPage() {
       }
     } catch (error) {
       toast({ variant: "destructive", title: "ত্রুটি", description: "অবৈধ JSON ফরম্যাট।" });
+    }
+  };
+
+  const handleAiGenerate = async () => {
+    if (!aiText.trim()) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "টেক্সট ইনপুট খালি।" });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const result = await generateQuestions({ text: aiText, count: aiCount, type: aiType });
+      if (aiType === 'MCQ') {
+        setMcqQuestions(prev => [...prev, ...result.questions]);
+      } else {
+        setCqQuestions(prev => [...prev, ...result.questions]);
+      }
+      setAiText("");
+      toast({ title: "সফল", description: `AI সফলভাবে ${result.questions.length}টি প্রশ্ন জেনারেট করেছে।` });
+    } catch (error) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "এআই জেনারেট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।" });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -874,9 +905,10 @@ export default function ExamPage() {
             </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="manual">আলাদা ইনপুট</TabsTrigger>
-                <TabsTrigger value="json">JSON ইনপুট</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="manual">আলাদা</TabsTrigger>
+                <TabsTrigger value="json">JSON</TabsTrigger>
+                <TabsTrigger value="ai" className="gap-1"><Sparkles className="h-3 w-3" /> AI</TabsTrigger>
               </TabsList>
               
               <TabsContent value="manual">
@@ -1026,7 +1058,7 @@ export default function ExamPage() {
                   <CardHeader>
                     <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
                     <CardDescription className="text-[10px]">
-                       নিচের ফরম্যাটটি অনুসরণ করুন (CQ উত্তরের জন্য "answers" ফিল্ড ব্যবহার করুন):
+                       নিচের ফরম্যাটটি অনুসরণ করুন:
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -1043,22 +1075,67 @@ export default function ExamPage() {
   },
   {
     "stimulus": "উদ্দীপক এখানে...",
-    "parts": {
-      "a": "ক নং প্রশ্ন",
-      "b": "খ নং প্রশ্ন",
-      "c": "গ নং প্রশ্ন",
-      "d": "ঘ নং প্রশ্ন"
-    },
-    "answers": {
-      "a": "ক উত্তর",
-      "b": "খ উত্তর",
-      "c": "গ উত্তর",
-      "d": "ঘ উত্তর"
-    }
+    "parts": { "a": "ক", "b": "খ", "c": "গ", "d": "ঘ" },
+    "answers": { "a": "উ ক", "b": "উ খ", "c": "উ গ", "d": "উ ঘ" }
   }
 ]'
                     />
                     <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="ai">
+                <Card className="shadow-lg border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-primary" /> AI জেনারেটর
+                    </CardTitle>
+                    <CardDescription>টেক্সট থেকে সরাসরি প্রশ্ন জেনারেট করুন</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>উৎস টেক্সট (Source Text)</Label>
+                      <Textarea 
+                        placeholder="আপনার টেক্সট এখানে পেস্ট করুন যা থেকে প্রশ্ন তৈরি হবে..." 
+                        value={aiText} 
+                        onChange={(e) => setAiText(e.target.value)}
+                        className="h-40 text-xs"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label>প্রশ্নের সংখ্যা</Label>
+                        <Input 
+                          type="number" 
+                          min={1} 
+                          max={20} 
+                          value={aiCount} 
+                          onChange={(e) => setAiCount(parseInt(e.target.value))} 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>ধরণ</Label>
+                        <Select value={aiType} onValueChange={(v: 'MCQ' | 'CQ') => setAiType(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="MCQ" disabled={mode === "CQ"}>MCQ</SelectItem>
+                            <SelectItem value="CQ" disabled={mode === "MCQ"}>CQ</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full py-6 text-lg" 
+                      onClick={handleAiGenerate}
+                      disabled={isGenerating}
+                    >
+                      {isGenerating ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> জেনারেট হচ্ছে...</>
+                      ) : (
+                        <><Sparkles className="mr-2 h-5 w-5" /> AI দিয়ে প্রশ্ন তৈরি করুন</>
+                      )}
+                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>

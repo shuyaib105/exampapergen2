@@ -77,6 +77,7 @@ body {
 }
 
 .watermark-text {
+  font-family: 'Noto Serif Bengali', serif;
   font-size: 8rem;
   font-weight: bold;
   transform: rotate(-45deg);
@@ -119,6 +120,18 @@ body[data-preview-answers="true"] .answer-content {
     display: none !important;
   }
 
+  /* Fixed watermark to repeat on every page */
+  .watermark-container {
+    position: fixed !important;
+    z-index: -1 !important;
+    visibility: visible !important;
+    opacity: 1 !important; /* Opacity controlled by inline style */
+  }
+  
+  .watermark-text {
+    visibility: visible !important;
+  }
+
   #printable-area {
     position: absolute;
     left: 0;
@@ -159,5 +172,10 @@ body[data-preview-answers="true"] .answer-content {
     padding: 10px;
     border-top: 1px solid #ccc;
     background: white;
+    visibility: visible !important;
+  }
+  
+  .print-footer * {
+    visibility: visible !important;
   }
 }

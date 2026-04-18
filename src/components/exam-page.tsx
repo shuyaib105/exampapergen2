@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,7 +28,8 @@ import {
   FileSignature,
   Sparkles,
   Loader2,
-  Copy
+  Copy,
+  Image as ImageIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,9 +39,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { generateQuestions } from "@/ai/flows/generate-questions-flow";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type AppMode = "MCQ" | "CQ" | "BOTH" | null;
 type FlowType = "SHEET" | "EXAM" | null;
+type WatermarkType = "text" | "image";
 
 const PaperPreview = ({ 
   examName, 
@@ -57,6 +59,8 @@ const PaperPreview = ({
   showLogo,
   watermarkText,
   watermarkOpacity,
+  watermarkType,
+  watermarkImage,
   youtubeText,
   youtubeUrl,
   facebookText,
@@ -77,6 +81,8 @@ const PaperPreview = ({
   showLogo: boolean;
   watermarkText: string;
   watermarkOpacity: number;
+  watermarkType: WatermarkType;
+  watermarkImage: string | null;
   youtubeText: string;
   youtubeUrl: string;
   facebookText: string;
@@ -125,28 +131,44 @@ const PaperPreview = ({
   return (
     <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
       {/* Watermark Container for Screen */}
-      {watermarkText && (
-        <div className="watermark-container no-print">
+      <div className="watermark-container no-print">
+        {watermarkType === 'text' && watermarkText && (
           <div 
             className="watermark-text" 
             style={{ opacity: watermarkOpacity / 100 }}
           >
             {watermarkText}
           </div>
-        </div>
-      )}
+        )}
+        {watermarkType === 'image' && watermarkImage && (
+          <img 
+            src={watermarkImage} 
+            alt="Watermark" 
+            className="watermark-image-el" 
+            style={{ opacity: watermarkOpacity / 100 }}
+          />
+        )}
+      </div>
       
-      {/* Repeating Watermark for Print (Fixed position in CSS handles multiple pages) */}
-      {watermarkText && (
-        <div className="watermark-container-print hidden print:flex">
+      {/* Repeating Watermark for Print */}
+      <div className="watermark-container-print hidden print:flex">
+        {watermarkType === 'text' && watermarkText && (
           <div 
             className="watermark-text" 
             style={{ opacity: watermarkOpacity / 100 }}
           >
             {watermarkText}
           </div>
-        </div>
-      )}
+        )}
+        {watermarkType === 'image' && watermarkImage && (
+          <img 
+            src={watermarkImage} 
+            alt="Watermark" 
+            className="watermark-image-el" 
+            style={{ opacity: watermarkOpacity / 100 }}
+          />
+        )}
+      </div>
 
       <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print relative z-10">
         <div className="flex items-center justify-center relative min-h-[80px]">
@@ -337,7 +359,9 @@ export default function ExamPage() {
   const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ', index: number} | null>(null);
 
   // Watermark state
+  const [watermarkType, setWatermarkType] = useState<WatermarkType>("text");
   const [watermarkText, setWatermarkText] = useState("");
+  const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
   const [watermarkOpacity, setWatermarkOpacity] = useState(10);
 
   // Social Footer state
@@ -681,7 +705,7 @@ export default function ExamPage() {
     }, 100);
   };
 
-  // Step 1: Flow Selection (SHEET vs EXAM)
+  // Step 1: Flow Selection
   if (!flowType) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
@@ -730,7 +754,7 @@ export default function ExamPage() {
     );
   }
 
-  // Step 2: Mode Selection (MCQ, CQ, BOTH)
+  // Step 2: Mode Selection
   if (!mode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
@@ -871,14 +895,43 @@ export default function ExamPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="p-4 pt-0 space-y-4">
-                  <div className="space-y-1">
-                    <Label>ওয়াটারমার্ক টেক্সট</Label>
-                    <Input 
-                      placeholder="যেমন: Confidential, My Institution" 
-                      value={watermarkText} 
-                      onChange={(e) => setWatermarkText(e.target.value)} 
-                    />
+                  <div className="space-y-2">
+                    <Label>ওয়াটারমার্ক টাইপ</Label>
+                    <RadioGroup 
+                      value={watermarkType} 
+                      onValueChange={(val) => setWatermarkType(val as WatermarkType)}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="text" id="wt-text" />
+                        <Label htmlFor="wt-text">টেক্সট</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="image" id="wt-image" />
+                        <Label htmlFor="wt-image">ইমেজ</Label>
+                      </div>
+                    </RadioGroup>
                   </div>
+
+                  {watermarkType === "text" ? (
+                    <div className="space-y-1">
+                      <Label>ওয়াটারমার্ক টেক্সট</Label>
+                      <Input 
+                        placeholder="যেমন: Confidential, My Institution" 
+                        value={watermarkText} 
+                        onChange={(e) => setWatermarkText(e.target.value)} 
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <Label>ওয়াটারমার্ক ইমেজ</Label>
+                      <div className="flex items-center gap-2">
+                        <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} className="text-xs" />
+                        {watermarkImage && <Button variant="outline" size="icon" onClick={() => setWatermarkImage(null)}><Trash2 className="h-4 w-4" /></Button>}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-1">
                     <Label>স্বচ্ছতা (Transparency: {watermarkOpacity}%)</Label>
                     <Slider min={0} max={50} step={1} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
@@ -1278,6 +1331,8 @@ export default function ExamPage() {
             showLogo={showLogo}
             watermarkText={watermarkText}
             watermarkOpacity={watermarkOpacity}
+            watermarkType={watermarkType}
+            watermarkImage={watermarkImage}
             youtubeText={youtubeText}
             youtubeUrl={youtubeUrl}
             facebookText={facebookText}

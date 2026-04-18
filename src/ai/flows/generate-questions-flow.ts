@@ -12,12 +12,61 @@ const GenerateQuestionsInputSchema = z.object({
   type: z.enum(['MCQ', 'CQ']).describe('Type of questions to generate.'),
 });
 
+const MCQSchema = z.object({
+  question: z.string(),
+  options: z.array(z.string()).length(4),
+  answer: z.string(),
+  explanation: z.string().optional(),
+});
+
+const CQSchema = z.object({
+  stimulus: z.string(),
+  parts: z.object({
+    a: z.string(),
+    b: z.string(),
+    c: z.string(),
+    d: z.string(),
+  }),
+  answers: z.object({
+    a: z.string().optional(),
+    b: z.string().optional(),
+    c: z.string().optional(),
+    d: z.string().optional(),
+  }),
+});
+
 const GenerateQuestionsOutputSchema = z.object({
-  questions: z.array(z.any()).describe('Array of generated questions in the application format.'),
+  questions: z.array(z.any()), // Using any to allow union of MCQ and CQ
 });
 
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsInputSchema>;
 export type GenerateQuestionsOutput = z.infer<typeof GenerateQuestionsOutputSchema>;
+
+const questionPrompt = ai.definePrompt({
+  name: 'questionPrompt',
+  input: { schema: GenerateQuestionsInputSchema },
+  output: { schema: GenerateQuestionsOutputSchema },
+  prompt: `
+You are an expert exam paper setter in Bengali. 
+Generate exactly {{count}} {{type}} questions based on the following source text.
+
+Source Text: 
+{{{text}}}
+
+Requirements for {{type}}:
+{{#if (eq type "MCQ")}}
+- Each MCQ must have a "question" in Bengali.
+- "options" must be an array of exactly 4 Bengali strings.
+- "answer" must match one of the options exactly.
+- "explanation" should be a brief Bengali explanation.
+{{else}}
+- Each CQ must have a "stimulus" (উদ্দীপক) in Bengali.
+- "parts" must have a, b, c, d as sub-questions in Bengali.
+- "answers" must have a, b, c, d as model answers in Bengali.
+{{/if}}
+
+Output must be a JSON object with a "questions" array.`,
+});
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {
   return generateQuestionsFlow(input);
@@ -30,41 +79,12 @@ const generateQuestionsFlow = ai.defineFlow(
     outputSchema: GenerateQuestionsOutputSchema,
   },
   async (input) => {
-    const prompt = input.type === 'MCQ' 
-      ? `You are an expert exam paper setter in Bengali. 
-         Generate exactly ${input.count} Multiple Choice Questions (MCQ) from the following text.
-         Each question must have:
-         1. A clear question in Bengali.
-         2. Exactly 4 options in Bengali.
-         3. The correct answer (must be one of the options).
-         4. A brief explanation in Bengali for why the answer is correct.
-         
-         Output format MUST be a JSON array of objects with these keys: "question", "options", "answer", "explanation".
-         
-         Text: ${input.text}`
-      : `You are an expert exam paper setter in Bengali.
-         Generate exactly ${input.count} Creative Questions (CQ) from the following text.
-         Each question must have:
-         1. A stimulus (উদ্দীপক) based on the text.
-         2. Four parts: ক (Knowledge), খ (Comprehension), গ (Application), ঘ (Higher Order Thinking).
-         3. Short model answers for each part.
-         
-         Output format MUST be a JSON array of objects with these keys: 
-         "stimulus", 
-         "parts": { "a": "...", "b": "...", "c": "...", "d": "..." },
-         "answers": { "a": "...", "b": "...", "c": "...", "d": "..." }
-         
-         Text: ${input.text}`;
+    const { output } = await questionPrompt(input);
+    
+    if (!output || !output.questions) {
+      throw new Error('AI failed to generate questions properly.');
+    }
 
-    const { output } = await ai.generate({
-      prompt,
-      output: { format: 'json' },
-    });
-
-    // Ensure it's an array. Gemini sometimes wraps it in an object.
-    const rawQuestions = output as any;
-    const questionsArray = Array.isArray(rawQuestions) ? rawQuestions : (rawQuestions.questions || []);
-
-    return { questions: questionsArray };
+    return output;
   }
 );

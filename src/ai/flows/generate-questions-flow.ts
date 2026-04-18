@@ -6,28 +6,29 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-// Define individual schemas for better clarity
-const MCQSchema = z.object({
-  question: z.string().describe('The question text in Bengali.'),
-  options: z.array(z.string()).length(4).describe('Exactly 4 options in Bengali.'),
-  answer: z.string().describe('The correct answer from the options.'),
-  explanation: z.string().optional().describe('A short explanation in Bengali.'),
-});
-
-const CQSchema = z.object({
-  stimulus: z.string().describe('The Bengali stimulus (উদ্দীপক).'),
+// Define a unified item schema that handles both MCQ and CQ fields.
+// This is necessary because Genkit's output schema needs concrete definitions for array items to work with Gemini's response_schema.
+const GeneratedQuestionSchema = z.object({
+  // MCQ fields
+  question: z.string().optional().describe('Question text in Bengali.'),
+  options: z.array(z.string()).optional().describe('4 options in Bengali.'),
+  answer: z.string().optional().describe('Correct answer.'),
+  explanation: z.string().optional().describe('Short explanation in Bengali.'),
+  
+  // CQ fields
+  stimulus: z.string().optional().describe('Bengali stimulus (উদ্দীপক).'),
   parts: z.object({
-    a: z.string().describe('Knowledge based question (ক)'),
-    b: z.string().describe('Understanding based question (খ)'),
-    c: z.string().describe('Application based question (গ)'),
-    d: z.string().describe('Higher order thinking based question (ঘ)'),
-  }),
+    a: z.string().optional().describe('ক নং প্রশ্ন'),
+    b: z.string().optional().describe('খ নং প্রশ্ন'),
+    c: z.string().optional().describe('গ নং প্রশ্ন'),
+    d: z.string().optional().describe('ঘ নং প্রশ্ন'),
+  }).optional().describe('Sub-questions ক, খ, গ, ঘ.'),
   answers: z.object({
-    a: z.string().optional().describe('Answer to ক'),
-    b: z.string().optional().describe('Answer to খ'),
-    c: z.string().optional().describe('Answer to গ'),
-    d: z.string().optional().describe('Answer to ঘ'),
-  }),
+    a: z.string().optional().describe('ক এর উত্তর'),
+    b: z.string().optional().describe('খ এর উত্তর'),
+    c: z.string().optional().describe('গ এর উত্তর'),
+    d: z.string().optional().describe('ঘ এর উত্তর'),
+  }).optional().describe('Answers for ক, খ, গ, ঘ.'),
 });
 
 const GenerateQuestionsInputSchema = z.object({
@@ -37,7 +38,7 @@ const GenerateQuestionsInputSchema = z.object({
 });
 
 const GenerateQuestionsOutputSchema = z.object({
-  questions: z.array(z.any()).describe('Array of generated questions matching the requested type.'),
+  questions: z.array(GeneratedQuestionSchema).describe('Array of generated questions matching the requested type.'),
 });
 
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsInputSchema>;
@@ -56,19 +57,22 @@ Source Text:
 
 INSTRUCTIONS:
 - All output MUST be in the Bengali language.
-- Follow professional educational standards for school/college exams.
+- Follow professional educational standards for school/college exams in Bangladesh.
 
 IF TYPE IS MCQ:
-- Each object in the 'questions' array must follow this structure:
-  { "question": "...", "options": ["...", "...", "...", "..."], "answer": "...", "explanation": "..." }
-- The 'answer' MUST be one of the strings provided in the 'options' array.
+- For each item in the "questions" array, provide:
+  - "question": string
+  - "options": array of exactly 4 strings
+  - "answer": string (must match one of the options)
+  - "explanation": string (short reason for the answer)
 
 IF TYPE IS CQ:
-- Each object in the 'questions' array must follow this structure:
-  { "stimulus": "...", "parts": { "a": "...", "b": "...", "c": "...", "d": "..." }, "answers": { "a": "...", "b": "...", "c": "...", "d": "..." } }
-- Ensure the stimulus is relevant to the text and sub-questions (ক, খ, গ, ঘ) flow logically.
+- For each item in the "questions" array, provide:
+  - "stimulus": string (the উদ্দীপক)
+  - "parts": { "a": "...", "b": "...", "c": "...", "d": "..." }
+  - "answers": { "a": "...", "b": "...", "c": "...", "d": "..." } (optional but helpful)
 
-Ensure the final output is a valid JSON object with a "questions" field containing the array.`,
+Return a valid JSON object with the "questions" key.`,
 });
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {

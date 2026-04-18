@@ -678,14 +678,26 @@ export default function ExamPage() {
     try {
       const result = await generateQuestions({ text: aiText, count: aiCount, type: aiType });
       if (aiType === 'MCQ') {
-        setMcqQuestions(prev => [...prev, ...result.questions]);
+        const mcqs: Question[] = result.questions.map(q => ({
+          question: q.question,
+          options: q.options,
+          answer: q.answer,
+          explanation: q.explanation
+        }));
+        setMcqQuestions(prev => [...prev, ...mcqs]);
       } else {
-        setCqQuestions(prev => [...prev, ...result.questions]);
+        const cqs: CQQuestion[] = result.questions.map(q => ({
+          stimulus: q.stimulus,
+          parts: q.parts,
+          answers: q.answers
+        }));
+        setCqQuestions(prev => [...prev, ...cqs]);
       }
       setAiText("");
       toast({ title: "সফল", description: `AI সফলভাবে ${result.questions.length}টি প্রশ্ন জেনারেট করেছে।` });
-    } catch (error) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "এআই জেনারেট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।" });
+    } catch (error: any) {
+      console.error(error);
+      toast({ variant: "destructive", title: "ত্রুটি", description: error.message || "এআই জেনারেট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।" });
     } finally {
       setIsGenerating(false);
     }

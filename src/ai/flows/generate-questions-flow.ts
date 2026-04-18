@@ -6,26 +6,27 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
+// Define individual schemas for better clarity
 const MCQSchema = z.object({
-  question: z.string(),
-  options: z.array(z.string()).length(4),
-  answer: z.string(),
-  explanation: z.string().optional(),
+  question: z.string().describe('The question text in Bengali.'),
+  options: z.array(z.string()).length(4).describe('Exactly 4 options in Bengali.'),
+  answer: z.string().describe('The correct answer from the options.'),
+  explanation: z.string().optional().describe('A short explanation in Bengali.'),
 });
 
 const CQSchema = z.object({
-  stimulus: z.string(),
+  stimulus: z.string().describe('The Bengali stimulus (উদ্দীপক).'),
   parts: z.object({
-    a: z.string(),
-    b: z.string(),
-    c: z.string(),
-    d: z.string(),
+    a: z.string().describe('Knowledge based question (ক)'),
+    b: z.string().describe('Understanding based question (খ)'),
+    c: z.string().describe('Application based question (গ)'),
+    d: z.string().describe('Higher order thinking based question (ঘ)'),
   }),
   answers: z.object({
-    a: z.string().optional(),
-    b: z.string().optional(),
-    c: z.string().optional(),
-    d: z.string().optional(),
+    a: z.string().optional().describe('Answer to ক'),
+    b: z.string().optional().describe('Answer to খ'),
+    c: z.string().optional().describe('Answer to গ'),
+    d: z.string().optional().describe('Answer to ঘ'),
   }),
 });
 
@@ -36,7 +37,7 @@ const GenerateQuestionsInputSchema = z.object({
 });
 
 const GenerateQuestionsOutputSchema = z.object({
-  questions: z.array(z.union([MCQSchema, CQSchema])),
+  questions: z.array(z.any()).describe('Array of generated questions matching the requested type.'),
 });
 
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsInputSchema>;
@@ -47,26 +48,27 @@ const questionPrompt = ai.definePrompt({
   input: { schema: GenerateQuestionsInputSchema },
   output: { schema: GenerateQuestionsOutputSchema },
   prompt: `
-You are an expert exam paper setter in Bengali. 
-Generate exactly {{count}} {{type}} questions based on the following source text.
+You are an expert exam paper setter specializing in the Bengali curriculum. 
+Based on the source text provided below, generate exactly {{count}} {{type}} questions.
 
 Source Text: 
 {{{text}}}
 
-Your task is to generate ONLY {{type}} questions.
+INSTRUCTIONS:
+- All output MUST be in the Bengali language.
+- Follow professional educational standards for school/college exams.
 
-If the requested type is MCQ:
-- Each question must be in Bengali.
-- Provide exactly 4 options for each question in Bengali.
-- Specify the correct answer which MUST match one of the options exactly.
-- Add a brief Bengali explanation for the answer.
+IF TYPE IS MCQ:
+- Each object in the 'questions' array must follow this structure:
+  { "question": "...", "options": ["...", "...", "...", "..."], "answer": "...", "explanation": "..." }
+- The 'answer' MUST be one of the strings provided in the 'options' array.
 
-If the requested type is CQ:
-- Provide a Bengali stimulus (উদ্দীপক).
-- Provide sub-questions ক, খ, গ, ঘ in Bengali as a, b, c, d fields.
-- Provide model answers for each sub-question in Bengali.
+IF TYPE IS CQ:
+- Each object in the 'questions' array must follow this structure:
+  { "stimulus": "...", "parts": { "a": "...", "b": "...", "c": "...", "d": "..." }, "answers": { "a": "...", "b": "...", "c": "...", "d": "..." } }
+- Ensure the stimulus is relevant to the text and sub-questions (ক, খ, গ, ঘ) flow logically.
 
-Ensure all text output is in Bengali language and follows professional educational standards.`,
+Ensure the final output is a valid JSON object with a "questions" field containing the array.`,
 });
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {
@@ -83,7 +85,7 @@ const generateQuestionsFlow = ai.defineFlow(
     const { output } = await questionPrompt(input);
     
     if (!output || !output.questions || output.questions.length === 0) {
-      throw new Error('AI failed to generate questions properly. Please try with different text.');
+      throw new Error('AI failed to generate questions. Please try providing more context or different text.');
     }
 
     return output;

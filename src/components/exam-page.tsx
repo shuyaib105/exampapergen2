@@ -29,6 +29,7 @@ import {
   Sparkles,
   Loader2,
   Copy,
+  FileUp,
   Image as ImageIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -631,8 +632,17 @@ export default function ExamPage() {
         const newCqs: CQQuestion[] = [];
 
         data.forEach((item: any) => {
-          if (item.options && item.answer) {
-            newMcqs.push(item);
+          if (item.question && item.options && item.answer !== undefined) {
+            let finalAnswer = "";
+            if (typeof item.answer === 'number') {
+              finalAnswer = item.options[item.answer - 1] || "";
+            } else {
+              finalAnswer = String(item.answer);
+            }
+            newMcqs.push({
+              ...item,
+              answer: finalAnswer
+            });
             mcqAdded++;
           } else if (item.parts) {
             newCqs.push(item);
@@ -654,6 +664,61 @@ export default function ExamPage() {
     } catch (error) {
       toast({ variant: "destructive", title: "ত্রুটি", description: "অবৈধ JSON ফরম্যাট।" });
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+        if (Array.isArray(data)) {
+          let mcqAdded = 0;
+          let cqAdded = 0;
+          const newMcqs: Question[] = [];
+          const newCqs: CQQuestion[] = [];
+
+          data.forEach((item: any) => {
+            if (item.question && item.options && item.answer !== undefined) {
+              let finalAnswer = "";
+              if (typeof item.answer === 'number') {
+                finalAnswer = item.options[item.answer - 1] || "";
+              } else {
+                finalAnswer = String(item.answer);
+              }
+              newMcqs.push({
+                question: item.question,
+                options: item.options,
+                answer: finalAnswer,
+                explanation: item.explanation || "",
+                image: item.image || undefined,
+                stimulus: item.stimulus || undefined,
+                stimulusImage: item.stimulusImage || undefined
+              });
+              mcqAdded++;
+            } else if (item.parts) {
+              newCqs.push(item);
+              cqAdded++;
+            }
+          });
+
+          if (mcqAdded > 0) setMcqQuestions(prev => [...prev, ...newMcqs]);
+          if (cqAdded > 0) setCqQuestions(prev => [...prev, ...newCqs]);
+
+          toast({ 
+            title: "সফল!", 
+            description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন ফাইল থেকে যুক্ত হয়েছে।` 
+          });
+        }
+      } catch (err) {
+        toast({ variant: "destructive", title: "ত্রুটি", description: "ফাইলটি সঠিক JSON ফরম্যাটে নেই।" });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset input
   };
 
   const copyJsonToClipboard = () => {
@@ -997,9 +1062,10 @@ export default function ExamPage() {
             </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="manual">আলাদা</TabsTrigger>
                 <TabsTrigger value="json">JSON</TabsTrigger>
+                <TabsTrigger value="upload" className="gap-1"><FileUp className="h-3 w-3" /> ফাইল</TabsTrigger>
                 <TabsTrigger value="ai" className="gap-1"><Sparkles className="h-3 w-3" /> AI</TabsTrigger>
               </TabsList>
               
@@ -1178,6 +1244,37 @@ export default function ExamPage() {
 ]'
                     />
                     <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="upload">
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileUp className="h-5 w-5" /> ফাইল আপলোড
+                    </CardTitle>
+                    <CardDescription>আপনার JSON ফাইলটি সিলেক্ট করুন</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <Label htmlFor="json-file">JSON ফাইল</Label>
+                      <Input id="json-file" type="file" accept=".json" onChange={handleFileUpload} />
+                    </div>
+                    <div className="bg-muted p-3 rounded text-[10px] space-y-2">
+                      <p className="font-bold">সফল টেমপ্লেট উদাহরণ:</p>
+                      <pre className="font-mono bg-white p-2 rounded border truncate">
+{`[
+  {
+    "question": "প্রশ্ন...",
+    "options": ["ক", "খ", "গ", "ঘ"],
+    "answer": 1,
+    "explanation": "ব্যাখ্যা..."
+  }
+]`}
+                      </pre>
+                      <p className="italic text-muted-foreground">* এখানে answer: 1 মানে ১ম বিকল্পটি সঠিক।</p>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>

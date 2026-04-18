@@ -184,7 +184,7 @@ const PaperPreview = ({
         </div>
         <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
           {flowType === 'EXAM' && <span>পূর্ণমান: {totalMarks || "..."}</span>}
-          {(mode === "MCQ" || mode === "BOTH") && <span className="font-bold">সেট: {setName}</span>}
+          {(mode === "MCQ" || mode === "BOTH") && flowType === 'EXAM' && <span className="font-bold">সেট: {setName}</span>}
           {flowType === 'EXAM' && <span>সময়: {examTime || "..."}</span>}
         </div>
       </header>
@@ -462,11 +462,12 @@ export default function ExamPage() {
   
   useEffect(() => {
     if (mcqQuestions.length > 0) {
-      setDisplayMcqQuestions(shuffleGroupedQuestions(mcqQuestions, selectedSet));
+      const setToShow = flowType === 'EXAM' ? selectedSet : 'A';
+      setDisplayMcqQuestions(shuffleGroupedQuestions(mcqQuestions, setToShow));
     } else {
       setDisplayMcqQuestions([]);
     }
-  }, [mcqQuestions, selectedSet]);
+  }, [mcqQuestions, selectedSet, flowType]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string | null) => void) => {
     const file = e.target.files?.[0];
@@ -1283,7 +1284,7 @@ export default function ExamPage() {
                   <Label>প্রিভিউতে উত্তর দেখান</Label>
                   <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
                 </div>
-                {(mode === "MCQ" || mode === "BOTH") && (
+                {(mode === "MCQ" || mode === "BOTH") && flowType === 'EXAM' && (
                   <div className="space-y-1">
                     <Label>সেট নির্বাচন</Label>
                     <Select value={selectedSet} onValueChange={setSelectedSet}>

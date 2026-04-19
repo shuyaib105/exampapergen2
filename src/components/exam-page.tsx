@@ -30,7 +30,6 @@ import {
   Loader2,
   Copy,
   FileUp,
-  Image as ImageIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -131,43 +130,21 @@ const PaperPreview = ({
 
   return (
     <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
-      {/* Watermark Container for Screen */}
       <div className="watermark-container no-print">
         {watermarkType === 'text' && watermarkText && (
-          <div 
-            className="watermark-text" 
-            style={{ opacity: watermarkOpacity / 100 }}
-          >
-            {watermarkText}
-          </div>
+          <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
         )}
         {watermarkType === 'image' && watermarkImage && (
-          <img 
-            src={watermarkImage} 
-            alt="Watermark" 
-            className="watermark-image-el" 
-            style={{ opacity: watermarkOpacity / 100 }}
-          />
+          <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
         )}
       </div>
       
-      {/* Repeating Watermark for Print */}
       <div className="watermark-container-print hidden print:flex">
         {watermarkType === 'text' && watermarkText && (
-          <div 
-            className="watermark-text" 
-            style={{ opacity: watermarkOpacity / 100 }}
-          >
-            {watermarkText}
-          </div>
+          <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
         )}
         {watermarkType === 'image' && watermarkImage && (
-          <img 
-            src={watermarkImage} 
-            alt="Watermark" 
-            className="watermark-image-el" 
-            style={{ opacity: watermarkOpacity / 100 }}
-          />
+          <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
         )}
       </div>
 
@@ -208,9 +185,7 @@ const PaperPreview = ({
                               <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
                             </div>
                           )}
-                          {stimulusData.stimulus && (
-                            <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>
-                          )}
+                          {stimulusData.stimulus && <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>}
                         </div>
                       )}
                       <div className="mt-1">
@@ -264,11 +239,7 @@ const PaperPreview = ({
                         <img src={q.stimulusImage} alt="Stimulus" className="max-h-60 object-contain rounded border" />
                       </div>
                     )}
-                    {q.stimulus && (
-                      <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">
-                        {q.stimulus}
-                      </div>
-                    )}
+                    {q.stimulus && <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">{q.stimulus}</div>}
                     <div className="grid grid-cols-1 gap-y-2 pl-4 print:pl-2">
                       <div className="flex flex-col">
                         <p><span className="font-bold">ক)</span> {q.parts.a}</p>
@@ -295,16 +266,10 @@ const PaperPreview = ({
         )}
       </section>
 
-      {/* Footer Links */}
       <footer className="mt-8 pt-4 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-500 relative z-10">
         <div className="flex items-center gap-1 justify-start">
           {youtubeUrl && (
-            <a 
-              href={ensureAbsoluteUrl(youtubeUrl)} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center gap-1 hover:text-red-600 transition-colors"
-            >
+            <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-red-600 transition-colors">
               <Youtube className="h-4 w-4 text-red-600" />
               <span>{youtubeText || "YouTube"}</span>
             </a>
@@ -312,12 +277,7 @@ const PaperPreview = ({
         </div>
         <div className="flex items-center gap-1 justify-center">
           {telegramUrl && (
-            <a 
-              href={ensureAbsoluteUrl(telegramUrl)} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center gap-1 hover:text-blue-500 transition-colors"
-            >
+            <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-500 transition-colors">
               <Send className="h-4 w-4 text-blue-500" />
               <span>{telegramText || "Telegram"}</span>
             </a>
@@ -325,12 +285,7 @@ const PaperPreview = ({
         </div>
         <div className="flex items-center gap-1 justify-end">
           {facebookUrl && (
-            <a 
-              href={ensureAbsoluteUrl(facebookUrl)} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-            >
+            <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
               <Facebook className="h-4 w-4 text-blue-600" />
               <span>{facebookText || "Facebook"}</span>
             </a>
@@ -359,13 +314,11 @@ export default function ExamPage() {
   const [printFontSize, setPrintFontSize] = useState(11);
   const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ', index: number} | null>(null);
 
-  // Watermark state
   const [watermarkType, setWatermarkType] = useState<WatermarkType>("text");
   const [watermarkText, setWatermarkText] = useState("");
   const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
   const [watermarkOpacity, setWatermarkOpacity] = useState(10);
 
-  // Social Footer state
   const [youtubeText, setYoutubeText] = useState("আমাদের ইউটিউব চ্যানেল");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("আমাদের ফেসবুক পেজ");
@@ -373,7 +326,6 @@ export default function ExamPage() {
   const [telegramText, setTelegramText] = useState("আমাদের টেলিগ্রাম চ্যানেল");
   const [telegramUrl, setTelegramUrl] = useState("");
 
-  // AI Generator state
   const [aiText, setAiText] = useState("");
   const [aiCount, setAiCount] = useState(5);
   const [aiType, setAiType] = useState<'MCQ' | 'CQ'>('MCQ');
@@ -432,7 +384,6 @@ export default function ExamPage() {
 
   const shuffleGroupedQuestions = (questions: Question[], seed: string): Question[] => {
     if (seed === "A") return questions;
-
     const groups: Question[][] = [];
     if (questions.length === 0) return [];
 
@@ -440,10 +391,7 @@ export default function ExamPage() {
     for (let i = 1; i < questions.length; i++) {
       const q = questions[i];
       const prevQ = questions[i - 1];
-      
-      const hasSameStimulus = 
-        (q.stimulus === prevQ.stimulus && q.stimulusImage === prevQ.stimulusImage);
-
+      const hasSameStimulus = (q.stimulus === prevQ.stimulus && q.stimulusImage === prevQ.stimulusImage);
       if (hasSameStimulus && (q.stimulus || q.stimulusImage)) {
         currentGroup.push(q);
       } else {
@@ -452,7 +400,6 @@ export default function ExamPage() {
       }
     }
     groups.push(currentGroup);
-
     const shuffledGroups = shuffleArraySeeded(groups, seed);
     return shuffledGroups.flat();
   };
@@ -474,9 +421,7 @@ export default function ExamPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setter(reader.result as string);
-      };
+      reader.onloadend = () => setter(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -492,29 +437,15 @@ export default function ExamPage() {
       parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD },
       answers: { a: cqAnsA, b: cqAnsB, c: cqAnsC, d: cqAnsD }
     };
-
     if (editingIndex?.type === 'CQ') {
       const updated = [...cqQuestions];
       updated[editingIndex.index] = newQ;
       setCqQuestions(updated);
       setEditingIndex(null);
-      toast({ title: "সফল", description: "সৃজনশীল প্রশ্ন আপডেট হয়েছে।" });
     } else {
-      const updated = [...cqQuestions, newQ];
-      setCqQuestions(updated);
-      toast({ title: "সফল", description: `সৃজনশীল প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
+      setCqQuestions([...cqQuestions, newQ]);
     }
-    
-    setCqStimulus("");
-    setCqStimulusImage(null);
-    setCqPartA("");
-    setCqPartB("");
-    setCqPartC("");
-    setCqPartD("");
-    setCqAnsA("");
-    setCqAnsB("");
-    setCqAnsC("");
-    setCqAnsD("");
+    setCqStimulus(""); setCqStimulusImage(null); setCqPartA(""); setCqPartB(""); setCqPartC(""); setCqPartD(""); setCqAnsA(""); setCqAnsB(""); setCqAnsC(""); setCqAnsD("");
   };
 
   const handleAddMcq = () => {
@@ -531,373 +462,106 @@ export default function ExamPage() {
       answer: mcqAnswer,
       explanation: mcqExplanation || undefined
     };
-
     if (editingIndex?.type === 'MCQ') {
       const updated = [...mcqQuestions];
       updated[editingIndex.index] = newQ;
       setMcqQuestions(updated);
       setEditingIndex(null);
-      toast({ title: "সফল", description: "MCQ প্রশ্ন আপডেট হয়েছে।" });
     } else {
-      const updated = [...mcqQuestions, newQ];
-      setMcqQuestions(updated);
-      toast({ title: "সফল", description: `MCQ প্রশ্ন যুক্ত হয়েছে। বর্তমানে মোট প্রশ্ন: ${updated.length}টি` });
+      setMcqQuestions([...mcqQuestions, newQ]);
     }
-
-    setMcqQuestion("");
-    setMcqImage(null);
-    if (!keepStimulus) {
-      setMcqStimulus("");
-      setMcqStimulusImage(null);
-    }
-    setMcqOptions(["", "", "", ""]);
-    setMcqAnswer("");
-    setMcqExplanation("");
+    setMcqQuestion(""); setMcqImage(null); if (!keepStimulus) { setMcqStimulus(""); setMcqStimulusImage(null); } setMcqOptions(["", "", "", ""]); setMcqAnswer(""); setMcqExplanation("");
   };
 
   const handleEdit = (type: 'MCQ' | 'CQ', index: number) => {
     setEditingIndex({type, index});
     if (type === "MCQ") {
       const q = mcqQuestions[index];
-      setMcqQuestion(q.question);
-      setMcqImage(q.image || null);
-      setMcqStimulus(q.stimulus || "");
-      setMcqStimulusImage(q.stimulusImage || null);
-      setMcqOptions(q.options);
-      setMcqAnswer(q.answer);
-      setMcqExplanation(q.explanation || "");
-      setKeepStimulus(!!(q.stimulus || q.stimulusImage));
+      setMcqQuestion(q.question); setMcqImage(q.image || null); setMcqStimulus(q.stimulus || ""); setMcqStimulusImage(q.stimulusImage || null); setMcqOptions(q.options); setMcqAnswer(q.answer); setMcqExplanation(q.explanation || ""); setKeepStimulus(!!(q.stimulus || q.stimulusImage));
     } else {
       const q = cqQuestions[index];
-      setCqStimulus(q.stimulus || "");
-      setCqStimulusImage(q.stimulusImage || null);
-      setCqPartA(q.parts.a);
-      setCqPartB(q.parts.b);
-      setCqPartC(q.parts.c);
-      setCqPartD(q.parts.d);
-      setCqAnsA(q.answers?.a || "");
-      setCqAnsB(q.answers?.b || "");
-      setCqAnsC(q.answers?.c || "");
-      setCqAnsD(q.answers?.d || "");
+      setCqStimulus(q.stimulus || ""); setCqStimulusImage(q.stimulusImage || null); setCqPartA(q.parts.a); setCqPartB(q.parts.b); setCqPartC(q.parts.c); setCqPartD(q.parts.d); setCqAnsA(q.answers?.a || ""); setCqAnsB(q.answers?.b || ""); setCqAnsC(q.answers?.c || ""); setCqAnsD(q.answers?.d || "");
     }
-    const formElement = document.getElementById('input-form');
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const cancelEdit = () => {
-    setEditingIndex(null);
-    setMcqQuestion("");
-    setMcqImage(null);
-    setMcqStimulus("");
-    setMcqStimulusImage(null);
-    setMcqOptions(["", "", "", ""]);
-    setMcqAnswer("");
-    setMcqExplanation("");
-    setCqStimulus("");
-    setCqStimulusImage(null);
-    setCqPartA("");
-    setCqPartB("");
-    setCqPartC("");
-    setCqPartD("");
-    setCqAnsA("");
-    setCqAnsB("");
-    setCqAnsC("");
-    setCqAnsD("");
-  };
-
-  const handleDelete = (type: 'MCQ' | 'CQ', index: number) => {
-    if (confirm("আপনি কি নিশ্চিতভাবে এই প্রশ্নটি মুছে ফেলতে চান?")) {
-      if (type === "MCQ") {
-        setMcqQuestions(prev => prev.filter((_, i) => i !== index));
-      } else {
-        setCqQuestions(prev => prev.filter((_, i) => i !== index));
-      }
-      toast({ title: "সফল", description: "প্রশ্নটি বর্তমান তালিকা থেকে মুছে ফেলা হয়েছে।" });
-    }
-  };
-
-  const handleJsonGenerate = () => {
-    if (!jsonInput.trim()) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "JSON ইনপুট খালি হতে পারে না।" });
-      return;
-    }
-    try {
-      const data = JSON.parse(jsonInput);
-      if (Array.isArray(data)) {
-        let mcqAdded = 0;
-        let cqAdded = 0;
-        const newMcqs: Question[] = [];
-        const newCqs: CQQuestion[] = [];
-
-        data.forEach((item: any) => {
-          if (item.question && item.options && item.answer !== undefined) {
-            let finalAnswer = "";
-            if (typeof item.answer === 'number') {
-              finalAnswer = item.options[item.answer - 1] || "";
-            } else {
-              finalAnswer = String(item.answer);
-            }
-            newMcqs.push({
-              ...item,
-              answer: finalAnswer
-            });
-            mcqAdded++;
-          } else if (item.parts) {
-            newCqs.push(item);
-            cqAdded++;
-          }
-        });
-
-        if (mcqAdded > 0) setMcqQuestions(prev => [...prev, ...newMcqs]);
-        if (cqAdded > 0) setCqQuestions(prev => [...prev, ...newCqs]);
-
-        setJsonInput("");
-        toast({ 
-          title: "সফল!", 
-          description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন যুক্ত হয়েছে। মোট প্রশ্ন: ${mcqQuestions.length + cqQuestions.length + mcqAdded + cqAdded}টি` 
-        });
-      } else {
-        throw new Error("JSON is not an array.");
-      }
-    } catch (error) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "অবৈধ JSON ফরম্যাট।" });
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const content = event.target?.result as string;
-        const data = JSON.parse(content);
-        if (Array.isArray(data)) {
-          let mcqAdded = 0;
-          let cqAdded = 0;
-          const newMcqs: Question[] = [];
-          const newCqs: CQQuestion[] = [];
-
-          data.forEach((item: any) => {
-            if (item.question && item.options && item.answer !== undefined) {
-              let finalAnswer = "";
-              if (typeof item.answer === 'number') {
-                finalAnswer = item.options[item.answer - 1] || "";
-              } else {
-                finalAnswer = String(item.answer);
-              }
-              newMcqs.push({
-                question: item.question,
-                options: item.options,
-                answer: finalAnswer,
-                explanation: item.explanation || "",
-                image: item.image || undefined,
-                stimulus: item.stimulus || undefined,
-                stimulusImage: item.stimulusImage || undefined
-              });
-              mcqAdded++;
-            } else if (item.parts) {
-              newCqs.push(item);
-              cqAdded++;
-            }
-          });
-
-          if (mcqAdded > 0) setMcqQuestions(prev => [...prev, ...newMcqs]);
-          if (cqAdded > 0) setCqQuestions(prev => [...prev, ...newCqs]);
-
-          toast({ 
-            title: "সফল!", 
-            description: `${mcqAdded}টি MCQ এবং ${cqAdded}টি সৃজনশীল প্রশ্ন ফাইল থেকে যুক্ত হয়েছে।` 
-          });
-        }
-      } catch (err) {
-        toast({ variant: "destructive", title: "ত্রুটি", description: "ফাইলটি সঠিক JSON ফরম্যাটে নেই।" });
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = ''; // Reset input
-  };
-
-  const copyJsonToClipboard = () => {
-    const currentData = [
-      ...mcqQuestions,
-      ...cqQuestions
-    ];
-    if (currentData.length === 0) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "কপি করার মতো কোনো প্রশ্ন নেই।" });
-      return;
-    }
-    navigator.clipboard.writeText(JSON.stringify(currentData, null, 2));
-    toast({ title: "সফল", description: "সব প্রশ্নের JSON ক্লিপবোর্ডে কপি করা হয়েছে।" });
+    document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleAiGenerate = async () => {
-    if (!aiText.trim()) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "টেক্সট ইনপুট খালি।" });
-      return;
-    }
+    if (!aiText.trim()) return;
     setIsGenerating(true);
     try {
       const result = await generateQuestions({ text: aiText, count: aiCount, type: aiType });
       if (aiType === 'MCQ') {
-        const mcqs: Question[] = result.questions.map(q => ({
+        const mapped = result.questions.map(q => ({
           question: q.question || '',
           options: q.options || [],
           answer: q.answer || '',
           explanation: q.explanation || '',
           stimulus: q.stimulus,
         }));
-        setMcqQuestions(prev => [...prev, ...mcqs]);
+        setMcqQuestions(prev => [...prev, ...mapped]);
       } else {
-        const cqs: CQQuestion[] = result.questions.map(q => ({
+        const mapped: CQQuestion[] = result.questions.map(q => ({
           stimulus: q.stimulus,
           parts: q.parts || { a: '', b: '', c: '', d: '' },
           answers: q.answers
         }));
-        setCqQuestions(prev => [...prev, ...cqs]);
+        setCqQuestions(prev => [...prev, ...mapped]);
       }
       setAiText("");
-      toast({ title: "সফল", description: `AI সফলভাবে ${result.questions.length}টি প্রশ্ন জেনারেট করেছে।` });
+      toast({ title: "সফল", description: "AI প্রশ্ন জেনারেট করেছে।" });
     } catch (error: any) {
-      console.error(error);
-      toast({ variant: "destructive", title: "ত্রুটি", description: error.message || "এআই জেনারেট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।" });
+      toast({ variant: "destructive", title: "ত্রুটি", description: error.message });
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleExport = (withAnswers: boolean) => {
-    const totalCount = mcqQuestions.length + cqQuestions.length;
-    if(totalCount === 0){
-        toast({ variant: "destructive", title: "ত্রুটি", description: "প্রথমে প্রশ্ন যুক্ত করুন।" });
-        return;
-    }
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    const originalTitle = document.title;
-    document.title = examName || "Exam Paper";
     window.print();
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 100);
   };
 
-  // Step 1: Flow Selection
   if (!flowType) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card 
-            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
-            onClick={() => setFlowType("SHEET")}
-          >
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("SHEET")}>
             <CardHeader className="text-center">
               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                 <FileSpreadsheet className="h-12 w-12" />
               </div>
               <CardTitle className="text-2xl">PDF Sheet</CardTitle>
-              <CardDescription>সময় ও পূর্ণমান ছাড়া শুধুমাত্র প্রশ্ন সাজান</CardDescription>
+              <CardDescription>প্রশ্ন সাজান</CardDescription>
             </CardHeader>
           </Card>
-
-          <Card 
-            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
-            onClick={() => setFlowType("EXAM")}
-          >
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("EXAM")}>
             <CardHeader className="text-center">
               <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                 <FileSignature className="h-12 w-12" />
               </div>
               <CardTitle className="text-2xl">প্রশ্নপত্র তৈরি</CardTitle>
-              <CardDescription>পরীক্ষার নাম, সময় ও পূর্ণমান সহ প্রফেশনাল প্রশ্ন</CardDescription>
+              <CardDescription>প্রফেশনাল প্রশ্ন</CardDescription>
             </CardHeader>
           </Card>
-        </div>
-
-        <div className="mt-8 text-sm text-muted-foreground flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1">
-            Developed By 
-            <a 
-              href="https://t.me/shu_yaib" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              <Send className="h-3 w-3" /> Md.Shuyaib Islam
-            </a>
-          </div>
         </div>
       </div>
     );
   }
 
-  // Step 2: Mode Selection
   if (!mode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => setFlowType(null)} 
-          className="self-start md:self-center"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান
-        </Button>
-
+        <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
         <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card 
-            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
-            onClick={() => setMode("MCQ")}
-          >
-            <CardHeader className="text-center">
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                <ListChecks className="h-10 w-10" />
-              </div>
-              <CardTitle className="text-2xl">MCQ মোড</CardTitle>
-              <CardDescription>মাল্টিপল চয়েস প্রশ্নপত্র তৈরি করুন</CardDescription>
-            </CardHeader>
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
+            <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ মোড</CardTitle></CardHeader>
           </Card>
-
-          <Card 
-            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
-            onClick={() => setMode("CQ")}
-          >
-            <CardHeader className="text-center">
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                <FileText className="h-10 w-10" />
-              </div>
-              <CardTitle className="text-2xl">CQ মোড</CardTitle>
-              <CardDescription>সৃজনশীল বা লিখিত প্রশ্নপত্র তৈরি করুন</CardDescription>
-            </CardHeader>
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
+            <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle>CQ মোড</CardTitle></CardHeader>
           </Card>
-
-          <Card 
-            className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group"
-            onClick={() => setMode("BOTH")}
-          >
-            <CardHeader className="text-center">
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                <LayoutGrid className="h-10 w-10" />
-              </div>
-              <CardTitle className="text-2xl">MCQ + CQ মোড</CardTitle>
-              <CardDescription>এমসিকিউ এবং সৃজনশীল এক ফাইলে আনুন</CardDescription>
-            </CardHeader>
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
+            <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>উভয় মোড</CardTitle></CardHeader>
           </Card>
-        </div>
-
-        <div className="mt-8 text-sm text-muted-foreground flex flex-col items-center gap-2">
-          <div className="flex items-center gap-1">
-            Developed By 
-            <a 
-              href="https://t.me/shu_yaib" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              <Send className="h-3 w-3" /> Md.Shuyaib Islam
-            </a>
-          </div>
         </div>
       </div>
     );
@@ -909,155 +573,31 @@ export default function ExamPage() {
       <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
         <aside className="w-full lg:w-[420px] lg:min-w-[420px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <Button 
-                variant="ghost" 
-                className="pl-0 hover:bg-transparent" 
-                onClick={() => setMode(null)}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন
-              </Button>
-            </div>
-            
+            <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন</Button>
             <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
-                   বেসিক সেটিংস
-                </AccordionTrigger>
-                <AccordionContent className="p-4 pt-0 space-y-4">
-                  <div className="space-y-1">
-                    <Label>পরীক্ষার নাম</Label>
-                    <Input value={examName} onChange={(e) => setExamName(e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>পরিচালনায়</Label>
-                    <Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} />
-                  </div>
-                  
+                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">বেসিক সেটিংস</AccordionTrigger>
+                <AccordionContent className="p-4 space-y-4">
+                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName} onChange={(e) => setExamName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} /></div>
                   {flowType === 'EXAM' && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label>সময়</Label>
-                        <Input value={examTime} onChange={(e) => setExamTime(e.target.value)} />
-                      </div>
-                      <div className="space-y-1">
-                        <Label>পূর্ণমান</Label>
-                        <Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} />
-                      </div>
+                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime} onChange={(e) => setExamTime(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
-
-                  <div className="space-y-1">
-                    <Label className="flex items-center justify-between">
-                      লোগো আপলোড
-                      <div className="flex items-center gap-1 scale-75 origin-right">
-                        <span className="text-[10px] text-muted-foreground">দেখাবেন?</span>
-                        <Switch checked={showLogo} onCheckedChange={setShowLogo} />
-                      </div>
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} className="text-xs" />
-                      {logoImage && <Button variant="outline" size="icon" onClick={() => setLogoImage(null)}><Trash2 className="h-4 w-4" /></Button>}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label>
-                    <Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} />
-                  </div>
+                  <div className="space-y-1"><Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
-
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
-                  <div className="flex items-center gap-2">
-                    <Type className="h-5 w-5" /> ওয়াটারমার্ক
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="p-4 pt-0 space-y-4">
-                  <div className="space-y-2">
-                    <Label>ওয়াটারমার্ক টাইপ</Label>
-                    <RadioGroup 
-                      value={watermarkType} 
-                      onValueChange={(val) => setWatermarkType(val as WatermarkType)}
-                      className="flex gap-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="text" id="wt-text" />
-                        <Label htmlFor="wt-text">টেক্সট</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="image" id="wt-image" />
-                        <Label htmlFor="wt-image">ইমেজ</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  {watermarkType === "text" ? (
-                    <div className="space-y-1">
-                      <Label>ওয়াটারমার্ক টেক্সট</Label>
-                      <Input 
-                        placeholder="যেমন: Confidential, My Institution" 
-                        value={watermarkText} 
-                        onChange={(e) => setWatermarkText(e.target.value)} 
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <Label>ওয়াটারমার্ক ইমেজ</Label>
-                      <div className="flex items-center gap-2">
-                        <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} className="text-xs" />
-                        {watermarkImage && <Button variant="outline" size="icon" onClick={() => setWatermarkImage(null)}><Trash2 className="h-4 w-4" /></Button>}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-1">
-                    <Label>স্বচ্ছতা (Transparency: {watermarkOpacity}%)</Label>
-                    <Slider min={0} max={50} step={1} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">
-                  <div className="flex items-center gap-2">
-                    <Youtube className="h-5 w-5" /> সোশ্যাল লিঙ্ক
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="p-4 pt-0 space-y-4">
-                  <div className="space-y-3 border-b pb-3">
-                    <h4 className="font-bold text-sm text-red-600 flex items-center gap-1"><Youtube className="h-4 w-4" /> ইউটিউব সেটিংস</h4>
-                    <div className="space-y-1">
-                      <Label>ডিসপ্লে টেক্সট</Label>
-                      <Input value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} placeholder="ইউটিউব ওয়ার্ড..." />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>লিঙ্ক (URL)</Label>
-                      <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="youtube.com/..." />
-                    </div>
-                  </div>
-                  <div className="space-y-3 border-b pb-3">
-                    <h4 className="font-bold text-sm text-blue-500 flex items-center gap-1"><Send className="h-4 w-4" /> টেলিগ্রাম সেটিংস</h4>
-                    <div className="space-y-1">
-                      <Label>ডিসপ্লে টেক্সট</Label>
-                      <Input value={telegramText} onChange={(e) => setTelegramText(e.target.value)} placeholder="টেলিগ্রাম ওয়ার্ড..." />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>লিঙ্ক (URL)</Label>
-                      <Input value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} placeholder="t.me/..." />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="font-bold text-sm text-blue-600 flex items-center gap-1"><Facebook className="h-4 w-4" /> ফেসবুক সেটিংস</h4>
-                    <div className="space-y-1">
-                      <Label>ডিসপ্লে টেক্সট</Label>
-                      <Input value={facebookText} onChange={(e) => setFacebookText(e.target.value)} placeholder="ফেসবুক ওয়ার্ড..." />
-                    </div>
-                    <div className="space-y-1">
-                      <Label>লিঙ্ক (URL)</Label>
-                      <Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="facebook.com/..." />
-                    </div>
-                  </div>
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg">ওয়াটারমার্ক</AccordionTrigger>
+                <AccordionContent className="p-4 space-y-4">
+                  <RadioGroup value={watermarkType} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
+                  </RadioGroup>
+                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
+                  <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -1066,391 +606,64 @@ export default function ExamPage() {
               <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="manual">আলাদা</TabsTrigger>
                 <TabsTrigger value="json">JSON</TabsTrigger>
-                <TabsTrigger value="upload" className="gap-1"><FileUp className="h-3 w-3" /> ফাইল</TabsTrigger>
-                <TabsTrigger value="ai" className="gap-1"><Sparkles className="h-3 w-3" /> AI</TabsTrigger>
+                <TabsTrigger value="upload">ফাইল</TabsTrigger>
+                <TabsTrigger value="ai">AI</TabsTrigger>
               </TabsList>
               
               <TabsContent value="manual">
-                <Card id="input-form" className={`shadow-lg transition-all duration-300 ${editingIndex !== null ? 'ring-2 ring-primary bg-primary/5' : ''}`}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-lg">
-                      {editingIndex !== null ? "প্রশ্ন এডিট করুন" : "নতুন প্রশ্ন"}
-                    </CardTitle>
-                    {editingIndex !== null && (
-                      <Badge variant="outline" className="text-primary border-primary animate-pulse">সম্পাদনা মোড সক্রিয়</Badge>
-                    )}
-                  </CardHeader>
+                <Card id="input-form">
+                  <CardHeader><CardTitle>{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <Tabs defaultValue={editingIndex?.type === 'CQ' ? "cq" : "mcq"} className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-4">
+                    <Tabs defaultValue="mcq">
+                      <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="mcq" disabled={mode === "CQ"}>MCQ</TabsTrigger>
                         <TabsTrigger value="cq" disabled={mode === "MCQ"}>CQ</TabsTrigger>
                       </TabsList>
-
-                      <TabsContent value="mcq">
-                        <div className="space-y-3">
-                          <Accordion type="single" collapsible className="w-full" defaultValue={(mcqStimulus || mcqStimulusImage) ? "stimulus" : undefined}>
-                            <AccordionItem value="stimulus" className="border rounded-md bg-gray-50/50">
-                              <AccordionTrigger className="py-2 hover:no-underline text-xs px-3">
-                                <div className="flex items-center gap-2">
-                                  <Info className="h-3 w-3 text-primary" />
-                                  {mcqStimulus || mcqStimulusImage ? "উদ্দীপক যুক্ত করা হয়েছে" : "উদ্দীপক যোগ করুন (ঐচ্ছিক)"}
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent className="pt-2 px-3 pb-3 space-y-3">
-                                 <Textarea 
-                                   placeholder="উদ্দীপক টেক্সট..." 
-                                   value={mcqStimulus} 
-                                   onChange={(e) => setMcqStimulus(e.target.value)} 
-                                   className="h-20 text-xs bg-white"
-                                 />
-                                 <div className="flex items-center gap-2">
-                                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqStimulusImage)} className="text-xs bg-white" />
-                                 </div>
-                                 <div className="flex items-center space-x-2 pt-2 border-t">
-                                   <Checkbox 
-                                     id="keepStimulus" 
-                                     checked={keepStimulus} 
-                                     onCheckedChange={(checked) => setKeepStimulus(!!checked)} 
-                                   />
-                                   <Label htmlFor="keepStimulus" className="text-[10px] font-medium leading-none cursor-pointer">
-                                     এই উদ্দীপকটি পরবর্তী প্রশ্নের জন্যও রাখুন
-                                   </Label>
-                                 </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                          <div className="space-y-1">
-                            <Label>প্রশ্ন</Label>
-                            <Input value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
-                          </div>
-                          <div className="space-y-1">
-                            <Label>প্রশ্ন ছবি (ঐচ্ছিক)</Label>
-                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqImage)} className="text-xs" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {mcqOptions.map((opt, i) => (
-                              <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => {
-                                const newOpts = [...mcqOptions];
-                                newOpts[i] = e.target.value;
-                                setMcqOptions(newOpts);
-                              }} />
-                            ))}
-                          </div>
-                          <div className="space-y-1">
-                            <Label>সঠিক উত্তর</Label>
-                            <Select value={mcqAnswer} onValueChange={setMcqAnswer}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="সঠিক উত্তর বেছে নিন" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {mcqOptions.map((opt, i) => (
-                                  opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label>ব্যাখ্যা (ঐচ্ছিক)</Label>
-                            <Textarea value={mcqExplanation} onChange={(e) => setMcqExplanation(e.target.value)} className="h-16 text-xs" placeholder="সঠিক উত্তরের কারণ বা ব্যাখ্যা..." />
-                          </div>
-                          <div className="flex gap-2">
-                            <Button className="flex-1" onClick={handleAddMcq}>
-                              {editingIndex?.type === 'MCQ' ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
-                            </Button>
-                            {editingIndex !== null && (
-                              <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
-                            )}
-                          </div>
-                        </div>
+                      <TabsContent value="mcq" className="space-y-3">
+                        <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => { const newOpts = [...mcqOptions]; newOpts[i] = e.target.value; setMcqOptions(newOpts); }} />)}</div>
+                        <Select value={mcqAnswer} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}</SelectContent></Select>
+                        <Button className="w-full" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
-
-                      <TabsContent value="cq">
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <Label>উদ্দীপক (টেক্সট)</Label>
-                            <Textarea value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} className="h-20" />
-                          </div>
-                          <div className="space-y-1">
-                            <Label>উদ্দীপক ছবি</Label>
-                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} className="text-xs" />
-                          </div>
-                          <div className="space-y-4">
-                            <div className="space-y-2 border-l-2 border-primary pl-3">
-                              <Label className="text-xs font-bold text-primary">ক নং প্রশ্ন ও উত্তর</Label>
-                              <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                              <Textarea placeholder="ক এর উত্তর (ঐচ্ছিক)" value={cqAnsA} onChange={(e) => setCqAnsA(e.target.value)} className="h-12 text-xs" />
-                            </div>
-                            <div className="space-y-2 border-l-2 border-primary pl-3">
-                              <Label className="text-xs font-bold text-primary">খ নং প্রশ্ন ও উত্তর</Label>
-                              <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                              <Textarea placeholder="খ এর উত্তর (ঐচ্ছিক)" value={cqAnsB} onChange={(e) => setCqAnsB(e.target.value)} className="h-12 text-xs" />
-                            </div>
-                            <div className="space-y-2 border-l-2 border-primary pl-3">
-                              <Label className="text-xs font-bold text-primary">গ নং প্রশ্ন ও উত্তর</Label>
-                              <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                              <Textarea placeholder="গ এর উত্তর (ঐচ্ছিক)" value={cqAnsC} onChange={(e) => setCqAnsC(e.target.value)} className="h-12 text-xs" />
-                            </div>
-                            <div className="space-y-2 border-l-2 border-primary pl-3">
-                              <Label className="text-xs font-bold text-primary">ঘ নং প্রশ্ন ও উত্তর</Label>
-                              <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
-                              <Textarea placeholder="ঘ এর উত্তর (ঐচ্ছিক)" value={cqAnsD} onChange={(e) => setCqAnsD(e.target.value)} className="h-12 text-xs" />
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button className="flex-1" onClick={handleAddCq}>
-                              {editingIndex?.type === 'CQ' ? "আপডেট করুন" : <><Plus className="mr-2 h-4 w-4" /> প্রশ্ন যুক্ত করুন</>}
-                            </Button>
-                            {editingIndex !== null && (
-                              <Button variant="outline" onClick={cancelEdit}>বাতিল</Button>
-                            )}
-                          </div>
-                        </div>
+                      <TabsContent value="cq" className="space-y-4">
+                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
+                        <Input placeholder="ক)" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
+                        <Input placeholder="খ)" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
+                        <Input placeholder="গ)" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
+                        <Input placeholder="ঘ)" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                        <Button className="w-full" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="json">
-                <Card className="shadow-lg">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">JSON ইনপুট (MCQ + CQ)</CardTitle>
-                      <CardDescription className="text-[10px]">
-                         নিচের ফরম্যাটটি অনুসরণ করুন:
-                      </CardDescription>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="h-8 gap-1">
-                      <Copy className="h-3 w-3" /> কপি
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <Textarea 
-                      className="h-60 text-xs font-mono" 
-                      value={jsonInput} 
-                      onChange={(e) => setJsonInput(e.target.value)} 
-                      placeholder='[
-  {
-    "question": "MCQ প্রশ্ন এখানে?",
-    "options": ["ক", "খ", "গ", "ঘ"],
-    "answer": "ক",
-    "explanation": "ব্যাখ্যা"
-  },
-  {
-    "stimulus": "উদ্দীপক এখানে...",
-    "parts": { "a": "ক", "b": "খ", "c": "গ", "d": "ঘ" },
-    "answers": { "a": "উ ক", "b": "উ খ", "c": "উ গ", "d": "উ ঘ" }
-  }
-]'
-                    />
-                    <Button className="w-full" onClick={handleJsonGenerate}>জেনারেট করুন</Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="upload">
-                <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <FileUp className="h-5 w-5" /> ফাইল আপলোড
-                    </CardTitle>
-                    <CardDescription>আপনার JSON ফাইলটি সিলেক্ট করুন</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="json-file">JSON ফাইল</Label>
-                      <Input id="json-file" type="file" accept=".json" onChange={handleFileUpload} />
-                    </div>
-                    <div className="bg-muted p-3 rounded text-[10px] space-y-2">
-                      <p className="font-bold">সফল টেমপ্লেট উদাহরণ:</p>
-                      <pre className="font-mono bg-white p-2 rounded border truncate">
-{`[
-  {
-    "question": "প্রশ্ন...",
-    "options": ["ক", "খ", "গ", "ঘ"],
-    "answer": 1,
-    "explanation": "ব্যাখ্যা..."
-  }
-]`}
-                      </pre>
-                      <p className="italic text-muted-foreground">* এখানে answer: 1 মানে ১ম বিকল্পটি সঠিক।</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
               <TabsContent value="ai">
-                <Card className="shadow-lg border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-primary" /> AI জেনারেটর
-                    </CardTitle>
-                    <CardDescription>টেক্সট থেকে সরাসরি প্রশ্ন জেনারেট করুন</CardDescription>
-                  </CardHeader>
+                <Card>
+                  <CardHeader><CardTitle>AI জেনারেটর</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>উৎস টেক্সট (Source Text)</Label>
-                      <Textarea 
-                        placeholder="আপনার টেক্সট এখানে পেস্ট করুন যা থেকে প্রশ্ন তৈরি হবে..." 
-                        value={aiText} 
-                        onChange={(e) => setAiText(e.target.value)}
-                        className="h-40 text-xs"
-                      />
-                    </div>
+                    <Textarea placeholder="টেক্সট পেস্ট করুন..." value={aiText} onChange={(e) => setAiText(e.target.value)} className="h-32" />
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label>প্রশ্নের সংখ্যা</Label>
-                        <Input 
-                          type="number" 
-                          min={1} 
-                          max={20} 
-                          value={aiCount} 
-                          onChange={(e) => setAiCount(parseInt(e.target.value))} 
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label>ধরণ</Label>
-                        <Select value={aiType} onValueChange={(v: 'MCQ' | 'CQ') => setAiType(v)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MCQ" disabled={mode === "CQ"}>MCQ</SelectItem>
-                            <SelectItem value="CQ" disabled={mode === "MCQ"}>CQ</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <Input type="number" value={aiCount} onChange={(e) => setAiCount(parseInt(e.target.value))} />
+                      <Select value={aiType} onValueChange={(v: 'MCQ' | 'CQ') => setAiType(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="MCQ">MCQ</SelectItem><SelectItem value="CQ">CQ</SelectItem></SelectContent></Select>
                     </div>
-                    <Button 
-                      className="w-full py-6 text-lg" 
-                      onClick={handleAiGenerate}
-                      disabled={isGenerating}
-                    >
-                      {isGenerating ? (
-                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> জেনারেট হচ্ছে...</>
-                      ) : (
-                        <><Sparkles className="mr-2 h-5 w-5" /> AI দিয়ে প্রশ্ন তৈরি করুন</>
-                      )}
-                    </Button>
+                    <Button className="w-full" onClick={handleAiGenerate} disabled={isGenerating}>{isGenerating ? <Loader2 className="animate-spin" /> : "AI জেনারেট করুন"}</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
 
-            {(mcqQuestions.length + cqQuestions.length) > 0 && (
-               <Card className="shadow-lg border-accent/30">
-                 <CardHeader className="py-3 px-4 bg-accent/5">
-                   <CardTitle className="text-sm font-bold flex items-center justify-between">
-                     বর্তমান প্রশ্নসমূহ
-                     <span className="bg-accent px-2 py-0.5 rounded text-[10px]">{mcqQuestions.length + cqQuestions.length}টি</span>
-                   </CardTitle>
-                 </CardHeader>
-                 <CardContent className="p-0 max-h-60 overflow-y-auto scrollbar-hide">
-                    <div className="divide-y">
-                       {mcqQuestions.map((q, i) => (
-                         <div key={`mcq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'MCQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
-                            <div className="flex flex-col flex-1 truncate mr-2">
-                              <span className="text-xs truncate font-medium">MCQ {i+1}. {q.question}</span>
-                              {(q.stimulus || q.stimulusImage) && <Badge variant="secondary" className="w-fit text-[10px] h-4 mt-1 px-2 bg-blue-100 text-blue-700 font-bold border-blue-200">উদ্দীপকসহ</Badge>}
-                            </div>
-                            <div className="flex items-center gap-1">
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('MCQ', i)}>
-                                 <Edit2 className="h-4 w-4" />
-                               </Button>
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete('MCQ', i)}>
-                                 <Trash2 className="h-4 w-4" />
-                               </Button>
-                            </div>
-                         </div>
-                       ))}
-                       {cqQuestions.map((q, i) => (
-                         <div key={`cq-${i}`} className={`flex items-center justify-between p-3 transition-colors group ${editingIndex?.type === 'CQ' && editingIndex.index === i ? 'bg-primary/10 border-l-4 border-primary' : 'hover:bg-gray-50'}`}>
-                            <div className="flex flex-col flex-1 truncate mr-2">
-                              <span className="text-xs truncate font-medium">CQ {i+1}. {q.stimulus?.slice(0, 30)}...</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => handleEdit('CQ', i)}>
-                                 <Edit2 className="h-4 w-4" />
-                               </Button>
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete('CQ', i)}>
-                                 <Trash2 className="h-4 w-4" />
-                               </Button>
-                            </div>
-                         </div>
-                       ))}
-                    </div>
-                 </CardContent>
-               </Card>
-            )}
-
-            <div className="mt-6 space-y-4">
-              <div className="flex flex-col gap-2">
-                <Button className="w-full h-12 text-lg font-bold" onClick={() => handleExport(true)}>
-                  <Printer className="mr-2 h-5 w-5" /> উত্তরসহ পিডিএফ
-                </Button>
-                <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>
-                  <Printer className="mr-2 h-4 w-4" /> উত্তর ছাড়া পিডিএফ
-                </Button>
-                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm bg-white">
-                  <Label>প্রিভিউতে উত্তর দেখান</Label>
-                  <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
-                </div>
-                {(mode === "MCQ" || mode === "BOTH") && flowType === 'EXAM' && (
-                  <div className="space-y-1">
-                    <Label>সেট নির্বাচন</Label>
-                    <Select value={selectedSet} onValueChange={setSelectedSet}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A">Set A</SelectItem>
-                        <SelectItem value="B">Set B</SelectItem>
-                        <SelectItem value="C">Set C</SelectItem>
-                        <SelectItem value="D">Set D</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-              
-              <Button 
-                variant="destructive" 
-                className="w-full" 
-                onClick={() => {
-                  if(confirm("সব প্রশ্ন মুছে ফেলতে চান?")){
-                    setMcqQuestions([]);
-                    setCqQuestions([]);
-                    toast({ title: "সফল", description: "বর্তমান তালিকা খালি করা হয়েছে।" });
-                  }
-                }}
-              >
-                সব প্রশ্ন মুছুন
-              </Button>
+            <div className="space-y-2">
+              <Button className="w-full" onClick={() => handleExport(true)}><Printer className="mr-2 h-4 w-4" /> উত্তরসহ পিডিএফ</Button>
+              <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}>উত্তর ছাড়া পিডিএফ</Button>
+              <div className="flex items-center justify-between rounded-lg border p-3 bg-white"><Label>উত্তর দেখান</Label><Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} /></div>
+              {flowType === 'EXAM' && <Select value={selectedSet} onValueChange={setSelectedSet}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="A">Set A</SelectItem><SelectItem value="B">Set B</SelectItem><SelectItem value="C">Set C</SelectItem><SelectItem value="D">Set D</SelectItem></SelectContent></Select>}
             </div>
           </div>
         </aside>
 
-        <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto scrollbar-hide">
-          <PaperPreview
-            examName={examName}
-            authorName={authorName}
-            examTime={examTime}
-            totalMarks={totalMarks}
-            mcqQuestions={displayMcqQuestions}
-            cqQuestions={cqQuestions}
-            setName={selectedSet}
-            mode={mode}
-            flowType={flowType}
-            logoImage={logoImage}
-            showLogo={showLogo}
-            watermarkText={watermarkText}
-            watermarkOpacity={watermarkOpacity}
-            watermarkType={watermarkType}
-            watermarkImage={watermarkImage}
-            youtubeText={youtubeText}
-            youtubeUrl={youtubeUrl}
-            facebookText={facebookText}
-            facebookUrl={facebookUrl}
-            telegramText={telegramText}
-            telegramUrl={telegramUrl}
-          />
+        <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto">
+          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, setName: selectedSet, mode, flowType, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
         </main>
       </div>
     </>

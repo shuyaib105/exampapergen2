@@ -30,6 +30,27 @@ const CQQuestionSchema = z.object({
   }).optional(),
 });
 
+// A combined schema for Gemini to handle structured output without z.any()
+const UnifiedQuestionSchema = z.object({
+  question: z.string().optional(),
+  options: z.array(z.string()).optional(),
+  answer: z.string().optional(),
+  explanation: z.string().optional(),
+  stimulus: z.string().optional(),
+  parts: z.object({
+    a: z.string(),
+    b: z.string(),
+    c: z.string(),
+    d: z.string(),
+  }).optional(),
+  answers: z.object({
+    a: z.string().optional(),
+    b: z.string().optional(),
+    c: z.string().optional(),
+    d: z.string().optional(),
+  }).optional(),
+});
+
 const GenerateQuestionsInputSchema = z.object({
   text: z.string().describe('The source text to generate questions from.'),
   count: z.number().min(1).max(20).describe('Number of questions to generate.'),
@@ -37,7 +58,7 @@ const GenerateQuestionsInputSchema = z.object({
 });
 
 const GenerateQuestionsOutputSchema = z.object({
-  questions: z.array(z.any()).describe('Array of generated questions matching the requested type structure.'),
+  questions: z.array(UnifiedQuestionSchema).describe('Array of generated questions matching the requested type structure.'),
 });
 
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsInputSchema>;
@@ -60,12 +81,12 @@ INSTRUCTIONS:
 - Follow professional educational standards for school/college exams in Bangladesh.
 
 IF TYPE IS MCQ:
-- Each item in "questions" must have: "question" (string), "options" (array of 4 strings), "answer" (string, must be one of options), "explanation" (string).
+- Each item in "questions" must provide: "question", "options" (4 strings), "answer" (one of options), and "explanation".
 
 IF TYPE IS CQ:
-- Each item in "questions" must have: "stimulus" (string), "parts" (object with a, b, c, d keys), "answers" (optional object with a, b, c, d keys).
+- Each item in "questions" must provide: "stimulus", "parts" (a, b, c, d), and optionally "answers" (a, b, c, d).
 
-Return a valid JSON object with the "questions" key.`,
+Return the response as a JSON object with the "questions" key containing the array of questions.`,
 });
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {
@@ -79,12 +100,17 @@ const generateQuestionsFlow = ai.defineFlow(
     outputSchema: GenerateQuestionsOutputSchema,
   },
   async (input) => {
-    const { output } = await questionPrompt(input);
-    
-    if (!output || !output.questions || output.questions.length === 0) {
-      throw new Error('AI failed to generate questions. Please try providing more context or different text.');
-    }
+    try {
+      const { output } = await questionPrompt(input);
+      
+      if (!output || !output.questions || output.questions.length === 0) {
+        throw new Error('AI failed to generate questions. Please try providing more context or different text.');
+      }
 
-    return output;
+      return output;
+    } catch (error: any) {
+      console.error('AI Generation Error:', error);
+      throw new Error(`AI generation failed: ${error.message || 'Unknown error'}`);
+    }
   }
 );

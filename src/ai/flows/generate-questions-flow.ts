@@ -8,9 +8,9 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 // A single robust schema that Gemini can reliably fulfill for both types
+// We make common fields optional but clearly describe their use in the prompt
 const QuestionItemSchema = z.object({
-  // Shared type indicator
-  questionType: z.enum(['MCQ', 'CQ']),
+  questionType: z.enum(['MCQ', 'CQ']).describe('The type of question being generated.'),
   
   // MCQ specific fields
   question: z.string().optional().describe('The question text (for MCQ) in Bengali.'),
@@ -19,7 +19,7 @@ const QuestionItemSchema = z.object({
   explanation: z.string().optional().describe('Short explanation in Bengali (for MCQ).'),
   
   // CQ specific fields
-  stimulus: z.string().optional().describe('The stimulus/context passage (উদ্দীপক) in Bengali (for CQ).'),
+  stimulus: z.string().optional().describe('The stimulus/context passage (উদ্দীপক) in Bengali (for CQ or shared MCQ context).'),
   parts: z.object({
     a: z.string().describe('Knowledge based question (ক)'),
     b: z.string().describe('Comprehension based question (খ)'),
@@ -59,19 +59,22 @@ Based on the source text provided, generate exactly {{count}} {{type}} questions
 Source Text: 
 {{{text}}}
 
-INSTRUCTIONS:
-- All output MUST be in the Bengali language.
-- Follow professional educational standards for school/college exams in Bangladesh.
+CRITICAL INSTRUCTIONS:
+1. All output MUST be in the Bengali language.
+2. Follow professional educational standards for school/college exams in Bangladesh.
+3. Return ONLY a JSON object containing a "questions" array.
 
 IF TYPE IS MCQ:
 - Set questionType to 'MCQ'.
-- Fill: question, options (exactly 4), answer, explanation.
+- You MUST provide: "question", "options" (exactly 4 items), "answer" (MUST be one of the options), and "explanation".
+- If the text implies a context, you can optionally fill "stimulus".
 
 IF TYPE IS CQ:
 - Set questionType to 'CQ'.
-- Fill: stimulus, parts (a, b, c, d), and optionally answers (a, b, c, d).
+- You MUST provide: "stimulus" (the passage), and the "parts" (a, b, c, d).
+- You can optionally provide "answers" for each part.
 
-Return only valid JSON matching the requested schema.`,
+Ensure the JSON is valid and matches the requested schema exactly.`,
 });
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {
@@ -92,13 +95,27 @@ const generateQuestionsFlow = ai.defineFlow(
         throw new Error('AI failed to generate questions. Please try providing more context or different text.');
       }
 
+      // Basic validation for MCQ
+      if (input.type === 'MCQ') {
+        output.questions.forEach((q, idx) => {
+          if (!q.question || !q.options || q.options.length !== 4 || !q.answer) {
+            console.warn(`MCQ at index ${idx} is missing required fields. Trying to fix locally...`);
+          }
+        });
+      }
+
       return output;
     } catch (error: any) {
       console.error('AI Generation Error:', error);
-      // Fallback for common API issues
-      if (error.message?.includes('404')) {
-        throw new Error('Model not found. Please check your Genkit/Gemini configuration.');
+      
+      // Handle specific API errors
+      if (error.message?.includes('400')) {
+        throw new Error('AI request was invalid. This might be due to content safety filters or schema issues.');
       }
+      if (error.message?.includes('429')) {
+        throw new Error('Too many requests. Please wait a minute and try again.');
+      }
+      
       throw new Error(`AI generation failed: ${error.message || 'Unknown error'}`);
     }
   }

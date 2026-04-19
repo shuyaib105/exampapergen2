@@ -7,48 +7,31 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-const MCQQuestionSchema = z.object({
-  question: z.string().describe('MCQ question text in Bengali.'),
-  options: z.array(z.string()).describe('Exactly 4 options in Bengali.'),
-  answer: z.string().describe('The correct answer (must match one of the options).'),
-  explanation: z.string().optional().describe('Short explanation in Bengali.'),
-});
-
-const CQQuestionSchema = z.object({
-  stimulus: z.string().describe('Bengali stimulus (উদ্দীপক).'),
+// A single robust schema that Gemini can reliably fulfill for both types
+const QuestionItemSchema = z.object({
+  // Shared type indicator
+  questionType: z.enum(['MCQ', 'CQ']),
+  
+  // MCQ specific fields
+  question: z.string().optional().describe('The question text (for MCQ) in Bengali.'),
+  options: z.array(z.string()).optional().describe('Exactly 4 options in Bengali (for MCQ).'),
+  answer: z.string().optional().describe('The correct answer matching one of the options (for MCQ).'),
+  explanation: z.string().optional().describe('Short explanation in Bengali (for MCQ).'),
+  
+  // CQ specific fields
+  stimulus: z.string().optional().describe('The stimulus/context passage (উদ্দীপক) in Bengali (for CQ).'),
   parts: z.object({
-    a: z.string().describe('Knowledge based question (ক নং প্রশ্ন)'),
-    b: z.string().describe('Comprehension based question (খ নং প্রশ্ন)'),
-    c: z.string().describe('Application based question (গ নং প্রশ্ন)'),
-    d: z.string().describe('Higher order thinking based question (ঘ নং প্রশ্ন)'),
-  }).describe('Sub-questions ক, খ, গ, ঘ.'),
-  answers: z.object({
-    a: z.string().optional().describe('Answer for ক'),
-    b: z.string().optional().describe('Answer for খ'),
-    c: z.string().optional().describe('Answer for গ'),
-    d: z.string().optional().describe('Answer for ঘ'),
-  }).optional(),
-});
-
-// A combined schema for Gemini to handle structured output without z.any()
-const UnifiedQuestionSchema = z.object({
-  question: z.string().optional(),
-  options: z.array(z.string()).optional(),
-  answer: z.string().optional(),
-  explanation: z.string().optional(),
-  stimulus: z.string().optional(),
-  parts: z.object({
-    a: z.string(),
-    b: z.string(),
-    c: z.string(),
-    d: z.string(),
-  }).optional(),
+    a: z.string().describe('Knowledge based question (ক)'),
+    b: z.string().describe('Comprehension based question (খ)'),
+    c: z.string().describe('Application based question (গ)'),
+    d: z.string().describe('Higher order thinking based question (ঘ)'),
+  }).optional().describe('The four sub-questions for CQ.'),
   answers: z.object({
     a: z.string().optional(),
     b: z.string().optional(),
     c: z.string().optional(),
     d: z.string().optional(),
-  }).optional(),
+  }).optional().describe('Optional model answers for CQ parts.'),
 });
 
 const GenerateQuestionsInputSchema = z.object({
@@ -58,7 +41,7 @@ const GenerateQuestionsInputSchema = z.object({
 });
 
 const GenerateQuestionsOutputSchema = z.object({
-  questions: z.array(UnifiedQuestionSchema).describe('Array of generated questions matching the requested type structure.'),
+  questions: z.array(QuestionItemSchema).describe('List of generated questions.'),
 });
 
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsInputSchema>;
@@ -81,12 +64,14 @@ INSTRUCTIONS:
 - Follow professional educational standards for school/college exams in Bangladesh.
 
 IF TYPE IS MCQ:
-- Each item in "questions" must provide: "question", "options" (4 strings), "answer" (one of options), and "explanation".
+- Set questionType to 'MCQ'.
+- Fill: question, options (exactly 4), answer, explanation.
 
 IF TYPE IS CQ:
-- Each item in "questions" must provide: "stimulus", "parts" (a, b, c, d), and optionally "answers" (a, b, c, d).
+- Set questionType to 'CQ'.
+- Fill: stimulus, parts (a, b, c, d), and optionally answers (a, b, c, d).
 
-Return the response as a JSON object with the "questions" key containing the array of questions.`,
+Return only valid JSON matching the requested schema.`,
 });
 
 export async function generateQuestions(input: GenerateQuestionsInput): Promise<GenerateQuestionsOutput> {
@@ -110,6 +95,10 @@ const generateQuestionsFlow = ai.defineFlow(
       return output;
     } catch (error: any) {
       console.error('AI Generation Error:', error);
+      // Fallback for common API issues
+      if (error.message?.includes('404')) {
+        throw new Error('Model not found. Please check your Genkit/Gemini configuration.');
+      }
       throw new Error(`AI generation failed: ${error.message || 'Unknown error'}`);
     }
   }

@@ -744,16 +744,17 @@ export default function ExamPage() {
       const result = await generateQuestions({ text: aiText, count: aiCount, type: aiType });
       if (aiType === 'MCQ') {
         const mcqs: Question[] = result.questions.map(q => ({
-          question: q.question,
-          options: q.options,
-          answer: q.answer,
-          explanation: q.explanation
+          question: q.question || '',
+          options: q.options || [],
+          answer: q.answer || '',
+          explanation: q.explanation || '',
+          stimulus: q.stimulus,
         }));
         setMcqQuestions(prev => [...prev, ...mcqs]);
       } else {
         const cqs: CQQuestion[] = result.questions.map(q => ({
           stimulus: q.stimulus,
-          parts: q.parts,
+          parts: q.parts || { a: '', b: '', c: '', d: '' },
           answers: q.answers
         }));
         setCqQuestions(prev => [...prev, ...cqs]);

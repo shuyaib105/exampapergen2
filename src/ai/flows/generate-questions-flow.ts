@@ -7,7 +7,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 // Define a unified item schema that handles both MCQ and CQ fields.
-// This is necessary because Genkit's output schema needs concrete definitions for array items to work with Gemini's response_schema.
 const GeneratedQuestionSchema = z.object({
   // MCQ fields
   question: z.string().optional().describe('Question text in Bengali.'),
@@ -46,6 +45,7 @@ export type GenerateQuestionsOutput = z.infer<typeof GenerateQuestionsOutputSche
 
 const questionPrompt = ai.definePrompt({
   name: 'questionPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: GenerateQuestionsInputSchema },
   output: { schema: GenerateQuestionsOutputSchema },
   prompt: `

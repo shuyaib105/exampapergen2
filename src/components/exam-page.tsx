@@ -34,7 +34,8 @@ import {
   Image as ImageIcon,
   BookOpen,
   ClipboardList,
-  HelpCircle
+  HelpCircle,
+  Share2
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -144,7 +145,7 @@ const PaperPreview = ({
   };
 
   return (
-    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden">
+    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden flex flex-col">
       <div className="watermark-container no-print">
         {watermarkType === 'text' && watermarkText && (
           <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
@@ -182,7 +183,7 @@ const PaperPreview = ({
         </div>
       </header>
 
-      <section className="mt-4 print:mt-2 relative z-10">
+      <section className="mt-4 print:mt-2 relative z-10 flex-grow">
         {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && (
           <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
             {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
@@ -310,28 +311,28 @@ const PaperPreview = ({
         )}
       </section>
 
-      <footer className="mt-8 pt-4 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-500 relative z-10">
-        <div className="flex items-center gap-1 justify-start">
+      <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-sans">
+        <div className="flex items-center gap-1.5 justify-start">
           {youtubeUrl && (
-            <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-red-600 transition-colors">
+            <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
               <Youtube className="h-4 w-4 text-red-600" />
-              <span>{youtubeText || "YouTube"}</span>
+              <span className="font-medium">{youtubeText || "YouTube"}</span>
             </a>
           )}
         </div>
-        <div className="flex items-center gap-1 justify-center">
+        <div className="flex items-center gap-1.5 justify-center">
           {telegramUrl && (
-            <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-500 transition-colors">
+            <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
               <Send className="h-4 w-4 text-blue-500" />
-              <span>{telegramText || "Telegram"}</span>
+              <span className="font-medium">{telegramText || "Telegram"}</span>
             </a>
           )}
         </div>
-        <div className="flex items-center gap-1 justify-end">
+        <div className="flex items-center gap-1.5 justify-end">
           {facebookUrl && (
-            <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
               <Facebook className="h-4 w-4 text-blue-600" />
-              <span>{facebookText || "Facebook"}</span>
+              <span className="font-medium">{facebookText || "Facebook"}</span>
             </a>
           )}
         </div>
@@ -734,6 +735,30 @@ export default function ExamPage() {
                   <div className="space-y-1"><Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
+
+              <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg">ফুটার সেটিংস</AccordionTrigger>
+                <AccordionContent className="p-4 space-y-4">
+                  <div className="space-y-3">
+                    <div className="p-3 border rounded bg-gray-50 space-y-2">
+                      <Label className="flex items-center gap-2 text-red-600"><Youtube className="h-4 w-4" /> ইউটিউব</Label>
+                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+                    </div>
+                    <div className="p-3 border rounded bg-gray-50 space-y-2">
+                      <Label className="flex items-center gap-2 text-blue-500"><Send className="h-4 w-4" /> টেলিগ্রাম</Label>
+                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText} onChange={(e) => setTelegramText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} />
+                    </div>
+                    <div className="p-3 border rounded bg-gray-50 space-y-2">
+                      <Label className="flex items-center gap-2 text-blue-600"><Facebook className="h-4 w-4" /> ফেসবুক</Label>
+                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText} onChange={(e) => setFacebookText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg">ওয়াটারমার্ক</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">

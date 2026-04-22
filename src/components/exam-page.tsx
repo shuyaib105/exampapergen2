@@ -311,7 +311,7 @@ const PaperPreview = ({
         )}
       </section>
 
-      <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-sans">
+      <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body">
         <div className="flex items-center gap-1.5 justify-start">
           {youtubeUrl && (
             <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
@@ -1007,11 +1007,17 @@ export default function ExamPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold">প্রশ্ন তালিকা</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold">প্রশ্ন তালিকা</Label>
+                <Badge variant="secondary" className="text-[10px]">মোট: {mcqQuestions.length + cqQuestions.length + writtenQuestions.length}</Badge>
+              </div>
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
                 {mcqQuestions.map((q, i) => (
                   <div key={`mcq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">MCQ {i+1}: {q.question}</span>
+                    <span className="truncate flex-1 flex items-center gap-1.5">
+                      <span className="bg-gray-100 w-5 h-5 flex items-center justify-center rounded-full flex-shrink-0 text-[10px] font-bold">{i + 1}</span>
+                      <span className="truncate">MCQ: {q.question}</span>
+                    </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('MCQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setMcqQuestions(mcqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
@@ -1020,7 +1026,10 @@ export default function ExamPage() {
                 ))}
                 {writtenQuestions.map((q, i) => (
                   <div key={`written-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">Short {i+1}: {q.question}</span>
+                    <span className="truncate flex-1 flex items-center gap-1.5">
+                      <span className="bg-blue-50 w-5 h-5 flex items-center justify-center rounded-full flex-shrink-0 text-[10px] font-bold text-blue-600">{i + 1}</span>
+                      <span className="truncate">সংক্ষিপ্ত: {q.question}</span>
+                    </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('WRITTEN', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setWrittenQuestions(writtenQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
@@ -1029,7 +1038,10 @@ export default function ExamPage() {
                 ))}
                 {cqQuestions.map((q, i) => (
                   <div key={`cq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">CQ {i+1}: {q.parts?.a || "প্রশ্ন"}</span>
+                    <span className="truncate flex-1 flex items-center gap-1.5">
+                      <span className="bg-amber-50 w-5 h-5 flex items-center justify-center rounded-full flex-shrink-0 text-[10px] font-bold text-amber-600">{i + 1}</span>
+                      <span className="truncate">সৃজনশীল: {q.parts?.a || "প্রশ্ন"}</span>
+                    </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('CQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setCqQuestions(cqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
@@ -1048,3 +1060,4 @@ export default function ExamPage() {
     </>
   );
 }
+

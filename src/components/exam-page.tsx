@@ -33,7 +33,8 @@ import {
   FileUp,
   Image as ImageIcon,
   BookOpen,
-  ClipboardList
+  ClipboardList,
+  HelpCircle
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -45,6 +46,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { generateQuestions } from "@/ai/flows/generate-questions-flow";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 
 type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
 type FlowType = "SHEET" | "EXAM" | null;
@@ -235,7 +243,7 @@ const PaperPreview = ({
 
         {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && (
           <div className={writtenQuestions.length > 0 ? "mb-8" : ""}>
-             {mode === "MCQ_WRITTEN" && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
+             {(mode === "MCQ_WRITTEN" || mode === "BOTH") && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
              {writtenQuestions.length > 0 && (
                <div className="space-y-4">
                  {writtenQuestions.map((q, index) => (
@@ -563,16 +571,20 @@ export default function ExamPage() {
 
   const processJsonQuestions = (json: any[]) => {
     const mapped = json.map((q: any) => {
+      // CQ check
       if (q.parts) {
         return { type: 'CQ', ...q };
       }
+      // MCQ check
       if (q.options && q.options.length === 4) {
         let correctAnswer = q.answer;
         if (typeof q.answer === 'number') {
+          // Handle 1-based index from user template
           correctAnswer = q.options[q.answer - 1] || "";
         }
         return { type: 'MCQ', ...q, answer: correctAnswer };
       }
+      // Default to WRITTEN
       return { type: 'WRITTEN', ...q };
     });
 
@@ -800,9 +812,66 @@ export default function ExamPage() {
 
               <TabsContent value="json">
                 <Card>
-                  <CardHeader><CardTitle>JSON ইনপুট</CardTitle></CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle>JSON ইনপুট</CardTitle>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8"><HelpCircle className="h-5 w-5" /></Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader><DialogTitle>JSON টেমপ্লেট উদাহরণ</DialogTitle></DialogHeader>
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><ListChecks className="h-4 w-4" /> বহুনির্বাচনি (MCQ)</h3>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+{`[
+  {
+    "question": "বাংলাদেশের রাজধানী কী?",
+    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],
+    "answer": "ঢাকা",
+    "explanation": "ঢাকা বাংলাদেশের রাজধানী এবং বৃহত্তম শহর।"
+  }
+]`}
+                            </pre>
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4" /> সংক্ষিপ্ত প্রশ্ন (Short Questions)</h3>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+{`[
+  {
+    "question": "টেলিকুইজ কী ধরনের টুল?",
+    "answer": "টেলিকুইজ একটি স্বয়ংক্রিয় কুইজ জেনারেটর টুল।"
+  }
+]`}
+                            </pre>
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><FileText className="h-4 w-4" /> সৃজনশীল (CQ)</h3>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+{`[
+  {
+    "stimulus": "একটি অনুচ্ছেদ বা উদ্দীপক এখানে...",
+    "parts": {
+      "a": "জ্ঞানমূলক প্রশ্ন",
+      "b": "অনুধাবনমূলক প্রশ্ন",
+      "c": "প্রয়োগমূলক প্রশ্ন",
+      "d": "উচ্চতর দক্ষতামূলক প্রশ্ন"
+    }
+  }
+]`}
+                            </pre>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
                   <CardContent className="space-y-4">
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
+                    <Textarea 
+                      placeholder="JSON অ্যারে পেস্ট করুন... উদাহরণের জন্য উপরে (?) আইকনে ক্লিক করুন" 
+                      value={jsonInput} 
+                      onChange={(e) => setJsonInput(e.target.value)} 
+                      className="h-48 font-mono text-xs" 
+                    />
                     <div className="flex gap-2">
                       <Button className="flex-1" onClick={() => {
                         try {
@@ -810,8 +879,10 @@ export default function ExamPage() {
                           if (Array.isArray(json)) {
                             processJsonQuestions(json);
                             setJsonInput("");
+                          } else {
+                            toast({ variant: "destructive", title: "ত্রুটি", description: "এটি একটি অ্যারে [ ] হতে হবে।" });
                           }
-                        } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON।" }); }
+                        } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" }); }
                       }}>যুক্ত করুন</Button>
                       <Button variant="outline" onClick={() => {
                         const all = [...mcqQuestions, ...cqQuestions, ...writtenQuestions];

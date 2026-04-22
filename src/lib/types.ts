@@ -15,6 +15,8 @@ export type CQQuestion = {
   id?: string;
   stimulus?: string;
   stimulusImage?: string;
+  stimulusImageWidth?: number;
+  stimulusImageAlign?: 'left' | 'center' | 'right';
   parts: {
     a: string;
     b: string;

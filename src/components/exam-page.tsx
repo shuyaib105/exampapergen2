@@ -59,6 +59,21 @@ type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
 type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
 
+const DeveloperFooter = () => (
+  <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+    <span>Developed By</span>
+    <a 
+      href="https://t.me/shu_yaib" 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="flex items-center gap-1.5 font-bold text-primary hover:underline transition-all"
+    >
+      <Send className="h-4 w-4" />
+      Shu Yaib
+    </a>
+  </footer>
+);
+
 const PaperPreview = ({ 
   examName, 
   authorName, 
@@ -663,52 +678,58 @@ export default function ExamPage() {
 
   if (!flowType) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
-        <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("SHEET")}>
-            <CardHeader className="text-center">
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                <FileSpreadsheet className="h-12 w-12" />
-              </div>
-              <CardTitle className="text-2xl">PDF Sheet</CardTitle>
-              <CardDescription>প্রশ্ন সাজান</CardDescription>
-            </CardHeader>
-          </Card>
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("EXAM")}>
-            <CardHeader className="text-center">
-              <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                <FileSignature className="h-12 w-12" />
-              </div>
-              <CardTitle className="text-2xl">প্রশ্নপত্র তৈরি</CardTitle>
-              <CardDescription>প্রফেশনাল প্রশ্ন</CardDescription>
-            </CardHeader>
-          </Card>
+      <div className="min-h-screen flex flex-col bg-background p-4">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("SHEET")}>
+              <CardHeader className="text-center">
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                  <FileSpreadsheet className="h-12 w-12" />
+                </div>
+                <CardTitle className="text-2xl">PDF Sheet</CardTitle>
+                <CardDescription>প্রশ্ন সাজান</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("EXAM")}>
+              <CardHeader className="text-center">
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                  <FileSignature className="h-12 w-12" />
+                </div>
+                <CardTitle className="text-2xl">প্রশ্নপত্র তৈরি</CardTitle>
+                <CardDescription>প্রফেশনাল প্রশ্ন</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
         </div>
+        <DeveloperFooter />
       </div>
     );
   }
 
   if (!mode) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
-        <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
-        <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
-            <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ মোড</CardTitle></CardHeader>
-          </Card>
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
-            <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle>CQ মোড</CardTitle></CardHeader>
-          </Card>
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}>
-            <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle>সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
-          </Card>
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
-            <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও CQ</CardTitle></CardHeader>
-          </Card>
-          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ_WRITTEN")}>
-            <CardHeader className="text-center"><ClipboardList className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও লিখিত</CardTitle></CardHeader>
-          </Card>
+      <div className="min-h-screen flex flex-col bg-background p-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+          <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
+          <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
+              <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ মোড</CardTitle></CardHeader>
+            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
+              <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle>CQ মোড</CardTitle></CardHeader>
+            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}>
+              <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle>সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
+            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
+              <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও CQ</CardTitle></CardHeader>
+            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ_WRITTEN")}>
+              <CardHeader className="text-center"><ClipboardList className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও লিখিত</CardTitle></CardHeader>
+            </Card>
+          </div>
         </div>
+        <DeveloperFooter />
       </div>
     );
   }
@@ -1060,4 +1081,3 @@ export default function ExamPage() {
     </>
   );
 }
-

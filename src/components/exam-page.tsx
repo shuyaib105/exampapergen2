@@ -555,17 +555,17 @@ export default function ExamPage() {
     setEditingIndex({type, index});
     if (type === "MCQ") {
       const q = mcqQuestions[index];
-      setMcqQuestion(q.question); setMcqImage(q.image || null); setMcqStimulus(q.stimulus || ""); setMcqStimulusImage(q.stimulusImage || null); setMcqOptions(q.options); setMcqAnswer(q.answer); setMcqExplanation(q.explanation || ""); setKeepStimulus(!!(q.stimulus || q.stimulusImage));
+      setMcqQuestion(q.question || ""); setMcqImage(q.image || null); setMcqStimulus(q.stimulus || ""); setMcqStimulusImage(q.stimulusImage || null); setMcqOptions(q.options || ["", "", "", ""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || ""); setKeepStimulus(!!(q.stimulus || q.stimulusImage));
     } else if (type === "CQ") {
       const q = cqQuestions[index];
       setCqStimulus(q.stimulus || ""); 
       setCqStimulusImage(q.stimulusImage || null); 
       setCqStimulusWidth(q.stimulusImageWidth || 100);
       setCqStimulusAlign(q.stimulusImageAlign || 'center');
-      setCqPartA(q.parts.a); setCqPartB(q.parts.b); setCqPartC(q.parts.c); setCqPartD(q.parts.d); setCqAnsA(q.answers?.a || ""); setCqAnsB(q.answers?.b || ""); setCqAnsC(q.answers?.c || ""); setCqAnsD(q.answers?.d || "");
+      setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || ""); setCqAnsA(q.answers?.a || ""); setCqAnsB(q.answers?.b || ""); setCqAnsC(q.answers?.c || ""); setCqAnsD(q.answers?.d || "");
     } else {
       const q = writtenQuestions[index];
-      setWrittenQuestion(q.question); setWrittenAnswer(q.answer || ""); setWrittenImage(q.image || null);
+      setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || ""); setWrittenImage(q.image || null);
     }
     document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -641,8 +641,8 @@ export default function ExamPage() {
         setCqQuestions(prev => [...prev, ...mapped]);
       } else {
         const mapped: ShortQuestion[] = result.questions.map(q => ({
-          question: q.question,
-          answer: q.answer,
+          question: q.question || '',
+          answer: q.answer || '',
           stimulus: q.stimulus
         }));
         setWrittenQuestions(prev => [...prev, ...mapped]);
@@ -724,12 +724,12 @@ export default function ExamPage() {
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">বেসিক সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName} onChange={(e) => setExamName(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
                   {flowType === 'EXAM' && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime} onChange={(e) => setExamTime(e.target.value)} /></div>
-                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
                   <div className="space-y-1"><Label>প্রিন্ট ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
@@ -742,18 +742,18 @@ export default function ExamPage() {
                   <div className="space-y-3">
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-red-600"><Youtube className="h-4 w-4" /> ইউটিউব</Label>
-                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} />
                     </div>
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-blue-500"><Send className="h-4 w-4" /> টেলিগ্রাম</Label>
-                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText} onChange={(e) => setTelegramText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} />
+                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} />
                     </div>
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-blue-600"><Facebook className="h-4 w-4" /> ফেসবুক</Label>
-                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText} onChange={(e) => setFacebookText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} />
+                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} />
                     </div>
                   </div>
                 </AccordionContent>
@@ -766,7 +766,7 @@ export default function ExamPage() {
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
-                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
+                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
                   <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
                 </AccordionContent>
               </AccordionItem>
@@ -791,13 +791,13 @@ export default function ExamPage() {
                         <TabsTrigger value="written" disabled={mode === "MCQ" || mode === "CQ" || mode === "BOTH"}>Short</TabsTrigger>
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt} onChange={(e) => { const newOpts = [...mcqOptions]; newOpts[i] = e.target.value; setMcqOptions(newOpts); }} />)}</div>
-                        <Select value={mcqAnswer} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}</SelectContent></Select>
+                        <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt || ""} onChange={(e) => { const newOpts = [...mcqOptions]; newOpts[i] = e.target.value; setMcqOptions(newOpts); }} />)}</div>
+                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}</SelectContent></Select>
                         <Button className="w-full" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-4">
-                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
+                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
                         <div className="space-y-2 border p-3 rounded-lg bg-gray-50/50">
                           <Label className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> উদ্দীপক ছবি</Label>
                           <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} />
@@ -809,7 +809,7 @@ export default function ExamPage() {
                               </div>
                               <div className="flex flex-col gap-1.5">
                                 <Label className="text-xs">অবস্থান</Label>
-                                <Select value={cqStimulusAlign} onValueChange={(v: any) => setCqStimulusAlign(v)}>
+                                <Select value={cqStimulusAlign || "center"} onValueChange={(v: any) => setCqStimulusAlign(v)}>
                                   <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
                                   <SelectContent><SelectItem value="left">বামে</SelectItem><SelectItem value="center">মাঝখানে</SelectItem><SelectItem value="right">ডানে</SelectItem></SelectContent>
                                 </Select>
@@ -819,27 +819,27 @@ export default function ExamPage() {
                         </div>
                         <div className="grid grid-cols-1 gap-2">
                            <div className="space-y-1">
-                             <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                             <Input placeholder="ক এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsA} onChange={(e) => setCqAnsA(e.target.value)} />
+                             <Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} />
+                             <Input placeholder="ক এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsA || ""} onChange={(e) => setCqAnsA(e.target.value)} />
                            </div>
                            <div className="space-y-1">
-                             <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                             <Input placeholder="খ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsB} onChange={(e) => setCqAnsB(e.target.value)} />
+                             <Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} />
+                             <Input placeholder="খ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsB || ""} onChange={(e) => setCqAnsB(e.target.value)} />
                            </div>
                            <div className="space-y-1">
-                             <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                             <Input placeholder="গ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsC} onChange={(e) => setCqAnsC(e.target.value)} />
+                             <Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} />
+                             <Input placeholder="গ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsC || ""} onChange={(e) => setCqAnsC(e.target.value)} />
                            </div>
                            <div className="space-y-1">
-                             <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
-                             <Input placeholder="ঘ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsD} onChange={(e) => setCqAnsD(e.target.value)} />
+                             <Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} />
+                             <Input placeholder="ঘ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsD || ""} onChange={(e) => setCqAnsD(e.target.value)} />
                            </div>
                         </div>
                         <Button className="w-full" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={writtenQuestion} onChange={(e) => setWrittenQuestion(e.target.value)} />
-                        <Textarea placeholder="উত্তর..." value={writtenAnswer} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Input placeholder="প্রশ্ন..." value={writtenQuestion || ""} onChange={(e) => setWrittenQuestion(e.target.value)} />
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} />
                         <Button className="w-full" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
@@ -911,7 +911,7 @@ export default function ExamPage() {
                   <CardContent className="space-y-4">
                     <Textarea 
                       placeholder="JSON অ্যারে পেস্ট করুন... উদাহরণের জন্য উপরে (?) আইকনে ক্লিক করুন" 
-                      value={jsonInput} 
+                      value={jsonInput || ""} 
                       onChange={(e) => setJsonInput(e.target.value)} 
                       className="h-48 font-mono text-xs" 
                     />
@@ -954,15 +954,15 @@ export default function ExamPage() {
                 <Card>
                   <CardHeader><CardTitle>AI জেনারেটর</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <Textarea placeholder="টেক্সট পেস্ট করুন..." value={aiText} onChange={(e) => setAiText(e.target.value)} className="h-32" />
+                    <Textarea placeholder="টেক্সট পেস্ট করুন..." value={aiText || ""} onChange={(e) => setAiText(e.target.value)} className="h-32" />
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <Label className="text-xs">সংখ্যা</Label>
-                        <Input type="number" value={aiCount} onChange={(e) => setAiCount(parseInt(e.target.value))} />
+                        <Input type="number" value={aiCount || 0} onChange={(e) => setAiCount(parseInt(e.target.value) || 0)} />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">ধরণ</Label>
-                        <Select value={aiType} onValueChange={(v: any) => setAiType(v)}>
+                        <Select value={aiType || "MCQ"} onValueChange={(v: any) => setAiType(v)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="MCQ">MCQ</SelectItem>
@@ -993,7 +993,7 @@ export default function ExamPage() {
               {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && flowType === 'EXAM' && (
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">সেট নির্বাচন করুন</Label>
-                  <Select value={selectedSet} onValueChange={setSelectedSet}>
+                  <Select value={selectedSet || "A"} onValueChange={setSelectedSet}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="A">Set A (মূল)</SelectItem>
@@ -1029,7 +1029,7 @@ export default function ExamPage() {
                 ))}
                 {cqQuestions.map((q, i) => (
                   <div key={`cq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">CQ {i+1}: {q.parts.a}</span>
+                    <span className="truncate flex-1">CQ {i+1}: {q.parts?.a || "প্রশ্ন"}</span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('CQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setCqQuestions(cqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>

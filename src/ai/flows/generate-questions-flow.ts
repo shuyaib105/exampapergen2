@@ -1,42 +1,42 @@
+
 'use server';
 /**
  * @fileOverview AI Flow to generate exam questions from plain text.
- * Using Gemini 2.5 Flash with robust schema for MCQ and CQ.
+ * Using Gemini 2.5 Flash with robust schema for MCQ, CQ, and Written.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-// Unified schema for both MCQ and CQ to avoid "missing field" errors in structured output
 const QuestionItemSchema = z.object({
-  questionType: z.enum(['MCQ', 'CQ']).describe('Type: MCQ for Multiple Choice, CQ for Creative Question'),
+  questionType: z.enum(['MCQ', 'CQ', 'WRITTEN']).describe('Type: MCQ, CQ, or WRITTEN (Short questions)'),
   
-  // MCQ specific fields (required if MCQ)
+  // MCQ specific fields
   question: z.string().describe('The question text in Bengali'),
-  options: z.array(z.string()).describe('Exactly 4 options in Bengali (only for MCQ)'),
-  answer: z.string().describe('The correct answer matching one of the options (only for MCQ)'),
+  options: z.array(z.string()).optional().describe('Exactly 4 options in Bengali (only for MCQ)'),
+  answer: z.string().optional().describe('The correct answer (for MCQ/WRITTEN)'),
   explanation: z.string().optional().describe('Short explanation in Bengali'),
   
   // Shared/CQ fields
   stimulus: z.string().optional().describe('The passage or stimulus in Bengali'),
   parts: z.object({
-    a: z.string().describe('Knowledge (ক)'),
-    b: z.string().describe('Comprehension (খ)'),
-    c: z.string().describe('Application (গ)'),
-    d: z.string().describe('Higher Thinking (ঘ)'),
-  }).optional().describe('The four parts of a CQ question'),
+    a: z.string().describe('ক'),
+    b: z.string().describe('খ'),
+    c: z.string().describe('গ'),
+    d: z.string().describe('ঘ'),
+  }).optional().describe('The parts of a CQ question'),
   answers: z.object({
     a: z.string().optional(),
     b: z.string().optional(),
     c: z.string().optional(),
     d: z.string().optional(),
-  }).optional().describe('Model answers for CQ parts'),
+  }).optional().describe('Model answers'),
 });
 
 const GenerateQuestionsInputSchema = z.object({
   text: z.string().describe('Source text'),
   count: z.number().min(1).max(20).describe('Number of questions'),
-  type: z.enum(['MCQ', 'CQ']).describe('Type to generate'),
+  type: z.enum(['MCQ', 'CQ', 'WRITTEN']).describe('Type to generate'),
 });
 
 const GenerateQuestionsOutputSchema = z.object({
@@ -60,11 +60,12 @@ STRICT RULES:
 1. All text MUST be in Bengali.
 2. For MCQ:
    - Provide "question", "options" (exactly 4), and "answer" (must be one of the options).
-   - "questionType" must be 'MCQ'.
 3. For CQ:
    - Provide "stimulus" and "parts" (a, b, c, d).
-   - "questionType" must be 'CQ'.
-4. Ensure the output is valid JSON matching the schema.
+4. For WRITTEN:
+   - Provide "question" and "answer" (model answer/explanation).
+   - "questionType" must be 'WRITTEN'.
+5. Ensure the output is valid JSON matching the schema.
 `,
 });
 

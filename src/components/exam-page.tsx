@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Question, CQQuestion } from "@/lib/types";
+import type { Question, CQQuestion, ShortQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,8 @@ import {
   Copy,
   FileUp,
   Image as ImageIcon,
+  BookOpen,
+  ClipboardList
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,7 +46,7 @@ import { generateQuestions } from "@/ai/flows/generate-questions-flow";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 
-type AppMode = "MCQ" | "CQ" | "BOTH" | null;
+type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
 type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
 
@@ -55,6 +57,7 @@ const PaperPreview = ({
   totalMarks, 
   mcqQuestions, 
   cqQuestions, 
+  writtenQuestions,
   setName, 
   mode,
   flowType,
@@ -77,6 +80,7 @@ const PaperPreview = ({
   totalMarks: string;
   mcqQuestions: Question[];
   cqQuestions: CQQuestion[];
+  writtenQuestions: ShortQuestion[];
   setName: string;
   mode: AppMode;
   flowType: FlowType;
@@ -165,15 +169,15 @@ const PaperPreview = ({
         </div>
         <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
           {flowType === 'EXAM' && <span>পূর্ণমান: {totalMarks || "..."}</span>}
-          {(mode === "MCQ" || mode === "BOTH") && flowType === 'EXAM' && <span className="font-bold">সেট: {setName}</span>}
+          {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && flowType === 'EXAM' && <span className="font-bold">সেট: {setName}</span>}
           {flowType === 'EXAM' && <span>সময়: {examTime || "..."}</span>}
         </div>
       </header>
 
       <section className="mt-4 print:mt-2 relative z-10">
-        {(mode === "MCQ" || mode === "BOTH") && (
+        {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && (
           <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
-            {mode === "BOTH" && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
+            {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
             {mcqQuestions.length > 0 && (
               <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
                 {mcqQuestions.map((q, index) => {
@@ -226,6 +230,27 @@ const PaperPreview = ({
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && (
+          <div className={writtenQuestions.length > 0 ? "mb-8" : ""}>
+             {mode === "MCQ_WRITTEN" && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
+             {writtenQuestions.length > 0 && (
+               <div className="space-y-4">
+                 {writtenQuestions.map((q, index) => (
+                   <article key={index} className="question-item-print break-inside-avoid">
+                     <p className="font-bold text-base"><span className="mr-1">{index + 1}.</span> {q.question}</p>
+                     {q.image && <img src={q.image} alt="Question" className="max-h-32 object-contain my-2" />}
+                     {q.answer && (
+                       <p className="answer-content text-blue-600 ml-6 text-sm italic border-l-2 border-blue-200 pl-2">
+                         উত্তর: {q.answer}
+                       </p>
+                     )}
+                   </article>
+                 ))}
+               </div>
+             )}
           </div>
         )}
 
@@ -316,14 +341,17 @@ export default function ExamPage() {
   const [totalMarks, setTotalMarks] = useState("১০০");
   const [logoImage, setLogoImage] = useState<string | null>(null);
   const [showLogo, setShowLogo] = useState(true);
+  
   const [mcqQuestions, setMcqQuestions] = useState<Question[]>([]);
   const [displayMcqQuestions, setDisplayMcqQuestions] = useState<Question[]>([]);
   const [cqQuestions, setCqQuestions] = useState<CQQuestion[]>([]);
+  const [writtenQuestions, setWrittenQuestions] = useState<ShortQuestion[]>([]);
+  
   const [jsonInput, setJsonInput] = useState("");
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
-  const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ', index: number} | null>(null);
+  const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ' | 'WRITTEN', index: number} | null>(null);
 
   const [watermarkType, setWatermarkType] = useState<WatermarkType>("text");
   const [watermarkText, setWatermarkText] = useState("");
@@ -339,9 +367,10 @@ export default function ExamPage() {
 
   const [aiText, setAiText] = useState("");
   const [aiCount, setAiCount] = useState(5);
-  const [aiType, setAiType] = useState<'MCQ' | 'CQ'>('MCQ');
+  const [aiType, setAiType] = useState<'MCQ' | 'CQ' | 'WRITTEN'>('MCQ');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Form states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -363,6 +392,10 @@ export default function ExamPage() {
   const [cqAnsB, setCqAnsB] = useState("");
   const [cqAnsC, setCqAnsC] = useState("");
   const [cqAnsD, setCqAnsD] = useState("");
+
+  const [writtenQuestion, setWrittenQuestion] = useState("");
+  const [writtenAnswer, setWrittenAnswer] = useState("");
+  const [writtenImage, setWrittenImage] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -439,6 +472,27 @@ export default function ExamPage() {
     }
   };
 
+  const handleAddWritten = () => {
+    if (!writtenQuestion) {
+      toast({ variant: "destructive", title: "ত্রুটি", description: "প্রশ্ন অবশ্যই পূরণ করতে হবে।" });
+      return;
+    }
+    const newQ: ShortQuestion = {
+      question: writtenQuestion,
+      answer: writtenAnswer,
+      image: writtenImage || undefined
+    };
+    if (editingIndex?.type === 'WRITTEN') {
+      const updated = [...writtenQuestions];
+      updated[editingIndex.index] = newQ;
+      setWrittenQuestions(updated);
+      setEditingIndex(null);
+    } else {
+      setWrittenQuestions([...writtenQuestions, newQ]);
+    }
+    setWrittenQuestion(""); setWrittenAnswer(""); setWrittenImage(null);
+  };
+
   const handleAddCq = () => {
     if (!cqPartA || !cqPartB || !cqPartC || !cqPartD) {
       toast({ variant: "destructive", title: "ত্রুটি", description: "ক, খ, গ, ঘ প্রশ্নগুলো অবশ্যই পূরণ করতে হবে।" });
@@ -488,20 +542,49 @@ export default function ExamPage() {
     setMcqQuestion(""); setMcqImage(null); if (!keepStimulus) { setMcqStimulus(""); setMcqStimulusImage(null); } setMcqOptions(["", "", "", ""]); setMcqAnswer(""); setMcqExplanation("");
   };
 
-  const handleEdit = (type: 'MCQ' | 'CQ', index: number) => {
+  const handleEdit = (type: 'MCQ' | 'CQ' | 'WRITTEN', index: number) => {
     setEditingIndex({type, index});
     if (type === "MCQ") {
       const q = mcqQuestions[index];
       setMcqQuestion(q.question); setMcqImage(q.image || null); setMcqStimulus(q.stimulus || ""); setMcqStimulusImage(q.stimulusImage || null); setMcqOptions(q.options); setMcqAnswer(q.answer); setMcqExplanation(q.explanation || ""); setKeepStimulus(!!(q.stimulus || q.stimulusImage));
-    } else {
+    } else if (type === "CQ") {
       const q = cqQuestions[index];
       setCqStimulus(q.stimulus || ""); 
       setCqStimulusImage(q.stimulusImage || null); 
       setCqStimulusWidth(q.stimulusImageWidth || 100);
       setCqStimulusAlign(q.stimulusImageAlign || 'center');
       setCqPartA(q.parts.a); setCqPartB(q.parts.b); setCqPartC(q.parts.c); setCqPartD(q.parts.d); setCqAnsA(q.answers?.a || ""); setCqAnsB(q.answers?.b || ""); setCqAnsC(q.answers?.c || ""); setCqAnsD(q.answers?.d || "");
+    } else {
+      const q = writtenQuestions[index];
+      setWrittenQuestion(q.question); setWrittenAnswer(q.answer || ""); setWrittenImage(q.image || null);
     }
     document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const processJsonQuestions = (json: any[]) => {
+    const mapped = json.map((q: any) => {
+      if (q.parts) {
+        return { type: 'CQ', ...q };
+      }
+      if (q.options && q.options.length === 4) {
+        let correctAnswer = q.answer;
+        if (typeof q.answer === 'number') {
+          correctAnswer = q.options[q.answer - 1] || "";
+        }
+        return { type: 'MCQ', ...q, answer: correctAnswer };
+      }
+      return { type: 'WRITTEN', ...q };
+    });
+
+    const mcqs = mapped.filter(q => q.type === 'MCQ').map(({type, ...r}) => r as Question);
+    const cqs = mapped.filter(q => q.type === 'CQ').map(({type, ...r}) => r as CQQuestion);
+    const wrs = mapped.filter(q => q.type === 'WRITTEN').map(({type, ...r}) => r as ShortQuestion);
+
+    setMcqQuestions(prev => [...prev, ...mcqs]);
+    setCqQuestions(prev => [...prev, ...cqs]);
+    setWrittenQuestions(prev => [...prev, ...wrs]);
+    
+    toast({ title: "সফল", description: "প্রশ্ন যুক্ত করা হয়েছে।" });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -513,48 +596,7 @@ export default function ExamPage() {
       try {
         const json = JSON.parse(event.target?.result as string);
         if (Array.isArray(json)) {
-          const mapped = json.map((q: any) => {
-            // Check if it's CQ
-            if (q.parts) {
-              return {
-                type: 'CQ',
-                stimulus: q.stimulus,
-                stimulusImage: q.stimulusImage,
-                parts: q.parts,
-                answers: q.answers
-              };
-            }
-            
-            // Assume MCQ
-            let correctAnswer = q.answer;
-            if (typeof q.answer === 'number') {
-              correctAnswer = q.options[q.answer - 1] || "";
-            }
-
-            return {
-              type: 'MCQ',
-              question: q.question,
-              options: q.options,
-              answer: correctAnswer,
-              explanation: q.explanation,
-              stimulus: q.stimulus,
-              image: q.image
-            };
-          });
-
-          const mcqs = mapped.filter(q => q.type === 'MCQ').map(q => {
-            const { type, ...rest } = q;
-            return rest as Question;
-          });
-          const cqs = mapped.filter(q => q.type === 'CQ').map(q => {
-            const { type, ...rest } = q;
-            return rest as CQQuestion;
-          });
-
-          setMcqQuestions(prev => [...prev, ...mcqs]);
-          setCqQuestions(prev => [...prev, ...cqs]);
-
-          toast({ title: "সফল", description: `${mapped.length} টি প্রশ্ন যুক্ত করা হয়েছে।` });
+          processJsonQuestions(json);
         }
       } catch (err) {
         toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" });
@@ -577,13 +619,20 @@ export default function ExamPage() {
           stimulus: q.stimulus,
         }));
         setMcqQuestions(prev => [...prev, ...mapped]);
-      } else {
+      } else if (aiType === 'CQ') {
         const mapped: CQQuestion[] = result.questions.map(q => ({
           stimulus: q.stimulus,
           parts: q.parts || { a: '', b: '', c: '', d: '' },
           answers: q.answers
         }));
         setCqQuestions(prev => [...prev, ...mapped]);
+      } else {
+        const mapped: ShortQuestion[] = result.questions.map(q => ({
+          question: q.question,
+          answer: q.answer,
+          stimulus: q.stimulus
+        }));
+        setWrittenQuestions(prev => [...prev, ...mapped]);
       }
       setAiText("");
       toast({ title: "সফল", description: "AI প্রশ্ন জেনারেট করেছে।" });
@@ -630,15 +679,21 @@ export default function ExamPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 flex-col gap-6">
         <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
-        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
             <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ মোড</CardTitle></CardHeader>
           </Card>
           <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
             <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle>CQ মোড</CardTitle></CardHeader>
           </Card>
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}>
+            <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle>সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
+          </Card>
           <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
-            <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>উভয় মোড</CardTitle></CardHeader>
+            <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও CQ</CardTitle></CardHeader>
+          </Card>
+          <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ_WRITTEN")}>
+            <CardHeader className="text-center"><ClipboardList className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও লিখিত</CardTitle></CardHeader>
           </Card>
         </div>
       </div>
@@ -678,17 +733,6 @@ export default function ExamPage() {
                   <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
                 </AccordionContent>
               </AccordionItem>
-              <AccordionItem value="social" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg">সোশ্যাল মিডিয়া</AccordionTrigger>
-                <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-1"><Label>ইউটিউব টেক্সট</Label><Input value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>ইউটিউব ইউআরএল</Label><Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>ফেসবুক টেক্সট</Label><Input value={facebookText} onChange={(e) => setFacebookText(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>ফেসবুক ইউআরএল</Label><Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>টেলিগ্রাম টেক্সট</Label><Input value={telegramText} onChange={(e) => setTelegramText(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>টেলিগ্রাম ইউআরএল</Label><Input value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
-                </AccordionContent>
-              </AccordionItem>
             </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
@@ -704,9 +748,10 @@ export default function ExamPage() {
                   <CardHeader><CardTitle>{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <Tabs defaultValue="mcq">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="mcq" disabled={mode === "CQ"}>MCQ</TabsTrigger>
-                        <TabsTrigger value="cq" disabled={mode === "MCQ"}>CQ</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="mcq" disabled={mode === "CQ" || mode === "WRITTEN"}>MCQ</TabsTrigger>
+                        <TabsTrigger value="cq" disabled={mode === "MCQ" || mode === "WRITTEN" || mode === "MCQ_WRITTEN"}>CQ</TabsTrigger>
+                        <TabsTrigger value="written" disabled={mode === "MCQ" || mode === "CQ" || mode === "BOTH"}>Short</TabsTrigger>
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
@@ -716,31 +761,25 @@ export default function ExamPage() {
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-4">
                         <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
-                        
                         <div className="space-y-2 border p-3 rounded-lg bg-gray-50/50">
                           <Label className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> উদ্দীপক ছবি</Label>
                           <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} />
                           {cqStimulusImage && (
                             <div className="space-y-3 pt-2">
                               <div className="flex flex-col gap-1.5">
-                                <Label className="text-xs">ছবির আকার (প্রস্থ): {cqStimulusWidth}%</Label>
+                                <Label className="text-xs">ছবির আকার: {cqStimulusWidth}%</Label>
                                 <Slider min={20} max={100} step={1} value={[cqStimulusWidth]} onValueChange={(v) => setCqStimulusWidth(v[0])} />
                               </div>
                               <div className="flex flex-col gap-1.5">
-                                <Label className="text-xs">ছবির অবস্থান</Label>
+                                <Label className="text-xs">অবস্থান</Label>
                                 <Select value={cqStimulusAlign} onValueChange={(v: any) => setCqStimulusAlign(v)}>
                                   <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="left">বামে</SelectItem>
-                                    <SelectItem value="center">মাঝখানে</SelectItem>
-                                    <SelectItem value="right">ডানে</SelectItem>
-                                  </SelectContent>
+                                  <SelectContent><SelectItem value="left">বামে</SelectItem><SelectItem value="center">মাঝখানে</SelectItem><SelectItem value="right">ডানে</SelectItem></SelectContent>
                                 </Select>
                               </div>
                             </div>
                           )}
                         </div>
-
                         <div className="grid grid-cols-1 gap-2">
                           <Input placeholder="ক)" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
                           <Input placeholder="খ)" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
@@ -748,6 +787,11 @@ export default function ExamPage() {
                           <Input placeholder="ঘ)" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
                         </div>
                         <Button className="w-full" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
+                      </TabsContent>
+                      <TabsContent value="written" className="space-y-3">
+                        <Input placeholder="প্রশ্ন..." value={writtenQuestion} onChange={(e) => setWrittenQuestion(e.target.value)} />
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Button className="w-full" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
                   </CardContent>
@@ -764,24 +808,13 @@ export default function ExamPage() {
                         try {
                           const json = JSON.parse(jsonInput);
                           if (Array.isArray(json)) {
-                            // Unified handling for uploaded JSON
-                            const mapped = json.map((q: any) => {
-                              if (q.parts) {
-                                return { type: 'CQ', stimulus: q.stimulus, parts: q.parts, answers: q.answers };
-                              }
-                              let correctAnswer = q.answer;
-                              if (typeof q.answer === 'number') correctAnswer = q.options[q.answer - 1] || "";
-                              return { type: 'MCQ', question: q.question, options: q.options, answer: correctAnswer, explanation: q.explanation, stimulus: q.stimulus, image: q.image };
-                            });
-                            setMcqQuestions(prev => [...prev, ...mapped.filter(q => q.type === 'MCQ').map(({type, ...r}) => r as Question)]);
-                            setCqQuestions(prev => [...prev, ...mapped.filter(q => q.type === 'CQ').map(({type, ...r}) => r as CQQuestion)]);
+                            processJsonQuestions(json);
                             setJsonInput("");
-                            toast({ title: "সফল", description: "প্রশ্ন যুক্ত করা হয়েছে।" });
                           }
                         } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON।" }); }
                       }}>যুক্ত করুন</Button>
                       <Button variant="outline" onClick={() => {
-                        const all = [...mcqQuestions, ...cqQuestions];
+                        const all = [...mcqQuestions, ...cqQuestions, ...writtenQuestions];
                         navigator.clipboard.writeText(JSON.stringify(all, null, 2));
                         toast({ title: "সফল", description: "JSON কপি করা হয়েছে।" });
                       }}><Copy className="h-4 w-4" /></Button>
@@ -799,7 +832,6 @@ export default function ExamPage() {
                       <p className="text-sm text-gray-500">JSON ফাইল সিলেক্ট করুন</p>
                       <input type="file" accept=".json" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                     </div>
-                    <p className="text-[10px] text-gray-400">টিপস: আপনি আপনার আগের তৈরি করা প্রশ্নের JSON ফাইল এখানে আপলোড করতে পারেন।</p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -816,9 +848,13 @@ export default function ExamPage() {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs">ধরণ</Label>
-                        <Select value={aiType} onValueChange={(v: 'MCQ' | 'CQ') => setAiType(v)}>
+                        <Select value={aiType} onValueChange={(v: any) => setAiType(v)}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent><SelectItem value="MCQ">MCQ</SelectItem><SelectItem value="CQ">CQ</SelectItem></SelectContent>
+                          <SelectContent>
+                            <SelectItem value="MCQ">MCQ</SelectItem>
+                            <SelectItem value="CQ">CQ</SelectItem>
+                            <SelectItem value="WRITTEN">সংক্ষিপ্ত প্রশ্ন</SelectItem>
+                          </SelectContent>
                         </Select>
                       </div>
                     </div>
@@ -840,7 +876,7 @@ export default function ExamPage() {
                 </div>
                 <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
               </div>
-              {flowType === 'EXAM' && (
+              {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && flowType === 'EXAM' && (
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">সেট নির্বাচন করুন</Label>
                   <Select value={selectedSet} onValueChange={setSelectedSet}>
@@ -868,6 +904,15 @@ export default function ExamPage() {
                     </div>
                   </div>
                 ))}
+                {writtenQuestions.map((q, i) => (
+                  <div key={`written-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
+                    <span className="truncate flex-1">Short {i+1}: {q.question}</span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('WRITTEN', i)}><Edit2 className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setWrittenQuestions(writtenQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  </div>
+                ))}
                 {cqQuestions.map((q, i) => (
                   <div key={`cq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
                     <span className="truncate flex-1">CQ {i+1}: {q.parts.a}</span>
@@ -883,7 +928,7 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto">
-          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, setName: selectedSet, mode, flowType, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
+          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, flowType, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
         </main>
       </div>
     </>

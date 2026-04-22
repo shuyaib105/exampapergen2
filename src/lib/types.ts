@@ -30,3 +30,13 @@ export type CQQuestion = {
     d?: string;
   };
 };
+
+export type ShortQuestion = {
+  id?: string;
+  question: string;
+  answer?: string;
+  explanation?: string;
+  image?: string;
+  stimulus?: string;
+  stimulusImage?: string;
+};

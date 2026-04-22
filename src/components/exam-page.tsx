@@ -793,10 +793,22 @@ export default function ExamPage() {
                           )}
                         </div>
                         <div className="grid grid-cols-1 gap-2">
-                          <Input placeholder="ক)" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                          <Input placeholder="খ)" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                          <Input placeholder="গ)" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                          <Input placeholder="ঘ)" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                           <div className="space-y-1">
+                             <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
+                             <Input placeholder="ক এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsA} onChange={(e) => setCqAnsA(e.target.value)} />
+                           </div>
+                           <div className="space-y-1">
+                             <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
+                             <Input placeholder="খ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsB} onChange={(e) => setCqAnsB(e.target.value)} />
+                           </div>
+                           <div className="space-y-1">
+                             <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
+                             <Input placeholder="গ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsC} onChange={(e) => setCqAnsC(e.target.value)} />
+                           </div>
+                           <div className="space-y-1">
+                             <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                             <Input placeholder="ঘ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsD} onChange={(e) => setCqAnsD(e.target.value)} />
+                           </div>
                         </div>
                         <Button className="w-full" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
@@ -850,12 +862,18 @@ export default function ExamPage() {
                             <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
 {`[
   {
-    "stimulus": "একটি অনুচ্ছেদ বা উদ্দীপক এখানে...",
+    "stimulus": "উদ্দীপক টেক্সট...",
     "parts": {
-      "a": "জ্ঞানমূলক প্রশ্ন",
-      "b": "অনুধাবনমূলক প্রশ্ন",
-      "c": "প্রয়োগমূলক প্রশ্ন",
-      "d": "উচ্চতর দক্ষতামূলক প্রশ্ন"
+      "a": "ক নং প্রশ্ন?",
+      "b": "খ নং প্রশ্ন?",
+      "c": "গ নং প্রশ্ন?",
+      "d": "ঘ নং প্রশ্ন?"
+    },
+    "answers": {
+      "a": "ক এর উত্তর...",
+      "b": "খ এর উত্তর...",
+      "c": "গ এর উত্তর...",
+      "d": "ঘ এর উত্তর..."
     }
   }
 ]`}

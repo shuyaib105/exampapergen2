@@ -11,8 +11,8 @@ import { z } from 'genkit';
 const QuestionItemSchema = z.object({
   questionType: z.enum(['MCQ', 'CQ', 'WRITTEN']).describe('Type: MCQ, CQ, or WRITTEN (Short questions)'),
   
-  // MCQ specific fields
-  question: z.string().describe('The question text in Bengali'),
+  // MCQ/WRITTEN specific fields
+  question: z.string().optional().describe('The question text in Bengali'),
   options: z.array(z.string()).optional().describe('Exactly 4 options in Bengali (only for MCQ)'),
   answer: z.string().optional().describe('The correct answer (for MCQ/WRITTEN)'),
   explanation: z.string().optional().describe('Short explanation in Bengali'),
@@ -26,11 +26,11 @@ const QuestionItemSchema = z.object({
     d: z.string().describe('ঘ'),
   }).optional().describe('The parts of a CQ question'),
   answers: z.object({
-    a: z.string().optional(),
-    b: z.string().optional(),
-    c: z.string().optional(),
-    d: z.string().optional(),
-  }).optional().describe('Model answers'),
+    a: z.string().optional().describe('ক এর আদর্শ উত্তর'),
+    b: z.string().optional().describe('খ এর আদর্শ উত্তর'),
+    c: z.string().optional().describe('গ এর আদর্শ উত্তর'),
+    d: z.string().optional().describe('ঘ এর আদর্শ উত্তর'),
+  }).optional().describe('Model answers for each part of the CQ'),
 });
 
 const GenerateQuestionsInputSchema = z.object({
@@ -61,7 +61,8 @@ STRICT RULES:
 2. For MCQ:
    - Provide "question", "options" (exactly 4), and "answer" (must be one of the options).
 3. For CQ:
-   - Provide "stimulus" and "parts" (a, b, c, d).
+   - Provide "stimulus", "parts" (a, b, c, d), and "answers" (a, b, c, d).
+   - "questionType" must be 'CQ'.
 4. For WRITTEN:
    - Provide "question" and "answer" (model answer/explanation).
    - "questionType" must be 'WRITTEN'.
@@ -82,8 +83,8 @@ const generateQuestionsFlow = ai.defineFlow(
   async (input) => {
     const { output } = await questionPrompt(input);
     
-    if (!output || !output.questions) {
-      throw new Error('AI failed to generate questions.');
+    if (!output || !output.questions || output.questions.length === 0) {
+      throw new Error('AI failed to generate questions. Please try providing more context or different text.');
     }
 
     return output;

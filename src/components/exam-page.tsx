@@ -27,10 +27,7 @@ import {
   Send,
   FileSpreadsheet,
   FileSignature,
-  Sparkles,
-  Loader2,
   Copy,
-  FileUp,
   Image as ImageIcon,
   BookOpen,
   ClipboardList,
@@ -44,7 +41,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { generateQuestions } from "@/ai/flows/generate-questions-flow";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { 
@@ -411,11 +407,6 @@ export default function ExamPage() {
   const [telegramText, setTelegramText] = useState("আমাদের টেলিগ্রাম চ্যানেল");
   const [telegramUrl, setTelegramUrl] = useState("");
 
-  const [aiText, setAiText] = useState("");
-  const [aiCount, setAiCount] = useState(5);
-  const [aiType, setAiType] = useState<'MCQ' | 'CQ' | 'WRITTEN'>('MCQ');
-  const [isGenerating, setIsGenerating] = useState(false);
-
   // Form states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
@@ -654,62 +645,6 @@ export default function ExamPage() {
     toast({ title: "সফল", description: "প্রশ্ন যুক্ত করা হয়েছে।" });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        if (Array.isArray(json)) {
-          processJsonQuestions(json);
-        }
-      } catch (err) {
-        toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" });
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleAiGenerate = async () => {
-    if (!aiText.trim()) return;
-    setIsGenerating(true);
-    try {
-      const result = await generateQuestions({ text: aiText, count: aiCount, type: aiType });
-      if (aiType === 'MCQ') {
-        const mapped = result.questions.map(q => ({
-          question: q.question || '',
-          options: q.options || [],
-          answer: q.answer || '',
-          explanation: q.explanation || '',
-          stimulus: q.stimulus,
-        }));
-        setMcqQuestions(prev => [...prev, ...mapped]);
-      } else if (aiType === 'CQ') {
-        const mapped: CQQuestion[] = result.questions.map(q => ({
-          stimulus: q.stimulus,
-          parts: q.parts || { a: '', b: '', c: '', d: '' },
-          answers: q.answers
-        }));
-        setCqQuestions(prev => [...prev, ...mapped]);
-      } else {
-        const mapped: ShortQuestion[] = result.questions.map(q => ({
-          question: q.question || '',
-          answer: q.answer || '',
-          stimulus: q.stimulus
-        }));
-        setWrittenQuestions(prev => [...prev, ...mapped]);
-      }
-      setAiText("");
-      toast({ title: "সফল", description: "AI প্রশ্ন জেনারেট করেছে।" });
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: error.message });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
     window.print();
@@ -850,11 +785,9 @@ export default function ExamPage() {
             </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="manual">আলাদা</TabsTrigger>
                 <TabsTrigger value="json">JSON</TabsTrigger>
-                <TabsTrigger value="upload">ফাইল</TabsTrigger>
-                <TabsTrigger value="ai">AI</TabsTrigger>
               </TabsList>
               
               <TabsContent value="manual">
@@ -883,6 +816,25 @@ export default function ExamPage() {
                         <div className="space-y-2 border p-3 rounded-lg bg-gray-50/50">
                           <Label className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> উদ্দীপক ছবি</Label>
                           <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqStimulusImage)} />
+                          {cqStimulusImage && (
+                            <div className="space-y-4 mt-2 p-2 border rounded bg-white">
+                              <div className="space-y-1">
+                                <Label className="text-xs">ছবির আকার (প্রস্থ: {cqStimulusWidth}%)</Label>
+                                <Slider min={10} max={100} value={[cqStimulusWidth]} onValueChange={(v) => setCqStimulusWidth(v[0])} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">ছবির অবস্থান</Label>
+                                <Select value={cqStimulusAlign} onValueChange={(v: any) => setCqStimulusAlign(v)}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="left">বামে</SelectItem>
+                                    <SelectItem value="center">মাঝখানে</SelectItem>
+                                    <SelectItem value="right">ডানে</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="grid grid-cols-1 gap-4">
                            <div className="space-y-2 border p-2 rounded bg-white">
@@ -956,6 +908,28 @@ export default function ExamPage() {
                             </pre>
                           </div>
                           <div>
+                            <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><FileText className="h-4 w-4" /> সৃজনশীল (CQ)</h3>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+{`[
+  {
+    "stimulus": "উদ্দীপক টেক্সট...",
+    "parts": {
+      "a": "ক নং প্রশ্ন?",
+      "b": "খ নং প্রশ্ন?",
+      "c": "গ নং প্রশ্ন?",
+      "d": "ঘ নং প্রশ্ন?"
+    },
+    "answers": {
+      "a": "ক এর উত্তর...",
+      "b": "খ এর উত্তর...",
+      "c": "গ এর উত্তর...",
+      "d": "ঘ এর উত্তর..."
+    }
+  }
+]`}
+                            </pre>
+                          </div>
+                          <div>
                             <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4" /> সংক্ষিপ্ত প্রশ্ন</h3>
                             <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
 {`[
@@ -994,46 +968,6 @@ export default function ExamPage() {
                         toast({ title: "সফল", description: "JSON কপি করা হয়েছে।" });
                       }}><Copy className="h-4 w-4" /></Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="upload">
-                <Card>
-                  <CardHeader><CardTitle>ফাইল আপলোড</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 hover:bg-gray-50 transition-colors cursor-pointer relative">
-                      <FileUp className="h-10 w-10 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">JSON ফাইল সিলেক্ট করুন</p>
-                      <input type="file" accept=".json" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="ai">
-                <Card>
-                  <CardHeader><CardTitle>AI জেনারেটর</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
-                    <Textarea placeholder="টেক্সট পেস্ট করুন..." value={aiText || ""} onChange={(e) => setAiText(e.target.value)} className="h-32" />
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <Label className="text-xs">সংখ্যা</Label>
-                        <Input type="number" value={aiCount || 0} onChange={(e) => setAiCount(parseInt(e.target.value) || 0)} />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">ধরণ</Label>
-                        <Select value={aiType || "MCQ"} onValueChange={(v: any) => setAiType(v)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MCQ">MCQ</SelectItem>
-                            <SelectItem value="CQ">CQ</SelectItem>
-                            <SelectItem value="WRITTEN">সংক্ষিপ্ত প্রশ্ন</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <Button className="w-full" onClick={handleAiGenerate} disabled={isGenerating}>{isGenerating ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2 h-4 w-4" /> AI জেনারেট করুন</>}</Button>
                   </CardContent>
                 </Card>
               </TabsContent>

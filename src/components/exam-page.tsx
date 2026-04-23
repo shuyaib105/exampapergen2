@@ -796,6 +796,23 @@ export default function ExamPage() {
                 </AccordionContent>
               </AccordionItem>
 
+              <AccordionItem value="logo" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg">লোগো সেটিংস</AccordionTrigger>
+                <AccordionContent className="p-4 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="font-semibold">লোগো দেখান</Label>
+                    <Switch checked={showLogo} onCheckedChange={setShowLogo} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>লোগো আপলোড</Label>
+                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} />
+                    {logoImage && (
+                      <Button variant="outline" size="sm" className="w-full mt-2" onClick={() => setLogoImage(null)}>লোগো রিমুভ করুন</Button>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
               <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg">ফুটার সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">

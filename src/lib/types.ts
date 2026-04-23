@@ -5,6 +5,7 @@ export type Question = {
   options: string[];
   answer: string;
   explanation?: string;
+  explanationImage?: string;
   image?: string;
   type?: string;
   stimulus?: string;
@@ -28,6 +29,10 @@ export type CQQuestion = {
     b?: string;
     c?: string;
     d?: string;
+    aImage?: string;
+    bImage?: string;
+    cImage?: string;
+    dImage?: string;
   };
 };
 
@@ -35,6 +40,7 @@ export type ShortQuestion = {
   id?: string;
   question: string;
   answer?: string;
+  answerImage?: string;
   explanation?: string;
   image?: string;
   stimulus?: string;

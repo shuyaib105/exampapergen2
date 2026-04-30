@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -156,7 +155,7 @@ const PaperPreview = ({
   };
 
   return (
-    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-2 min-h-[11in] relative overflow-hidden flex flex-col">
+    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
       <div className="watermark-container no-print">
         {watermarkType === 'text' && watermarkText && (
           <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
@@ -647,7 +646,10 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    window.print();
+    // Ensure the browser has time to apply the attribute before the print dialog opens
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   if (!flowType) {

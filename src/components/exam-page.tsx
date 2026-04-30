@@ -646,10 +646,10 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Ensure the browser has time to apply the attribute before the print dialog opens
+    // Brief delay to allow CSS attribute selector to apply
     setTimeout(() => {
       window.print();
-    }, 150);
+    }, 100);
   };
 
   if (!flowType) {

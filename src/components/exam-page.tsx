@@ -15,14 +15,11 @@ import {
   FileText, 
   ListChecks, 
   ArrowLeft, 
-  Plus, 
   Trash2, 
   Edit2,
-  Info,
   LayoutGrid,
   Youtube,
   Facebook,
-  Type,
   Send,
   FileSpreadsheet,
   FileSignature,
@@ -30,8 +27,7 @@ import {
   Image as ImageIcon,
   BookOpen,
   ClipboardList,
-  HelpCircle,
-  Share2
+  HelpCircle
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,7 +35,6 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { 
@@ -55,7 +50,7 @@ type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
 
 const DeveloperFooter = () => (
-  <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+  <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
     <span>Developed By</span>
     <a 
       href="https://t.me/shu_yaib" 
@@ -155,220 +150,222 @@ const PaperPreview = ({
   };
 
   return (
-    <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
-      <div className="watermark-container no-print">
-        {watermarkType === 'text' && watermarkText && (
-          <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
-        )}
-        {watermarkType === 'image' && watermarkImage && (
-          <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
-        )}
-      </div>
-      
-      <div className="watermark-container-print hidden print:flex">
-        {watermarkType === 'text' && watermarkText && (
-          <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
-        )}
-        {watermarkType === 'image' && watermarkImage && (
-          <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
-        )}
-      </div>
-
-      <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print relative z-10">
-        <div className="flex items-center justify-center relative min-h-[80px]">
-          {showLogo && logoImage && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center">
-              <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
-            </div>
+    <div id="printable-area-wrapper" className="w-full flex justify-center">
+      <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
+        <div className="watermark-container no-print">
+          {watermarkType === 'text' && watermarkText && (
+            <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
           )}
-          <div className="text-center px-10">
-            <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
-            <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
-          </div>
+          {watermarkType === 'image' && watermarkImage && (
+            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
+          )}
         </div>
-        <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
-          {flowType === 'EXAM' && <span>পূর্ণমান: {totalMarks || "..."}</span>}
-          {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && flowType === 'EXAM' && <span className="font-bold">সেট: {setName}</span>}
-          {flowType === 'EXAM' && <span>সময়: {examTime || "..."}</span>}
+        
+        <div className="watermark-container-print hidden print:flex">
+          {watermarkType === 'text' && watermarkText && (
+            <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
+          )}
+          {watermarkType === 'image' && watermarkImage && (
+            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
+          )}
         </div>
-      </header>
 
-      <section className="mt-4 print:mt-2 relative z-10 flex-grow">
-        {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && (
-          <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
-            {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
-            {mcqQuestions.length > 0 && (
-              <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
-                {mcqQuestions.map((q, index) => {
-                  const stimulusData = getMcqStimulusDisplay(index);
-                  return (
-                    <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
-                      {stimulusData && stimulusData !== "SKIP" && (
-                        <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
-                          <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
-                          {stimulusData.image && (
-                            <div className="mb-2 flex justify-center">
-                              <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
+        <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print relative z-10">
+          <div className="flex items-center justify-center relative min-h-[80px]">
+            {showLogo && logoImage && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center">
+                <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
+              </div>
+            )}
+            <div className="text-center px-10">
+              <h1 className="text-2xl font-bold font-headline print-h1">{examName || "পরীক্ষার নাম"}</h1>
+              <p className="text-lg font-semibold print-header-p">{authorName || "পরিচালনায়: নাম"}</p>
+            </div>
+          </div>
+          <div className="flex justify-between items-center mt-2 print:mt-1 text-base print-header-div px-2">
+            {flowType === 'EXAM' && <span>পূর্ণমান: {totalMarks || "..."}</span>}
+            {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && flowType === 'EXAM' && <span className="font-bold">সেট: {setName}</span>}
+            {flowType === 'EXAM' && <span>সময়: {examTime || "..."}</span>}
+          </div>
+        </header>
+
+        <section className="mt-4 print:mt-2 relative z-10 flex-grow">
+          {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && (
+            <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
+              {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
+              {mcqQuestions.length > 0 && (
+                <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
+                  {mcqQuestions.map((q, index) => {
+                    const stimulusData = getMcqStimulusDisplay(index);
+                    return (
+                      <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
+                        {stimulusData && stimulusData !== "SKIP" && (
+                          <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
+                            <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
+                            {stimulusData.image && (
+                              <div className="mb-2 flex justify-center">
+                                <img src={stimulusData.image} alt="Stimulus" className="max-h-32 object-contain rounded" />
+                              </div>
+                            )}
+                            {stimulusData.stimulus && <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>}
+                          </div>
+                        )}
+                        <div className="mt-1">
+                          <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
+                          {q.image && (
+                            <div className="mb-2 max-w-full h-auto flex justify-center">
+                              <img src={q.image} alt="Question" className="max-h-32 object-contain" />
                             </div>
                           )}
-                          {stimulusData.stimulus && <p className="text-sm leading-relaxed">{stimulusData.stimulus}</p>}
+                          <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
+                            {q.options.map((option, optIndex) => {
+                              const optionLabel = String.fromCharCode(97 + optIndex);
+                              const isCorrect = option === q.answer;
+                              return (
+                                <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
+                                  <div className="answer-content text-blue-600 print:text-blue-600 mt-1">
+                                    {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
+                                  </div>
+                                   <div className="flex items-start">
+                                     <span className="font-medium mr-1">{optionLabel})</span>
+                                     <p>{option}</p>
+                                   </div>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          {q.explanation && (
+                            <div className="answer-content mt-1 pl-6 text-xs italic text-gray-600 border-l-2 border-blue-200 flex flex-col gap-1">
+                              <span>ব্যাখ্যা: {q.explanation}</span>
+                              {q.explanationImage && <img src={q.explanationImage} alt="Explanation" className="max-h-32 w-fit object-contain rounded" />}
+                            </div>
+                          )}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && (
+            <div className={writtenQuestions.length > 0 ? "mb-8" : ""}>
+               {(mode === "MCQ_WRITTEN" || mode === "BOTH") && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
+               {writtenQuestions.length > 0 && (
+                 <div className="space-y-4">
+                   {writtenQuestions.map((q, index) => (
+                     <article key={index} className="question-item-print break-inside-avoid">
+                       <p className="font-bold text-base"><span className="mr-1">{index + 1}.</span> {q.question}</p>
+                       {q.image && <img src={q.image} alt="Question" className="max-h-32 object-contain my-2" />}
+                       {(q.answer || q.answerImage) && (
+                         <div className="answer-content text-blue-600 ml-6 text-sm italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
+                           {q.answer && <p>উত্তর: {q.answer}</p>}
+                           {q.answerImage && <img src={q.answerImage} alt="Answer" className="max-h-48 w-fit object-contain rounded border" />}
+                         </div>
+                       )}
+                     </article>
+                   ))}
+                 </div>
+               )}
+            </div>
+          )}
+
+          {(mode === "CQ" || mode === "BOTH") && (
+            <div>
+              {mode === "BOTH" && cqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সৃজনশীল অংশ</h2>}
+              {cqQuestions.length > 0 && (
+                <div className="space-y-6 print:space-y-4">
+                  {cqQuestions.map((q, index) => (
+                    <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
+                      <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
+                      {q.stimulusImage && (
+                        <div className={cn(
+                          "mb-3 print:mb-2 flex",
+                          q.stimulusImageAlign === 'left' ? 'justify-start' : q.stimulusImageAlign === 'right' ? 'justify-end' : 'justify-center'
+                        )}>
+                          <img 
+                            src={q.stimulusImage} 
+                            alt="Stimulus" 
+                            className="max-h-80 object-contain rounded border" 
+                            style={{ width: `${q.stimulusImageWidth || 100}%` }}
+                          />
                         </div>
                       )}
-                      <div className="mt-1">
-                        <p className="font-bold text-base mb-1 print-question-p">{index + 1}. {q.question}</p>
-                        {q.image && (
-                          <div className="mb-2 max-w-full h-auto flex justify-center">
-                            <img src={q.image} alt="Question" className="max-h-32 object-contain" />
-                          </div>
-                        )}
-                        <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
-                          {q.options.map((option, optIndex) => {
-                            const optionLabel = String.fromCharCode(97 + optIndex);
-                            const isCorrect = option === q.answer;
-                            return (
-                              <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
-                                <div className="answer-content text-blue-600 print:text-blue-600 mt-1">
-                                  {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
-                                </div>
-                                 <div className="flex items-start">
-                                   <span className="font-medium mr-1">{optionLabel})</span>
-                                   <p>{option}</p>
-                                 </div>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                        {q.explanation && (
-                          <div className="answer-content mt-1 pl-6 text-xs italic text-gray-600 border-l-2 border-blue-200 flex flex-col gap-1">
-                            <span>ব্যাখ্যা: {q.explanation}</span>
-                            {q.explanationImage && <img src={q.explanationImage} alt="Explanation" className="max-h-32 w-fit object-contain rounded" />}
-                          </div>
-                        )}
+                      {q.stimulus && <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">{q.stimulus}</div>}
+                      <div className="grid grid-cols-1 gap-y-2 pl-4 print:pl-2">
+                        <div className="flex flex-col">
+                          <p><span className="font-bold">ক)</span> {q.parts.a}</p>
+                          {(q.answers?.a || q.answers?.aImage) && (
+                            <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
+                              {q.answers.a && <p>উত্তর: {q.answers.a}</p>}
+                              {q.answers.aImage && <img src={q.answers.aImage} alt="Answer A" className="max-h-32 w-fit object-contain" />}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <p><span className="font-bold">খ)</span> {q.parts.b}</p>
+                          {(q.answers?.b || q.answers?.bImage) && (
+                            <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
+                              {q.answers.b && <p>উত্তর: {q.answers.b}</p>}
+                              {q.answers.bImage && <img src={q.answers.bImage} alt="Answer B" className="max-h-32 w-fit object-contain" />}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <p><span className="font-bold">গ)</span> {q.parts.c}</p>
+                          {(q.answers?.c || q.answers?.cImage) && (
+                            <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
+                              {q.answers.c && <p>উত্তর: {q.answers.c}</p>}
+                              {q.answers.cImage && <img src={q.answers.cImage} alt="Answer C" className="max-h-32 w-fit object-contain" />}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
+                          {(q.answers?.d || q.answers?.dImage) && (
+                            <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
+                              {q.answers.d && <p>উত্তর: {q.answers.d}</p>}
+                              {q.answers.dImage && <img src={q.answers.dImage} alt="Answer D" className="max-h-32 w-fit object-contain" />}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </article>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body">
+          <div className="flex items-center gap-1.5 justify-start">
+            {youtubeUrl && (
+              <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
+                <Youtube className="h-4 w-4 text-red-600" />
+                <span className="font-medium">{youtubeText || "YouTube"}</span>
+              </a>
             )}
           </div>
-        )}
-
-        {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && (
-          <div className={writtenQuestions.length > 0 ? "mb-8" : ""}>
-             {(mode === "MCQ_WRITTEN" || mode === "BOTH") && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
-             {writtenQuestions.length > 0 && (
-               <div className="space-y-4">
-                 {writtenQuestions.map((q, index) => (
-                   <article key={index} className="question-item-print break-inside-avoid">
-                     <p className="font-bold text-base"><span className="mr-1">{index + 1}.</span> {q.question}</p>
-                     {q.image && <img src={q.image} alt="Question" className="max-h-32 object-contain my-2" />}
-                     {(q.answer || q.answerImage) && (
-                       <div className="answer-content text-blue-600 ml-6 text-sm italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
-                         {q.answer && <p>উত্তর: {q.answer}</p>}
-                         {q.answerImage && <img src={q.answerImage} alt="Answer" className="max-h-48 w-fit object-contain rounded border" />}
-                       </div>
-                     )}
-                   </article>
-                 ))}
-               </div>
-             )}
-          </div>
-        )}
-
-        {(mode === "CQ" || mode === "BOTH") && (
-          <div>
-            {mode === "BOTH" && cqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সৃজনশীল অংশ</h2>}
-            {cqQuestions.length > 0 && (
-              <div className="space-y-6 print:space-y-4">
-                {cqQuestions.map((q, index) => (
-                  <article key={index} className="question-item-print break-inside-avoid border-b pb-4 print:pb-2 last:border-0">
-                    <p className="font-bold mb-2 print:mb-1">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
-                    {q.stimulusImage && (
-                      <div className={cn(
-                        "mb-3 print:mb-2 flex",
-                        q.stimulusImageAlign === 'left' ? 'justify-start' : q.stimulusImageAlign === 'right' ? 'justify-end' : 'justify-center'
-                      )}>
-                        <img 
-                          src={q.stimulusImage} 
-                          alt="Stimulus" 
-                          className="max-h-80 object-contain rounded border" 
-                          style={{ width: `${q.stimulusImageWidth || 100}%` }}
-                        />
-                      </div>
-                    )}
-                    {q.stimulus && <div className="mb-3 print:mb-2 italic text-gray-700 bg-gray-50 p-2 rounded print:bg-white print:p-0 print:italic">{q.stimulus}</div>}
-                    <div className="grid grid-cols-1 gap-y-2 pl-4 print:pl-2">
-                      <div className="flex flex-col">
-                        <p><span className="font-bold">ক)</span> {q.parts.a}</p>
-                        {(q.answers?.a || q.answers?.aImage) && (
-                          <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
-                            {q.answers.a && <p>উত্তর: {q.answers.a}</p>}
-                            {q.answers.aImage && <img src={q.answers.aImage} alt="Answer A" className="max-h-32 w-fit object-contain" />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <p><span className="font-bold">খ)</span> {q.parts.b}</p>
-                        {(q.answers?.b || q.answers?.bImage) && (
-                          <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
-                            {q.answers.b && <p>উত্তর: {q.answers.b}</p>}
-                            {q.answers.bImage && <img src={q.answers.bImage} alt="Answer B" className="max-h-32 w-fit object-contain" />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <p><span className="font-bold">গ)</span> {q.parts.c}</p>
-                        {(q.answers?.c || q.answers?.cImage) && (
-                          <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
-                            {q.answers.c && <p>উত্তর: {q.answers.c}</p>}
-                            {q.answers.cImage && <img src={q.answers.cImage} alt="Answer C" className="max-h-32 w-fit object-contain" />}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
-                        {(q.answers?.d || q.answers?.dImage) && (
-                          <div className="answer-content ml-6 text-sm text-blue-600 italic border-l-2 border-blue-200 pl-2 flex flex-col gap-2">
-                            {q.answers.d && <p>উত্তর: {q.answers.d}</p>}
-                            {q.answers.dImage && <img src={q.answers.dImage} alt="Answer D" className="max-h-32 w-fit object-contain" />}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
+          <div className="flex items-center gap-1.5 justify-center">
+            {telegramUrl && (
+              <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
+                <Send className="h-4 w-4 text-blue-500" />
+                <span className="font-medium">{telegramText || "Telegram"}</span>
+              </a>
             )}
           </div>
-        )}
-      </section>
-
-      <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body">
-        <div className="flex items-center gap-1.5 justify-start">
-          {youtubeUrl && (
-            <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
-              <Youtube className="h-4 w-4 text-red-600" />
-              <span className="font-medium">{youtubeText || "YouTube"}</span>
-            </a>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 justify-center">
-          {telegramUrl && (
-            <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
-              <Send className="h-4 w-4 text-blue-500" />
-              <span className="font-medium">{telegramText || "Telegram"}</span>
-            </a>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5 justify-end">
-          {facebookUrl && (
-            <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-              <Facebook className="h-4 w-4 text-blue-600" />
-              <span className="font-medium">{facebookText || "Facebook"}</span>
-            </a>
-          )}
-        </div>
-      </footer>
+          <div className="flex items-center gap-1.5 justify-end">
+            {facebookUrl && (
+              <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+                <Facebook className="h-4 w-4 text-blue-600" />
+                <span className="font-medium">{facebookText || "Facebook"}</span>
+              </a>
+            )}
+          </div>
+        </footer>
+      </div>
     </div>
   );
 };
@@ -646,10 +643,10 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Brief delay to allow CSS attribute selector to apply
+    // Small delay to ensure styles are applied
     setTimeout(() => {
       window.print();
-    }, 100);
+    }, 250);
   };
 
   if (!flowType) {
@@ -1036,7 +1033,7 @@ export default function ExamPage() {
           </div>
         </aside>
 
-        <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
           <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, flowType, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
         </main>
       </div>

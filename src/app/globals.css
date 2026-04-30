@@ -119,15 +119,12 @@ body[data-preview-answers="true"] .answer-content {
     overflow: visible !important;
   }
 
-  body * {
-    visibility: hidden;
+  /* Hide everything that is NOT the printable area */
+  body > *:not(#printable-area-wrapper) {
+    display: none !important;
   }
 
-  #printable-area, #printable-area * {
-    visibility: visible;
-  }
-  
-  .no-print {
+  .no-print, aside, button, footer, header:not(.exam-header-print) {
     display: none !important;
   }
 
@@ -153,6 +150,7 @@ body[data-preview-answers="true"] .answer-content {
   }
 
   #printable-area {
+    visibility: visible !important;
     position: relative !important;
     left: 0 !important;
     top: 0 !important;
@@ -164,6 +162,11 @@ body[data-preview-answers="true"] .answer-content {
     height: auto !important;
     display: block !important;
     overflow: visible !important;
+    background: white !important;
+  }
+
+  #printable-area * {
+    visibility: visible !important;
   }
 
   /* Show answers if data-print-with-answers is true */
@@ -181,6 +184,7 @@ body[data-preview-answers="true"] .answer-content {
     break-inside: avoid !important;
     margin-bottom: 0.5rem;
     position: relative;
+    display: block;
   }
   
   .exam-header-print {
@@ -188,20 +192,17 @@ body[data-preview-answers="true"] .answer-content {
      margin-bottom: 1rem;
      padding-bottom: 0.5rem;
      page-break-after: avoid;
+     display: block;
   }
 
   .print-footer {
     position: relative !important;
-    margin-top: 2rem !important;
+    margin-top: 1rem !important;
     padding-top: 0.5rem !important;
     border-top: 1px solid #000 !important;
     visibility: visible !important;
     display: grid !important;
     page-break-inside: avoid !important;
     clear: both;
-  }
-  
-  .print-footer * {
-    visibility: visible !important;
   }
 }

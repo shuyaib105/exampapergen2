@@ -403,39 +403,6 @@ export default function ExamPage() {
   const [telegramText, setTelegramText] = useState("আমাদের টেলিগ্রাম চ্যানেল");
   const [telegramUrl, setTelegramUrl] = useState("");
 
-  // Form states
-  const [mcqQuestion, setMcqQuestion] = useState("");
-  const [mcqImage, setMcqImage] = useState<string | null>(null);
-  const [mcqStimulus, setMcqStimulus] = useState("");
-  const [mcqStimulusImage, setMcqStimulusImage] = useState<string | null>(null);
-  const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
-  const [mcqAnswer, setMcqAnswer] = useState("");
-  const [mcqExplanation, setMcqExplanation] = useState("");
-  const [mcqExplanationImage, setMcqExplanationImage] = useState<string | null>(null);
-  const [keepStimulus, setKeepStimulus] = useState(false);
-
-  const [cqStimulus, setCqStimulus] = useState("");
-  const [cqStimulusImage, setCqStimulusImage] = useState<string | null>(null);
-  const [cqStimulusWidth, setCqStimulusWidth] = useState(100);
-  const [cqStimulusAlign, setCqStimulusAlign] = useState<'left' | 'center' | 'right'>('center');
-  const [cqPartA, setCqPartA] = useState("");
-  const [cqPartB, setCqPartB] = useState("");
-  const [cqPartC, setCqPartC] = useState("");
-  const [cqPartD, setCqPartD] = useState("");
-  const [cqAnsA, setCqAnsA] = useState("");
-  const [cqAnsB, setCqAnsB] = useState("");
-  const [cqAnsC, setCqAnsC] = useState("");
-  const [cqAnsD, setCqAnsD] = useState("");
-  const [cqAnsAImage, setCqAnsAImage] = useState<string | null>(null);
-  const [cqAnsBImage, setCqAnsBImage] = useState<string | null>(null);
-  const [cqAnsCImage, setCqAnsCImage] = useState<string | null>(null);
-  const [cqAnsDImage, setCqAnsDImage] = useState<string | null>(null);
-
-  const [writtenQuestion, setWrittenQuestion] = useState("");
-  const [writtenAnswer, setWrittenAnswer] = useState("");
-  const [writtenImage, setWrittenImage] = useState<string | null>(null);
-  const [writtenAnswerImage, setWrittenAnswerImage] = useState<string | null>(null);
-
   const { toast } = useToast();
 
   useEffect(() => {
@@ -448,7 +415,7 @@ export default function ExamPage() {
       #printable-area .print-header-p { font-size: ${printFontSize * 1.15}px !important; }
       #printable-area .print-header-div { font-size: ${printFontSize}px !important; }
       #printable-area .print-question-p { font-size: ${printFontSize}px !important; }
-      #printable-area .print-option-li { font-size: ${printFontSize * 0.95}px !important; }
+      #printable-area .print-option-li { font-size: ${printFontSize * 0.9}px !important; }
       #printable-area .question-item-print { font-size: ${printFontSize}px !important; }
     }
   `;
@@ -511,11 +478,51 @@ export default function ExamPage() {
     }
   };
 
+  const handleExport = (withAnswers: boolean) => {
+    // 1. Set data attributes for print CSS
+    document.body.setAttribute('data-print-with-answers', String(withAnswers));
+    
+    // 2. Small delay to allow state and attributes to settle
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
+
+  // Form states and handlers...
+  const [mcqQuestion, setMcqQuestion] = useState("");
+  const [mcqImage, setMcqImage] = useState<string | null>(null);
+  const [mcqStimulus, setMcqStimulus] = useState("");
+  const [mcqStimulusImage, setMcqStimulusImage] = useState<string | null>(null);
+  const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
+  const [mcqAnswer, setMcqAnswer] = useState("");
+  const [mcqExplanation, setMcqExplanation] = useState("");
+  const [mcqExplanationImage, setMcqExplanationImage] = useState<string | null>(null);
+  const [keepStimulus, setKeepStimulus] = useState(false);
+
+  const [cqStimulus, setCqStimulus] = useState("");
+  const [cqStimulusImage, setCqStimulusImage] = useState<string | null>(null);
+  const [cqStimulusWidth, setCqStimulusWidth] = useState(100);
+  const [cqStimulusAlign, setCqStimulusAlign] = useState<'left' | 'center' | 'right'>('center');
+  const [cqPartA, setCqPartA] = useState("");
+  const [cqPartB, setCqPartB] = useState("");
+  const [cqPartC, setCqPartC] = useState("");
+  const [cqPartD, setCqPartD] = useState("");
+  const [cqAnsA, setCqAnsA] = useState("");
+  const [cqAnsB, setCqAnsB] = useState("");
+  const [cqAnsC, setCqAnsC] = useState("");
+  const [cqAnsD, setCqAnsD] = useState("");
+  const [cqAnsAImage, setCqAnsAImage] = useState<string | null>(null);
+  const [cqAnsBImage, setCqAnsBImage] = useState<string | null>(null);
+  const [cqAnsCImage, setCqAnsCImage] = useState<string | null>(null);
+  const [cqAnsDImage, setCqAnsDImage] = useState<string | null>(null);
+
+  const [writtenQuestion, setWrittenQuestion] = useState("");
+  const [writtenAnswer, setWrittenAnswer] = useState("");
+  const [writtenImage, setWrittenImage] = useState<string | null>(null);
+  const [writtenAnswerImage, setWrittenAnswerImage] = useState<string | null>(null);
+
   const handleAddWritten = () => {
-    if (!writtenQuestion) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "প্রশ্ন অবশ্যই পূরণ করতে হবে।" });
-      return;
-    }
+    if (!writtenQuestion) return;
     const newQ: ShortQuestion = {
       question: writtenQuestion,
       answer: writtenAnswer,
@@ -534,10 +541,7 @@ export default function ExamPage() {
   };
 
   const handleAddCq = () => {
-    if (!cqPartA || !cqPartB || !cqPartC || !cqPartD) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "ক, খ, গ, ঘ প্রশ্নগুলো অবশ্যই পূরণ করতে হবে।" });
-      return;
-    }
+    if (!cqPartA || !cqPartB || !cqPartC || !cqPartD) return;
     const newQ: CQQuestion = {
       stimulus: cqStimulus,
       stimulusImage: cqStimulusImage || undefined,
@@ -565,10 +569,7 @@ export default function ExamPage() {
   };
 
   const handleAddMcq = () => {
-    if (!mcqQuestion || mcqOptions.some(o => !o) || !mcqAnswer) {
-      toast({ variant: "destructive", title: "ত্রুটি", description: "প্রশ্ন, বিকল্প এবং সঠিক উত্তর অবশ্যই পূরণ করতে হবে।" });
-      return;
-    }
+    if (!mcqQuestion || mcqOptions.some(o => !o) || !mcqAnswer) return;
     const newQ: Question = {
       question: mcqQuestion,
       image: mcqImage || undefined,
@@ -608,45 +609,18 @@ export default function ExamPage() {
       const q = writtenQuestions[index];
       setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || ""); setWrittenImage(q.image || null); setWrittenAnswerImage(q.answerImage || null);
     }
-    document.getElementById('input-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const processJsonQuestions = (json: any[]) => {
     const mapped = json.map((q: any) => {
-      // CQ check
-      if (q.parts) {
-        return { type: 'CQ', ...q };
-      }
-      // MCQ check
-      if (q.options && q.options.length === 4) {
-        let correctAnswer = q.answer;
-        if (typeof q.answer === 'number') {
-          // Handle 1-based index from user template
-          correctAnswer = q.options[q.answer - 1] || "";
-        }
-        return { type: 'MCQ', ...q, answer: correctAnswer };
-      }
-      // Default to WRITTEN
+      if (q.parts) return { type: 'CQ', ...q };
+      if (q.options && q.options.length === 4) return { type: 'MCQ', ...q };
       return { type: 'WRITTEN', ...q };
     });
-
-    const mcqs = mapped.filter(q => q.type === 'MCQ').map(({type, ...r}) => r as Question);
-    const cqs = mapped.filter(q => q.type === 'CQ').map(({type, ...r}) => r as CQQuestion);
-    const wrs = mapped.filter(q => q.type === 'WRITTEN').map(({type, ...r}) => r as ShortQuestion);
-
-    setMcqQuestions(prev => [...prev, ...mcqs]);
-    setCqQuestions(prev => [...prev, ...cqs]);
-    setWrittenQuestions(prev => [...prev, ...wrs]);
-    
+    setMcqQuestions(prev => [...prev, ...mapped.filter(q => q.type === 'MCQ').map(({type, ...r}) => r as Question)]);
+    setCqQuestions(prev => [...prev, ...mapped.filter(q => q.type === 'CQ').map(({type, ...r}) => r as CQQuestion)]);
+    setWrittenQuestions(prev => [...prev, ...mapped.filter(q => q.type === 'WRITTEN').map(({type, ...r}) => r as ShortQuestion)]);
     toast({ title: "সফল", description: "প্রশ্ন যুক্ত করা হয়েছে।" });
-  };
-
-  const handleExport = (withAnswers: boolean) => {
-    document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Small delay to ensure styles are applied
-    setTimeout(() => {
-      window.print();
-    }, 250);
   };
 
   if (!flowType) {
@@ -659,7 +633,7 @@ export default function ExamPage() {
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                   <FileSpreadsheet className="h-12 w-12" />
                 </div>
-                <CardTitle className="text-2xl">PDF Sheet</CardTitle>
+                <CardTitle className="text-2xl font-headline">PDF Sheet</CardTitle>
                 <CardDescription>প্রশ্ন সাজান</CardDescription>
               </CardHeader>
             </Card>
@@ -668,7 +642,7 @@ export default function ExamPage() {
                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                   <FileSignature className="h-12 w-12" />
                 </div>
-                <CardTitle className="text-2xl">প্রশ্নপত্র তৈরি</CardTitle>
+                <CardTitle className="text-2xl font-headline">প্রশ্নপত্র তৈরি</CardTitle>
                 <CardDescription>প্রফেশনাল প্রশ্ন</CardDescription>
               </CardHeader>
             </Card>
@@ -686,19 +660,19 @@ export default function ExamPage() {
           <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
           <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
-              <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ মোড</CardTitle></CardHeader>
+              <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ মোড</CardTitle></CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
-              <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle>CQ মোড</CardTitle></CardHeader>
+              <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">CQ মোড</CardTitle></CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}>
-              <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle>সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
+              <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
-              <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও CQ</CardTitle></CardHeader>
+              <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ ও CQ</CardTitle></CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ_WRITTEN")}>
-              <CardHeader className="text-center"><ClipboardList className="h-10 w-10 mx-auto mb-4" /><CardTitle>MCQ ও লিখিত</CardTitle></CardHeader>
+              <CardHeader className="text-center"><ClipboardList className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ ও লিখিত</CardTitle></CardHeader>
             </Card>
           </div>
         </div>
@@ -716,7 +690,7 @@ export default function ExamPage() {
             <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন</Button>
             <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg">বেসিক সেটিংস</AccordionTrigger>
+                <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
                   <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
                   <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
@@ -731,7 +705,7 @@ export default function ExamPage() {
               </AccordionItem>
 
               <AccordionItem value="logo" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg">লোগো সেটিংস</AccordionTrigger>
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">লোগো সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
                   <div className="flex items-center justify-between mb-2">
                     <Label className="font-semibold">লোগো দেখান</Label>
@@ -748,7 +722,7 @@ export default function ExamPage() {
               </AccordionItem>
 
               <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg">ফুটার সেটিংস</AccordionTrigger>
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
                   <div className="space-y-3">
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
@@ -771,7 +745,7 @@ export default function ExamPage() {
               </AccordionItem>
 
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg">ওয়াটারমার্ক</AccordionTrigger>
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ওয়াটারমার্ক</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
                   <RadioGroup value={watermarkType} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
@@ -785,13 +759,13 @@ export default function ExamPage() {
 
             <Tabs defaultValue="manual" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="manual">আলাদা</TabsTrigger>
-                <TabsTrigger value="json">JSON</TabsTrigger>
+                <TabsTrigger value="manual" className="font-headline">আলাদা</TabsTrigger>
+                <TabsTrigger value="json" className="font-headline">JSON</TabsTrigger>
               </TabsList>
               
               <TabsContent value="manual">
-                <Card id="input-form">
-                  <CardHeader><CardTitle>{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
+                <Card>
+                  <CardHeader><CardTitle className="font-headline">{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <Tabs defaultValue="mcq">
                       <TabsList className="grid w-full grid-cols-3">
@@ -803,12 +777,8 @@ export default function ExamPage() {
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
                         <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt || ""} onChange={(e) => { const newOpts = [...mcqOptions]; newOpts[i] = e.target.value; setMcqOptions(newOpts); }} />)}</div>
                         <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}</SelectContent></Select>
-                        <div className="space-y-2 border p-3 rounded-lg bg-gray-50/50">
-                          <Label className="text-xs font-bold">ব্যাখ্যা ও ছবি</Label>
-                          <Textarea placeholder="ব্যাখ্যা..." value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} className="h-20 text-xs" />
-                          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setMcqExplanationImage)} className="h-8 text-xs" />
-                        </div>
-                        <Button className="w-full" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
+                        <Textarea placeholder="ব্যাখ্যা..." value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} />
+                        <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-4">
                         <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
@@ -838,43 +808,27 @@ export default function ExamPage() {
                         <div className="grid grid-cols-1 gap-4">
                            <div className="space-y-2 border p-2 rounded bg-white">
                              <Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} />
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                               <Input placeholder="ক এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsA || ""} onChange={(e) => setCqAnsA(e.target.value)} />
-                               <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqAnsAImage)} className="h-8 text-[10px]" />
-                             </div>
+                             <Input placeholder="ক এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsA || ""} onChange={(e) => setCqAnsA(e.target.value)} />
                            </div>
                            <div className="space-y-2 border p-2 rounded bg-white">
                              <Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} />
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                               <Input placeholder="খ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsB || ""} onChange={(e) => setCqAnsB(e.target.value)} />
-                               <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqAnsBImage)} className="h-8 text-[10px]" />
-                             </div>
+                             <Input placeholder="খ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsB || ""} onChange={(e) => setCqAnsB(e.target.value)} />
                            </div>
                            <div className="space-y-2 border p-2 rounded bg-white">
                              <Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} />
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                               <Input placeholder="গ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsC || ""} onChange={(e) => setCqAnsC(e.target.value)} />
-                               <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqAnsCImage)} className="h-8 text-[10px]" />
-                             </div>
+                             <Input placeholder="গ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsC || ""} onChange={(e) => setCqAnsC(e.target.value)} />
                            </div>
                            <div className="space-y-2 border p-2 rounded bg-white">
                              <Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} />
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                               <Input placeholder="ঘ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsD || ""} onChange={(e) => setCqAnsD(e.target.value)} />
-                               <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCqAnsDImage)} className="h-8 text-[10px]" />
-                             </div>
+                             <Input placeholder="ঘ এর উত্তর" className="text-xs h-8 text-blue-600" value={cqAnsD || ""} onChange={(e) => setCqAnsD(e.target.value)} />
                            </div>
                         </div>
-                        <Button className="w-full" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
+                        <Button className="w-full font-headline" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
                         <Input placeholder="প্রশ্ন..." value={writtenQuestion || ""} onChange={(e) => setWrittenQuestion(e.target.value)} />
-                        <div className="space-y-2 border p-3 rounded-lg bg-gray-50/50">
-                          <Label className="text-xs font-bold">উত্তর ও ছবি</Label>
-                          <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} className="h-24 text-sm" />
-                          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWrittenAnswerImage)} className="h-8 text-xs" />
-                        </div>
-                        <Button className="w-full" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Button className="w-full font-headline" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
                   </CardContent>
@@ -884,81 +838,37 @@ export default function ExamPage() {
               <TabsContent value="json">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle>JSON ইনপুট</CardTitle>
+                    <CardTitle className="font-headline">JSON ইনপুট</CardTitle>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8"><HelpCircle className="h-5 w-5" /></Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle>JSON টেমপ্লেট উদাহরণ</DialogTitle></DialogHeader>
+                        <DialogHeader><DialogTitle className="font-headline">JSON টেমপ্লেট উদাহরণ</DialogTitle></DialogHeader>
                         <div className="space-y-6">
                           <div>
                             <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><ListChecks className="h-4 w-4" /> বহুনির্বাচনি (MCQ)</h3>
-                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
-{`[
-  {
-    "question": "বাংলাদেশের রাজধানী কী?",
-    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],
-    "answer": "ঢাকা",
-    "explanation": "ঢাকা বাংলাদেশের রাজধানী।",
-    "explanationImage": "data:image/png;base64,..."
-  }
-]`}
-                            </pre>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "question": "বাংলাদেশের রাজধানী কী?",\n    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],\n    "answer": "ঢাকা"\n  }\n]`}</pre>
                           </div>
                           <div>
                             <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><FileText className="h-4 w-4" /> সৃজনশীল (CQ)</h3>
-                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
-{`[
-  {
-    "stimulus": "উদ্দীপক টেক্সট...",
-    "parts": {
-      "a": "ক নং প্রশ্ন?",
-      "b": "খ নং প্রশ্ন?",
-      "c": "গ নং প্রশ্ন?",
-      "d": "ঘ নং প্রশ্ন?"
-    },
-    "answers": {
-      "a": "ক এর উত্তর...",
-      "b": "খ এর উত্তর...",
-      "c": "গ এর উত্তর...",
-      "d": "ঘ এর উত্তর..."
-    }
-  }
-]`}
-                            </pre>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "stimulus": "উদ্দীপক টেক্সট...",\n    "parts": {\n      "a": "ক নং প্রশ্ন?",\n      "b": "খ নং প্রশ্ন?",\n      "c": "গ নং প্রশ্ন?",\n      "d": "ঘ নং প্রশ্ন?"\n    },\n    "answers": {\n      "a": "ক এর উত্তর...",\n      "b": "খ এর উত্তর...",\n      "c": "গ এর উত্তর...",\n      "d": "ঘ এর উত্তর..."\n    }\n  }\n]`}</pre>
                           </div>
                           <div>
                             <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4" /> সংক্ষিপ্ত প্রশ্ন</h3>
-                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
-{`[
-  {
-    "question": "টেলিকুইজ কী?",
-    "answer": "একটি কুইজ জেনারেটর টুল।",
-    "answerImage": "data:image/png;base64,..."
-  }
-]`}
-                            </pre>
+                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "question": "সংক্ষিপ্ত প্রশ্নটি কী?",\n    "answer": "উত্তরটি এখানে লিখুন"\n  }\n]`}</pre>
                           </div>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Textarea 
-                      placeholder="JSON অ্যারে পেস্ট করুন..." 
-                      value={jsonInput || ""} 
-                      onChange={(e) => setJsonInput(e.target.value)} 
-                      className="h-48 font-mono text-xs" 
-                    />
+                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-48 font-mono text-xs" />
                     <div className="flex gap-2">
-                      <Button className="flex-1" onClick={() => {
+                      <Button className="flex-1 font-headline" onClick={() => {
                         try {
                           const json = JSON.parse(jsonInput);
-                          if (Array.isArray(json)) {
-                            processJsonQuestions(json);
-                            setJsonInput("");
-                          }
+                          if (Array.isArray(json)) processJsonQuestions(json);
                         } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" }); }
                       }}>যুক্ত করুন</Button>
                       <Button variant="outline" onClick={() => {
@@ -974,13 +884,13 @@ export default function ExamPage() {
 
             <div className="space-y-3 pt-4 border-t">
               <div className="grid grid-cols-2 gap-2">
-                <Button className="w-full" onClick={() => handleExport(true)}><Printer className="mr-2 h-4 w-4" /> উত্তরসহ PDF</Button>
-                <Button variant="secondary" className="w-full" onClick={() => handleExport(false)}><FileText className="mr-2 h-4 w-4" /> উত্তর ছাড়া PDF</Button>
+                <Button className="w-full font-headline" onClick={() => handleExport(true)}><Printer className="mr-2 h-4 w-4" /> উত্তরসহ PDF</Button>
+                <Button variant="secondary" className="w-full font-headline" onClick={() => handleExport(false)}><FileText className="mr-2 h-4 w-4" /> উত্তর ছাড়া PDF</Button>
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3 bg-white shadow-sm">
                 <div className="flex flex-col">
-                  <Label className="text-sm font-bold">উত্তর দেখান</Label>
-                  <span className="text-[10px] text-gray-500">প্রিভিউতে উত্তর হাইলাইট করুন</span>
+                  <Label className="text-sm font-bold">উত্তর প্রিভিউ</Label>
+                  <span className="text-[10px] text-gray-500">স্ক্রিনে উত্তর হাইলাইট করুন</span>
                 </div>
                 <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
               </div>
@@ -988,7 +898,7 @@ export default function ExamPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-bold">প্রশ্ন তালিকা</Label>
+                <Label className="text-xs font-bold font-headline">প্রশ্ন তালিকা</Label>
                 <Badge variant="secondary" className="text-[10px]">মোট: {mcqQuestions.length + cqQuestions.length + writtenQuestions.length}</Badge>
               </div>
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">

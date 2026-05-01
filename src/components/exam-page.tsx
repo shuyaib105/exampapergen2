@@ -152,6 +152,7 @@ const PaperPreview = ({
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
+        {/* Watermarks */}
         <div className="watermark-container no-print">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
@@ -160,7 +161,6 @@ const PaperPreview = ({
             <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
           )}
         </div>
-        
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
@@ -170,6 +170,7 @@ const PaperPreview = ({
           )}
         </div>
 
+        {/* Header */}
         <header className="pb-4 print:pb-2 border-b print:border-b-2 border-gray-200 print:border-black exam-header-print relative z-10">
           <div className="flex items-center justify-center relative min-h-[80px]">
             {showLogo && logoImage && (
@@ -189,12 +190,14 @@ const PaperPreview = ({
           </div>
         </header>
 
+        {/* Content Section */}
         <section className="mt-4 print:mt-2 relative z-10 flex-grow">
+          {/* MCQ Section */}
           {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && (
             <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
               {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
               {mcqQuestions.length > 0 && (
-                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-6">
+                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-8">
                   {mcqQuestions.map((q, index) => {
                     const stimulusData = getMcqStimulusDisplay(index);
                     return (
@@ -249,6 +252,7 @@ const PaperPreview = ({
             </div>
           )}
 
+          {/* Short Written Section */}
           {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && (
             <div className={writtenQuestions.length > 0 ? "mb-8" : ""}>
                {(mode === "MCQ_WRITTEN" || mode === "BOTH") && writtenQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সংক্ষিপ্ত প্রশ্ন অংশ</h2>}
@@ -271,6 +275,7 @@ const PaperPreview = ({
             </div>
           )}
 
+          {/* CQ Section */}
           {(mode === "CQ" || mode === "BOTH") && (
             <div>
               {mode === "BOTH" && cqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">সৃজনশীল অংশ</h2>}
@@ -339,7 +344,8 @@ const PaperPreview = ({
           )}
         </section>
 
-        <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body exam-footer-print">
+        {/* Footer */}
+        <footer className="mt-8 pt-2 border-t print:mt-auto exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
               <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
@@ -480,12 +486,13 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Clear display constraints before print
+    // Brief delay to allow browser to apply the attribute before print dialog
     setTimeout(() => {
       window.print();
-    }, 300);
+    }, 200);
   };
 
+  // State for manual inputs (Controlled)
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -685,6 +692,7 @@ export default function ExamPage() {
         <aside className="w-full lg:w-[420px] lg:min-w-[420px] p-4 sm:p-6 border-b lg:border-r lg:border-b-0 print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
             <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন</Button>
+            
             <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 hover:no-underline font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
@@ -748,8 +756,15 @@ export default function ExamPage() {
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
-                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
-                  <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                  {watermarkType === "text" ? (
+                    <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} />
+                  ) : (
+                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
+                  )}
+                  <div className="space-y-2">
+                    <Label className="text-xs">স্বচ্ছতা ({watermarkOpacity}%)</Label>
+                    <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -772,8 +787,21 @@ export default function ExamPage() {
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt || ""} onChange={(e) => { const newOpts = [...mcqOptions]; newOpts[i] = e.target.value; setMcqOptions(newOpts); }} />)}</div>
-                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}</SelectContent></Select>
+                        <div className="grid grid-cols-2 gap-2">
+                          {mcqOptions.map((opt, i) => (
+                            <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt || ""} onChange={(e) => { 
+                              const newOpts = [...mcqOptions]; 
+                              newOpts[i] = e.target.value; 
+                              setMcqOptions(newOpts); 
+                            }} />
+                          ))}
+                        </div>
+                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}>
+                          <SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger>
+                          <SelectContent>
+                            {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                         <Textarea placeholder="ব্যাখ্যা..." value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
@@ -850,10 +878,6 @@ export default function ExamPage() {
                           <div>
                             <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><FileText className="h-4 w-4" /> সৃজনশীল (CQ)</h3>
                             <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "stimulus": "উদ্দীপক টেক্সট...",\n    "parts": {\n      "a": "ক নং প্রশ্ন?",\n      "b": "খ নং প্রশ্ন?",\n      "c": "গ নং প্রশ্ন?",\n      "d": "ঘ নং প্রশ্ন?"\n    },\n    "answers": {\n      "a": "ক এর উত্তর...",\n      "b": "খ এর উত্তর...",\n      "c": "গ এর উত্তর...",\n      "d": "ঘ এর উত্তর..."\n    }\n  }\n]`}</pre>
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-sm mb-2 flex items-center gap-2"><BookOpen className="h-4 w-4" /> সংক্ষিপ্ত প্রশ্ন</h3>
-                            <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "question": "সংক্ষিপ্ত প্রশ্নটি কী?",\n    "answer": "উত্তরটি এখানে লিখুন"\n  }\n]`}</pre>
                           </div>
                         </div>
                       </DialogContent>

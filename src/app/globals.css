@@ -28,19 +28,6 @@ body {
     --input: 0 0% 100%;
     --ring: 214 32% 55%;
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -99,7 +86,6 @@ body {
   display: none;
 }
 
-/* Show on screen if toggled */
 body[data-preview-answers="true"] .answer-content {
   display: flex;
 }
@@ -113,6 +99,7 @@ body[data-preview-answers="true"] .answer-content {
   html, body {
     width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
@@ -122,33 +109,86 @@ body[data-preview-answers="true"] .answer-content {
     print-color-adjust: exact !important;
   }
 
-  aside, 
-  button, 
-  nav, 
-  .no-print, 
-  footer:not(.exam-footer-print),
-  .no-print-element,
-  [role="dialog"],
-  [data-radix-portal] {
+  /* Hide UI elements */
+  aside, button, nav, .no-print, [role="dialog"], [data-radix-portal], footer:not(.exam-footer-print) {
     display: none !important;
   }
 
-  /* Force main content visibility */
-  main, #printable-area-wrapper, #printable-area {
-    display: block !important;
-    visibility: visible !important;
-    position: static !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    margin: 0 !important;
+  /* Force layout to be non-flex to allow proper page breaking and columns */
+  main {
     padding: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
+    background: white !important;
+    display: block !important;
     overflow: visible !important;
   }
 
+  #printable-area-wrapper {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  #printable-area {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  /* Header styles */
+  .exam-header-print {
+    border-bottom: 2px solid black;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    display: block !important;
+    width: 100% !important;
+    page-break-after: avoid;
+  }
+
+  /* Two-column MCQ container */
+  .mcq-container-print {
+    column-count: 2 !important;
+    column-gap: 30px !important;
+    column-fill: auto !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Question items */
+  .question-item-print {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 1rem;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* 2x2 Options Grid */
+  .options-grid-print {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px 10px !important;
+    list-style: none !important;
+    padding-left: 10px !important;
+    width: 100% !important;
+  }
+
+  .print-option-li {
+    display: flex !important;
+    align-items: flex-start !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Answer content logic */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
     visibility: visible !important;
@@ -158,34 +198,7 @@ body[data-preview-answers="true"] .answer-content {
     display: none !important;
   }
 
-  .question-item-print {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    margin-bottom: 0.75rem;
-    display: block !important;
-    width: 100% !important;
-  }
-  
-  .exam-header-print {
-     border-bottom: 2px solid black;
-     margin-bottom: 1.25rem;
-     padding-bottom: 0.5rem;
-     page-break-after: avoid;
-     display: block !important;
-  }
-
-  .print-footer {
-    position: relative !important;
-    margin-top: 1.5rem !important;
-    padding-top: 0.75rem !important;
-    border-top: 1px solid #000 !important;
-    visibility: visible !important;
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    page-break-inside: avoid !important;
-    width: 100%;
-  }
-
+  /* Watermark for Print */
   .watermark-container-print {
     position: fixed !important;
     top: 50% !important;
@@ -193,36 +206,21 @@ body[data-preview-answers="true"] .answer-content {
     transform: translate(-50%, -50%) !important;
     width: 100% !important;
     height: 100% !important;
-    z-index: -10 !important;
+    z-index: -1 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    pointer-events: none;
+    opacity: 0.1;
   }
 
-  /* Specific fix for MCQ columns and grid */
-  .mcq-container-print {
-    column-count: 2 !important;
-    column-gap: 24px !important;
-    column-fill: auto !important;
-    display: block !important;
-    width: 100% !important;
-  }
-
-  .options-grid-print {
+  /* Footer at bottom of content */
+  .exam-footer-print {
+    margin-top: 2rem !important;
+    padding-top: 0.75rem !important;
+    border-top: 1px solid black !important;
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 4px 16px !important;
-    padding-left: 8px !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     width: 100% !important;
-    list-style: none !important;
-  }
-
-  .print-option-li {
-    display: flex !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    page-break-inside: avoid;
   }
 }

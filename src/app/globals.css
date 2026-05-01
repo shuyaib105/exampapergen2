@@ -109,7 +109,6 @@ body[data-preview-answers="true"] .answer-content {
     margin: 10mm;
   }
 
-  /* Reset global layout for printing */
   html, body {
     width: 100% !important;
     height: auto !important;
@@ -122,7 +121,6 @@ body[data-preview-answers="true"] .answer-content {
     print-color-adjust: exact !important;
   }
 
-  /* Hide UI elements properly */
   aside, 
   button, 
   nav, 
@@ -132,7 +130,6 @@ body[data-preview-answers="true"] .answer-content {
     display: none !important;
   }
 
-  /* Ensure all parents allow visibility of the printable content */
   main, .flex, div, section, article {
     display: block !important;
     overflow: visible !important;
@@ -146,7 +143,6 @@ body[data-preview-answers="true"] .answer-content {
     background: transparent !important;
   }
 
-  /* Explicitly target the printable area */
   #printable-area-wrapper {
     display: block !important;
     visibility: visible !important;
@@ -168,7 +164,6 @@ body[data-preview-answers="true"] .answer-content {
     box-shadow: none !important;
   }
 
-  /* Answer visibility based on data attribute */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
     visibility: visible !important;
@@ -181,14 +176,14 @@ body[data-preview-answers="true"] .answer-content {
   .question-item-print {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     display: block;
     width: 100%;
   }
   
   .exam-header-print {
      border-bottom: 2px solid black;
-     margin-bottom: 1.5rem;
+     margin-bottom: 1.25rem;
      padding-bottom: 0.5rem;
      page-break-after: avoid;
      display: block;
@@ -196,8 +191,8 @@ body[data-preview-answers="true"] .answer-content {
 
   .print-footer {
     position: relative !important;
-    margin-top: 2rem !important;
-    padding-top: 1rem !important;
+    margin-top: 1.5rem !important;
+    padding-top: 0.75rem !important;
     border-top: 1px solid #000 !important;
     visibility: visible !important;
     display: grid !important;
@@ -220,8 +215,29 @@ body[data-preview-answers="true"] .answer-content {
     pointer-events: none;
   }
 
-  .md\:columns-2 {
+  /* Specific fix for MCQ columns and grid */
+  .mcq-container-print {
     columns: 2 !important;
-    column-gap: 20px !important;
+    column-gap: 24px !important;
+    column-fill: auto !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .options-grid-print {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px 16px !important;
+    padding-left: 8px !important;
+    width: 100% !important;
+    list-style: none !important;
+  }
+
+  .print-option-li {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

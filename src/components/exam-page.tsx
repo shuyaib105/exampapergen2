@@ -194,11 +194,11 @@ const PaperPreview = ({
             <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
               {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
               {mcqQuestions.length > 0 && (
-                <div className="md:columns-2 print:columns-2 md:gap-x-12 print:gap-x-6 [column-fill:auto]">
+                <div className="md:columns-2 print:columns-2 mcq-container-print md:gap-x-12 print:gap-x-6">
                   {mcqQuestions.map((q, index) => {
                     const stimulusData = getMcqStimulusDisplay(index);
                     return (
-                      <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid-column">
+                      <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
                         {stimulusData && stimulusData !== "SKIP" && (
                           <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
                             <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
@@ -217,18 +217,18 @@ const PaperPreview = ({
                               <img src={q.image} alt="Question" className="max-h-32 object-contain" />
                             </div>
                           )}
-                          <ul className="grid grid-cols-2 gap-x-6 print:gap-x-4 gap-y-0 pl-3 print:pl-2">
+                          <ul className="grid grid-cols-2 gap-x-6 gap-y-0.5 pl-3 print:pl-2 options-grid-print">
                             {q.options.map((option, optIndex) => {
                               const optionLabel = String.fromCharCode(97 + optIndex);
                               const isCorrect = option === q.answer;
                               return (
-                                <li key={optIndex} className="flex items-start space-x-2 print:space-x-1 print-option-li">
-                                  <div className="answer-content text-blue-600 print:text-blue-600 mt-1">
+                                <li key={optIndex} className="flex items-start space-x-1.5 print:space-x-1 print-option-li">
+                                  <div className="answer-content text-blue-600 print:text-blue-600 mt-0.5 flex-shrink-0">
                                     {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                                   </div>
-                                   <div className="flex items-start">
+                                   <div className="flex items-baseline">
                                      <span className="font-medium mr-1">{optionLabel})</span>
-                                     <p>{option}</p>
+                                     <p className="leading-tight">{option}</p>
                                    </div>
                                 </li>
                               );
@@ -479,16 +479,12 @@ export default function ExamPage() {
   };
 
   const handleExport = (withAnswers: boolean) => {
-    // 1. Set data attributes for print CSS
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    
-    // 2. Small delay to allow state and attributes to settle
     setTimeout(() => {
       window.print();
     }, 300);
   };
 
-  // Form states and handlers...
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");

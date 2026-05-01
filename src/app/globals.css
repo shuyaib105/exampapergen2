@@ -106,55 +106,69 @@ body[data-preview-answers="true"] .answer-content {
 @media print {
   @page {
     size: A4;
-    margin: 10mm 10mm 10mm 10mm;
+    margin: 10mm;
   }
 
+  /* Reset global layout for printing */
   html, body {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide UI elements properly */
+  aside, 
+  button, 
+  nav, 
+  .no-print, 
+  footer:not(.exam-footer-print),
+  .no-print-element {
+    display: none !important;
+  }
+
+  /* Ensure all parents allow visibility of the printable content */
+  main, .flex, div, section, article {
+    display: block !important;
+    overflow: visible !important;
+    width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
   }
 
-  /* Hide everything except printable area */
-  body > *:not(#printable-area-wrapper) {
-    display: none !important;
-  }
-
-  .no-print, aside, button, footer:not(.exam-footer-print), .no-print-element {
-    display: none !important;
-  }
-
+  /* Explicitly target the printable area */
   #printable-area-wrapper {
+    display: block !important;
+    visibility: visible !important;
     position: static !important;
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
-    display: block !important;
-    background: white !important;
   }
 
   #printable-area {
+    display: block !important;
     visibility: visible !important;
-    position: relative !important;
     width: 100% !important;
     max-width: none !important;
-    padding: 0 !important;
     margin: 0 !important;
-    box-shadow: none !important;
-    min-height: 0 !important;
-    height: auto !important;
-    display: block !important;
-    overflow: visible !important;
+    padding: 0 !important;
     background: white !important;
     border: none !important;
+    box-shadow: none !important;
   }
 
-  /* Show answers if data-print-with-answers is true */
+  /* Answer visibility based on data attribute */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
     visibility: visible !important;
@@ -168,7 +182,6 @@ body[data-preview-answers="true"] .answer-content {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     margin-bottom: 1rem;
-    position: relative;
     display: block;
     width: 100%;
   }
@@ -179,7 +192,6 @@ body[data-preview-answers="true"] .answer-content {
      padding-bottom: 0.5rem;
      page-break-after: avoid;
      display: block;
-     width: 100%;
   }
 
   .print-footer {
@@ -191,11 +203,9 @@ body[data-preview-answers="true"] .answer-content {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     page-break-inside: avoid !important;
-    clear: both;
     width: 100%;
   }
 
-  /* Watermark fix for print */
   .watermark-container-print {
     position: fixed !important;
     top: 50% !important;
@@ -210,10 +220,8 @@ body[data-preview-answers="true"] .answer-content {
     pointer-events: none;
   }
 
-  /* Avoid splitting columns across pages */
   .md\:columns-2 {
     columns: 2 !important;
     column-gap: 20px !important;
-    display: block !important;
   }
 }

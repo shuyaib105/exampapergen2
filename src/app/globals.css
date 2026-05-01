@@ -84,6 +84,7 @@ body {
   user-select: none;
   color: #000;
   text-align: center;
+  transform: rotate(-30deg);
 }
 
 .watermark-image-el {

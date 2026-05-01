@@ -194,11 +194,11 @@ const PaperPreview = ({
             <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
               {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
               {mcqQuestions.length > 0 && (
-                <div className="md:columns-2 print:columns-2 mcq-container-print md:gap-x-12 print:gap-x-6">
+                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-6">
                   {mcqQuestions.map((q, index) => {
                     const stimulusData = getMcqStimulusDisplay(index);
                     return (
-                      <article key={index} className="mb-2 print:mb-1 question-item-print break-inside-avoid">
+                      <article key={index} className="mb-4 print:mb-2 question-item-print break-inside-avoid">
                         {stimulusData && stimulusData !== "SKIP" && (
                           <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
                             <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
@@ -217,12 +217,12 @@ const PaperPreview = ({
                               <img src={q.image} alt="Question" className="max-h-32 object-contain" />
                             </div>
                           )}
-                          <ul className="grid grid-cols-2 gap-x-6 gap-y-0.5 pl-3 print:pl-2 options-grid-print">
+                          <ul className="grid grid-cols-2 gap-x-6 gap-y-1 pl-3 print:pl-2 options-grid-print">
                             {q.options.map((option, optIndex) => {
                               const optionLabel = String.fromCharCode(97 + optIndex);
                               const isCorrect = option === q.answer;
                               return (
-                                <li key={optIndex} className="flex items-start space-x-1.5 print:space-x-1 print-option-li">
+                                <li key={optIndex} className="flex items-start space-x-1.5 print:space-x-1 print-option-li break-inside-avoid">
                                   <div className="answer-content text-blue-600 print:text-blue-600 mt-0.5 flex-shrink-0">
                                     {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                                   </div>
@@ -339,7 +339,7 @@ const PaperPreview = ({
           )}
         </section>
 
-        <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body">
+        <footer className="mt-8 pt-2 border-t print:mt-auto print-footer grid grid-cols-3 items-center text-xs text-gray-600 relative z-10 font-body exam-footer-print">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
               <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
@@ -480,6 +480,7 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
+    // Clear display constraints before print
     setTimeout(() => {
       window.print();
     }, 300);

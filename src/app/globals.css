@@ -126,13 +126,17 @@ body[data-preview-answers="true"] .answer-content {
   nav, 
   .no-print, 
   footer:not(.exam-footer-print),
-  .no-print-element {
+  .no-print-element,
+  [role="dialog"],
+  [data-radix-portal] {
     display: none !important;
   }
 
-  main, .flex, div, section, article {
+  /* Force main content visibility */
+  main, #printable-area-wrapper, #printable-area {
     display: block !important;
-    overflow: visible !important;
+    visibility: visible !important;
+    position: static !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
@@ -141,27 +145,7 @@ body[data-preview-answers="true"] .answer-content {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
-  }
-
-  #printable-area-wrapper {
-    display: block !important;
-    visibility: visible !important;
-    position: static !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  #printable-area {
-    display: block !important;
-    visibility: visible !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-    border: none !important;
-    box-shadow: none !important;
+    overflow: visible !important;
   }
 
   body[data-print-with-answers="true"] .answer-content {
@@ -177,8 +161,8 @@ body[data-preview-answers="true"] .answer-content {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     margin-bottom: 0.75rem;
-    display: block;
-    width: 100%;
+    display: block !important;
+    width: 100% !important;
   }
   
   .exam-header-print {
@@ -186,7 +170,7 @@ body[data-preview-answers="true"] .answer-content {
      margin-bottom: 1.25rem;
      padding-bottom: 0.5rem;
      page-break-after: avoid;
-     display: block;
+     display: block !important;
   }
 
   .print-footer {
@@ -217,7 +201,7 @@ body[data-preview-answers="true"] .answer-content {
 
   /* Specific fix for MCQ columns and grid */
   .mcq-container-print {
-    columns: 2 !important;
+    column-count: 2 !important;
     column-gap: 24px !important;
     column-fill: auto !important;
     display: block !important;

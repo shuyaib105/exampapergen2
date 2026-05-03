@@ -90,64 +90,32 @@ body[data-preview-answers="true"] .answer-content {
   display: flex;
 }
 
-/* PRINT STYLES - STRICTOR AND ROBUST */
+/* PRINT STYLES - REWRITTEN FOR ZERO WHITE PAGES AND EXACT MATCH */
 @media print {
   @page {
     size: A4;
-    margin: 10mm;
+    margin: 5mm; /* Small margins like the image */
   }
 
-  /* Reset all layout constraints for print to avoid white pages */
-  html, body {
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-    color: black !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Force parents of the printable area to be visible */
-  main, div, section, article {
+  /* Critical fix for white pages: reset all parents */
+  html, body, #__next, main, div:not(#printable-area):not(.mcq-container-print):not(.question-item-print) {
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
     position: static !important;
-    display: block !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
+    background: white !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* Hide UI elements absolutely */
-  aside, 
-  nav, 
-  button, 
-  .no-print, 
-  header.no-print,
-  footer.no-print,
-  [role="dialog"], 
-  [data-radix-portal],
-  .DeveloperFooter_wrapper {
+  /* Hide everything except the printable area */
+  aside, nav, button, .no-print, header:not(.exam-header-print), footer:not(.exam-footer-print) {
     display: none !important;
-    height: 0 !important;
-    width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    visibility: hidden !important;
   }
 
   #printable-area-wrapper {
     display: block !important;
     width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
     background: white !important;
   }
 
@@ -155,91 +123,72 @@ body[data-preview-answers="true"] .answer-content {
     display: block !important;
     width: 100% !important;
     background: white !important;
-    position: relative !important;
-    padding: 0 !important;
+    padding: 10mm !important;
     box-shadow: none !important;
+    position: relative !important;
+    min-height: 0 !important;
   }
 
-  /* Header styles */
-  .exam-header-print {
-    border-bottom: 2px solid black !important;
-    margin-bottom: 20px !important;
-    padding-bottom: 10px !important;
-    display: block !important;
-    width: 100% !important;
-    page-break-after: avoid;
-  }
-
-  /* Two-column MCQ layout - Questions fill left then right */
+  /* Two-column layout for MCQs */
   .mcq-container-print {
+    display: block !important;
     column-count: 2 !important;
     column-gap: 30px !important;
-    column-rule: 1px solid #eee;
-    display: block !important;
+    column-rule: 0.5px solid #ddd;
     width: 100% !important;
   }
 
-  /* Question items */
   .question-item-print {
+    display: block !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-    margin-bottom: 15px !important;
-    display: block !important;
+    margin-bottom: 20px !important;
     width: 100% !important;
-    padding-right: 5px;
+    font-size: 11pt !important;
   }
 
-  /* 2x2 Options Grid */
+  /* Options in 2x2 grid */
   .options-grid-print {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 2px 10px !important;
-    list-style: none !important;
-    padding-left: 15px !important;
+    gap: 4px 15px !important;
+    padding-left: 20px !important;
     margin-top: 5px !important;
-    width: 100% !important;
   }
 
   .print-option-li {
     display: flex !important;
     align-items: flex-start !important;
-    break-inside: avoid !important;
-    font-size: 0.9em;
+    font-size: 10pt !important;
   }
 
-  /* Answer content logic for print */
+  /* Header adjustments */
+  .exam-header-print {
+    margin-bottom: 20px !important;
+    text-align: center !important;
+  }
+
+  .meta-line-print {
+    display: flex !important;
+    justify-content: space-between !important;
+    border-bottom: 1px solid black !important;
+    padding: 4px 0 !important;
+    margin-bottom: 15px !important;
+    font-weight: bold !important;
+  }
+
+  /* Answer visibility */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
-    visibility: visible !important;
     color: #2563eb !important;
+    font-style: italic !important;
+    font-size: 9pt !important;
   }
 
-  body:not([data-print-with-answers="true"]) .answer-content {
-    display: none !important;
-  }
-
-  /* Watermark for Print */
-  .watermark-container-print {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: -1 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* Footer for Print */
-  .exam-footer-print {
-    margin-top: 20px !important;
-    padding-top: 10px !important;
-    border-top: 1px solid black !important;
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    width: 100% !important;
-    page-break-inside: avoid;
+  /* Ensure text is black and images are visible */
+  * {
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

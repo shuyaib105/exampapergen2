@@ -50,7 +50,7 @@ type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
 
 const DeveloperFooter = () => (
-  <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
+  <footer className="DeveloperFooter_wrapper mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
     <span>Developed By</span>
     <a 
       href="https://t.me/shu_yaib" 
@@ -155,18 +155,18 @@ const PaperPreview = ({
         {/* Watermarks */}
         <div className="watermark-container no-print">
           {watermarkType === 'text' && watermarkText && (
-            <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
+            <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
           )}
           {watermarkType === 'image' && watermarkImage && (
-            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
+            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: (watermarkOpacity || 0) / 100 }} />
           )}
         </div>
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
-            <div className="watermark-text" style={{ opacity: watermarkOpacity / 100 }}>{watermarkText}</div>
+            <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
           )}
           {watermarkType === 'image' && watermarkImage && (
-            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: watermarkOpacity / 100 }} />
+            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: (watermarkOpacity || 0) / 100 }} />
           )}
         </div>
 
@@ -197,11 +197,11 @@ const PaperPreview = ({
             <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
               {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
               {mcqQuestions.length > 0 && (
-                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-8">
+                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-10">
                   {mcqQuestions.map((q, index) => {
                     const stimulusData = getMcqStimulusDisplay(index);
                     return (
-                      <article key={index} className="mb-4 print:mb-2 question-item-print break-inside-avoid">
+                      <article key={index} className="mb-4 print:mb-3 question-item-print break-inside-avoid">
                         {stimulusData && stimulusData !== "SKIP" && (
                           <div className="mb-3 p-2 print:p-0 print:mb-2 border-none">
                             <p className="font-bold text-sm mb-1">{stimulusData.header}</p>
@@ -226,7 +226,7 @@ const PaperPreview = ({
                               const isCorrect = option === q.answer;
                               return (
                                 <li key={optIndex} className="flex items-start space-x-1.5 print:space-x-1 print-option-li break-inside-avoid">
-                                  <div className="answer-content text-blue-600 print:text-blue-600 mt-0.5 flex-shrink-0">
+                                  <div className="answer-content text-blue-600 mt-0.5 flex-shrink-0">
                                     {isCorrect ? <CheckCircle className="h-4 w-4" /> : <Circle className="h-4 w-4 text-gray-300" />}
                                   </div>
                                    <div className="flex items-baseline">
@@ -238,7 +238,7 @@ const PaperPreview = ({
                             })}
                           </ul>
                           {q.explanation && (
-                            <div className="answer-content mt-1 pl-6 text-xs italic text-gray-600 border-l-2 border-blue-200 flex flex-col gap-1">
+                            <div className="answer-content mt-1 pl-6 text-xs italic text-blue-600 border-l-2 border-blue-200 flex flex-col gap-1">
                               <span>ব্যাখ্যা: {q.explanation}</span>
                               {q.explanationImage && <img src={q.explanationImage} alt="Explanation" className="max-h-32 w-fit object-contain rounded" />}
                             </div>
@@ -485,14 +485,16 @@ export default function ExamPage() {
   };
 
   const handleExport = (withAnswers: boolean) => {
+    // Set attribute to trigger correct answer visibility in CSS
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Brief delay to allow browser to apply the attribute before print dialog
+    
+    // Crucial: A small delay to let the DOM settle and state-driven styles to apply
     setTimeout(() => {
       window.print();
-    }, 200);
+    }, 500);
   };
 
-  // State for manual inputs (Controlled)
+  // State for manual inputs
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -762,8 +764,8 @@ export default function ExamPage() {
                     <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
                   )}
                   <div className="space-y-2">
-                    <Label className="text-xs">স্বচ্ছতা ({watermarkOpacity}%)</Label>
-                    <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                    <Label className="text-xs">স্বচ্ছতা ({watermarkOpacity || 0}%)</Label>
+                    <Slider min={0} max={50} value={[watermarkOpacity || 0]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -813,12 +815,12 @@ export default function ExamPage() {
                           {cqStimulusImage && (
                             <div className="space-y-4 mt-2 p-2 border rounded bg-white">
                               <div className="space-y-1">
-                                <Label className="text-xs">ছবির আকার (প্রস্থ: {cqStimulusWidth}%)</Label>
-                                <Slider min={10} max={100} value={[cqStimulusWidth]} onValueChange={(v) => setCqStimulusWidth(v[0])} />
+                                <Label className="text-xs">ছবির আকার (প্রস্থ: {cqStimulusWidth || 100}%)</Label>
+                                <Slider min={10} max={100} value={[cqStimulusWidth || 100]} onValueChange={(v) => setCqStimulusWidth(v[0])} />
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-xs">ছবির অবস্থান</Label>
-                                <Select value={cqStimulusAlign} onValueChange={(v: any) => setCqStimulusAlign(v)}>
+                                <Select value={cqStimulusAlign || "center"} onValueChange={(v: any) => setCqStimulusAlign(v)}>
                                   <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="left">বামে</SelectItem>

@@ -90,12 +90,14 @@ body[data-preview-answers="true"] .answer-content {
   display: flex;
 }
 
+/* PRINT STYLES - STRICTOR AND ROBUST */
 @media print {
   @page {
     size: A4;
-    margin: 10mm;
+    margin: 15mm;
   }
 
+  /* Reset all layout constraints for print */
   html, body {
     width: 100% !important;
     height: auto !important;
@@ -109,17 +111,36 @@ body[data-preview-answers="true"] .answer-content {
     print-color-adjust: exact !important;
   }
 
-  /* Hide UI elements */
-  aside, button, nav, .no-print, [role="dialog"], [data-radix-portal], footer:not(.exam-footer-print) {
-    display: none !important;
+  /* Force parents of the printable area to be visible */
+  main, div, section, article {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+    display: block !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Force layout to be non-flex to allow proper page breaking and columns */
-  main {
+  /* Hide UI elements absolutely */
+  aside, 
+  nav, 
+  button, 
+  .no-print, 
+  header.no-print,
+  footer.no-print,
+  [role="dialog"], 
+  [data-radix-portal],
+  .DeveloperFooter_wrapper {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
-    background: white !important;
-    display: block !important;
-    overflow: visible !important;
+    visibility: hidden !important;
   }
 
   #printable-area-wrapper {
@@ -127,36 +148,31 @@ body[data-preview-answers="true"] .answer-content {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    box-shadow: none !important;
-    overflow: visible !important;
   }
 
   #printable-area {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    min-height: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
+    background: white !important;
     position: relative !important;
-    overflow: visible !important;
+    padding: 0 !important;
   }
 
   /* Header styles */
   .exam-header-print {
-    border-bottom: 2px solid black;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
+    border-bottom: 2px solid black !important;
+    margin-bottom: 20px !important;
+    padding-bottom: 10px !important;
     display: block !important;
     width: 100% !important;
     page-break-after: avoid;
   }
 
-  /* Two-column MCQ container */
+  /* Two-column MCQ layout */
   .mcq-container-print {
     column-count: 2 !important;
-    column-gap: 30px !important;
+    column-gap: 40px !important;
     column-fill: auto !important;
     display: block !important;
     width: 100% !important;
@@ -166,7 +182,7 @@ body[data-preview-answers="true"] .answer-content {
   .question-item-print {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-    margin-bottom: 1rem;
+    margin-bottom: 15px !important;
     display: block !important;
     width: 100% !important;
   }
@@ -175,9 +191,10 @@ body[data-preview-answers="true"] .answer-content {
   .options-grid-print {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 4px 10px !important;
+    gap: 4px 15px !important;
     list-style: none !important;
     padding-left: 10px !important;
+    margin-top: 5px !important;
     width: 100% !important;
   }
 
@@ -185,13 +202,13 @@ body[data-preview-answers="true"] .answer-content {
     display: flex !important;
     align-items: flex-start !important;
     break-inside: avoid !important;
-    page-break-inside: avoid !important;
   }
 
-  /* Answer content logic */
+  /* Answer content logic for print */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
     visibility: visible !important;
+    color: #2563eb !important; /* Force blue for answers */
   }
 
   body:not([data-print-with-answers="true"]) .answer-content {
@@ -210,13 +227,12 @@ body[data-preview-answers="true"] .answer-content {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    opacity: 0.1;
   }
 
-  /* Footer at bottom of content */
+  /* Footer for Print */
   .exam-footer-print {
-    margin-top: 2rem !important;
-    padding-top: 0.75rem !important;
+    margin-top: auto !important;
+    padding-top: 10px !important;
     border-top: 1px solid black !important;
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;

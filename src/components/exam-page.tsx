@@ -56,7 +56,7 @@ const DeveloperFooter = () => (
       href="https://t.me/shu_yaib" 
       target="_blank" 
       rel="noopener noreferrer" 
-      className="flex items-center gap-1.5 font-bold text-primary hover:underline transition-all"
+      className="flex items-center gap-1.5 font-bold text-primary hover:underline transition-all font-body"
     >
       <Send className="h-4 w-4" />
       Shu Yaib
@@ -117,6 +117,8 @@ const PaperPreview = ({
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
     return `https://${trimmed}`;
   };
+
+  const bengaliOptions = ['ক', 'খ', 'গ', 'ঘ'];
 
   const getMcqStimulusDisplay = (currentIndex: number) => {
     const q = mcqQuestions[currentIndex];
@@ -197,7 +199,7 @@ const PaperPreview = ({
             <div className={mcqQuestions.length > 0 ? "mb-8" : ""}>
               {(mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && <h2 className="text-lg font-bold border-b mb-4 pb-1">বহুনির্বাচনি অংশ</h2>}
               {mcqQuestions.length > 0 && (
-                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-10">
+                <div className="md:columns-2 print:mcq-container-print md:gap-x-12 print:gap-x-8">
                   {mcqQuestions.map((q, index) => {
                     const stimulusData = getMcqStimulusDisplay(index);
                     return (
@@ -220,9 +222,9 @@ const PaperPreview = ({
                               <img src={q.image} alt="Question" className="max-h-32 object-contain" />
                             </div>
                           )}
-                          <ul className="grid grid-cols-2 gap-x-6 gap-y-1 pl-3 print:pl-2 options-grid-print">
+                          <ul className="grid grid-cols-2 gap-x-4 gap-y-1 pl-3 print:pl-2 options-grid-print">
                             {q.options.map((option, optIndex) => {
-                              const optionLabel = String.fromCharCode(97 + optIndex);
+                              const optionLabel = bengaliOptions[optIndex];
                               const isCorrect = option === q.answer;
                               return (
                                 <li key={optIndex} className="flex items-start space-x-1.5 print:space-x-1 print-option-li break-inside-avoid">
@@ -485,16 +487,12 @@ export default function ExamPage() {
   };
 
   const handleExport = (withAnswers: boolean) => {
-    // Set attribute to trigger correct answer visibility in CSS
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    
-    // Crucial: A small delay to let the DOM settle and state-driven styles to apply
     setTimeout(() => {
       window.print();
     }, 500);
   };
 
-  // State for manual inputs
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqImage, setMcqImage] = useState<string | null>(null);
   const [mcqStimulus, setMcqStimulus] = useState("");
@@ -791,7 +789,7 @@ export default function ExamPage() {
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
                         <div className="grid grid-cols-2 gap-2">
                           {mcqOptions.map((opt, i) => (
-                            <Input key={i} placeholder={`বিকল্প ${i+1}`} value={opt || ""} onChange={(e) => { 
+                            <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { 
                               const newOpts = [...mcqOptions]; 
                               newOpts[i] = e.target.value; 
                               setMcqOptions(newOpts); 
@@ -801,7 +799,7 @@ export default function ExamPage() {
                         <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}>
                           <SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger>
                           <SelectContent>
-                            {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{opt}</SelectItem>)}
+                            {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}
                           </SelectContent>
                         </Select>
                         <Textarea placeholder="ব্যাখ্যা..." value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} />

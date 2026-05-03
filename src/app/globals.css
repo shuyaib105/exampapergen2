@@ -94,10 +94,10 @@ body[data-preview-answers="true"] .answer-content {
 @media print {
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 10mm;
   }
 
-  /* Reset all layout constraints for print */
+  /* Reset all layout constraints for print to avoid white pages */
   html, body {
     width: 100% !important;
     height: auto !important;
@@ -118,7 +118,7 @@ body[data-preview-answers="true"] .answer-content {
     overflow: visible !important;
     position: static !important;
     display: block !important;
-    background: white !important;
+    background: transparent !important;
     box-shadow: none !important;
     border: none !important;
     margin: 0 !important;
@@ -148,15 +148,16 @@ body[data-preview-answers="true"] .answer-content {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: white !important;
   }
 
   #printable-area {
-    display: flex !important;
-    flex-direction: column !important;
+    display: block !important;
     width: 100% !important;
     background: white !important;
     position: relative !important;
     padding: 0 !important;
+    box-shadow: none !important;
   }
 
   /* Header styles */
@@ -169,11 +170,11 @@ body[data-preview-answers="true"] .answer-content {
     page-break-after: avoid;
   }
 
-  /* Two-column MCQ layout */
+  /* Two-column MCQ layout - Questions fill left then right */
   .mcq-container-print {
     column-count: 2 !important;
-    column-gap: 40px !important;
-    column-fill: auto !important;
+    column-gap: 30px !important;
+    column-rule: 1px solid #eee;
     display: block !important;
     width: 100% !important;
   }
@@ -185,15 +186,16 @@ body[data-preview-answers="true"] .answer-content {
     margin-bottom: 15px !important;
     display: block !important;
     width: 100% !important;
+    padding-right: 5px;
   }
 
   /* 2x2 Options Grid */
   .options-grid-print {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 4px 15px !important;
+    gap: 2px 10px !important;
     list-style: none !important;
-    padding-left: 10px !important;
+    padding-left: 15px !important;
     margin-top: 5px !important;
     width: 100% !important;
   }
@@ -202,13 +204,14 @@ body[data-preview-answers="true"] .answer-content {
     display: flex !important;
     align-items: flex-start !important;
     break-inside: avoid !important;
+    font-size: 0.9em;
   }
 
   /* Answer content logic for print */
   body[data-print-with-answers="true"] .answer-content {
     display: flex !important;
     visibility: visible !important;
-    color: #2563eb !important; /* Force blue for answers */
+    color: #2563eb !important;
   }
 
   body:not([data-print-with-answers="true"]) .answer-content {
@@ -231,7 +234,7 @@ body[data-preview-answers="true"] .answer-content {
 
   /* Footer for Print */
   .exam-footer-print {
-    margin-top: auto !important;
+    margin-top: 20px !important;
     padding-top: 10px !important;
     border-top: 1px solid black !important;
     display: grid !important;

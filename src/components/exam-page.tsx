@@ -154,6 +154,9 @@ const PaperPreview = ({
             <span>সেট: {setName}</span>
             <span>সময়: {examTime || "..."}</span>
           </div>
+          
+          {/* New Horizontal Line after meta data */}
+          <div className="border-t-2 border-black mt-1.5 w-full"></div>
         </header>
 
         {/* Content Section */}

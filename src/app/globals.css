@@ -90,25 +90,22 @@ body[data-preview-answers="true"] .answer-content {
   display: flex;
 }
 
-/* PRINT STYLES - REWRITTEN FOR ZERO WHITE PAGES AND EXACT MATCH */
+/* PRINT STYLES */
 @media print {
   @page {
     size: A4;
-    margin: 5mm; /* Small margins like the image */
+    margin: 5mm;
   }
 
-  /* Critical fix for white pages: reset all parents */
-  html, body, #__next, main, div:not(#printable-area):not(.mcq-container-print):not(.question-item-print) {
+  html, body {
     height: auto !important;
-    min-height: 0 !important;
     overflow: visible !important;
-    position: static !important;
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
-  /* Hide everything except the printable area */
+  /* Hide everything except printable area */
   aside, nav, button, .no-print, header:not(.exam-header-print), footer:not(.exam-footer-print) {
     display: none !important;
   }
@@ -116,78 +113,60 @@ body[data-preview-answers="true"] .answer-content {
   #printable-area-wrapper {
     display: block !important;
     width: 100% !important;
-    background: white !important;
   }
 
   #printable-area {
     display: block !important;
     width: 100% !important;
-    background: white !important;
-    padding: 10mm !important;
-    box-shadow: none !important;
-    position: relative !important;
+    padding: 8mm !important;
     min-height: 0 !important;
+    position: relative !important;
   }
 
-  /* Two-column layout for MCQs */
+  /* Two-column layout */
   .mcq-container-print {
     display: block !important;
     column-count: 2 !important;
     column-gap: 30px !important;
-    column-rule: 0.5px solid #ddd;
+    column-rule: 0.5px solid #eee;
     width: 100% !important;
   }
 
   .question-item-print {
     display: block !important;
     break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    margin-bottom: 20px !important;
-    width: 100% !important;
-    font-size: 11pt !important;
+    margin-bottom: 15px !important;
   }
 
-  /* Options in 2x2 grid */
+  /* Options Grid */
   .options-grid-print {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 4px 15px !important;
-    padding-left: 20px !important;
-    margin-top: 5px !important;
+    gap: 2px 10px !important;
+    padding-left: 15px !important;
+    margin-top: 3px !important;
   }
 
-  .print-option-li {
-    display: flex !important;
-    align-items: flex-start !important;
-    font-size: 10pt !important;
-  }
-
-  /* Header adjustments */
-  .exam-header-print {
-    margin-bottom: 20px !important;
-    text-align: center !important;
-  }
-
-  .meta-line-print {
-    display: flex !important;
-    justify-content: space-between !important;
-    border-bottom: 1px solid black !important;
-    padding: 4px 0 !important;
-    margin-bottom: 15px !important;
-    font-weight: bold !important;
-  }
-
-  /* Answer visibility */
+  /* Answer/Explanation Styling (Black Box, White Text) */
   body[data-print-with-answers="true"] .answer-content {
-    display: flex !important;
-    color: #2563eb !important;
-    font-style: italic !important;
+    display: block !important;
+    background-color: #000 !important;
+    color: #fff !important;
+    padding: 4px 8px !important;
+    margin-top: 6px !important;
+    border-radius: 2px !important;
     font-size: 9pt !important;
+    font-weight: normal !important;
+    width: fit-content !important;
+    max-width: 100% !important;
   }
 
-  /* Ensure text is black and images are visible */
+  /* Force white text in the black box for print */
+  .answer-content * {
+    color: #fff !important;
+  }
+
   * {
-    color: black !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

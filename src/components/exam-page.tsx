@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   Printer, 
   CheckCircle, 
-  Circle, 
   FileText, 
   ListChecks, 
   ArrowLeft, 
@@ -24,9 +23,7 @@ import {
   FileSpreadsheet,
   FileSignature,
   Copy,
-  Image as ImageIcon,
   BookOpen,
-  ClipboardList,
   HelpCircle
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +31,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { 
@@ -74,7 +70,6 @@ const PaperPreview = ({
   writtenQuestions,
   setName, 
   mode,
-  flowType,
   logoImage,
   showLogo,
   watermarkText,
@@ -97,7 +92,6 @@ const PaperPreview = ({
   writtenQuestions: ShortQuestion[];
   setName: string;
   mode: AppMode;
-  flowType: FlowType;
   logoImage: string | null;
   showLogo: boolean;
   watermarkText: string;
@@ -118,7 +112,7 @@ const PaperPreview = ({
     return `https://${trimmed}`;
   };
 
-  const optionLabels = ['a', 'b', 'c', 'd'];
+  const optionLabels = ['ক', 'খ', 'গ', 'ঘ'];
 
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
@@ -141,16 +135,16 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header - Styled like the reference image */}
+        {/* Header */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center">
             {showLogo && logoImage && (
-              <div className="absolute left-0 top-0 h-16 w-16">
+              <div className="absolute left-0 top-0 h-14 w-14">
                 <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
               </div>
             )}
             <h1 className="text-2xl font-bold print:text-xl">{examName || "পরীক্ষার নাম"}</h1>
-            <p className="text-lg font-medium print:text-md mt-1">{authorName || "পরিচালনায়: নাম"}</p>
+            <p className="text-lg font-medium print:text-sm mt-1">{authorName || "পরিচালনায়: নাম"}</p>
           </div>
           
           <div className="border-t-2 border-black my-2 w-full"></div>
@@ -184,17 +178,15 @@ const PaperPreview = ({
                           <li key={optIndex} className="flex items-start space-x-1.5 print-option-li">
                             <span className="font-medium">{optionLabels[optIndex]})</span>
                             <span className="flex-1">{option}</span>
-                            {/* Answer Marker for Preview/Answer Sheet */}
-                            <div className="answer-content text-blue-600 ml-1">
-                              {option === q.answer && <CheckCircle className="h-3 w-3" />}
-                            </div>
                           </li>
                         ))}
                       </ul>
                       
-                      {q.explanation && (
-                        <div className="answer-content mt-1 pl-4 text-xs italic text-blue-600 border-l border-blue-200">
-                          ব্যাখ্যা: {q.explanation}
+                      {/* Black Box Explanation */}
+                      {(q.explanation || q.answer) && (
+                        <div className="answer-content">
+                          {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
+                          {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
                         </div>
                       )}
                     </div>
@@ -222,6 +214,15 @@ const PaperPreview = ({
                     <p><span className="font-bold">গ)</span> {q.parts.c}</p>
                     <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
                   </div>
+                  {/* Black Box for CQ Answers */}
+                  {q.answers && (
+                    <div className="answer-content">
+                      {q.answers.a && <p>ক: {q.answers.a}</p>}
+                      {q.answers.b && <p>খ: {q.answers.b}</p>}
+                      {q.answers.c && <p>গ: {q.answers.c}</p>}
+                      {q.answers.d && <p>ঘ: {q.answers.d}</p>}
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
@@ -233,14 +234,14 @@ const PaperPreview = ({
               {writtenQuestions.map((q, index) => (
                 <article key={index} className="question-item-print break-inside-avoid">
                   <p className="font-bold"><span className="mr-1">{index + 1}.</span> {q.question}</p>
-                  {q.answer && <div className="answer-content text-blue-600 ml-6 text-sm italic">উত্তর: {q.answer}</div>}
+                  {q.answer && <div className="answer-content">উত্তর: {q.answer}</div>}
                 </article>
               ))}
             </div>
           )}
         </section>
 
-        {/* Footer with a closing line */}
+        {/* Footer */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
@@ -313,9 +314,7 @@ export default function ExamPage() {
 
   const dynamicPrintStyles = `
     @media print {
-      #printable-area .print-h1 { font-size: ${printFontSize * 1.2}px !important; }
       #printable-area .question-item-print { font-size: ${printFontSize}px !important; }
-      #printable-area .print-option-li { font-size: ${printFontSize * 0.9}px !important; }
     }
   `;
 
@@ -343,7 +342,7 @@ export default function ExamPage() {
     }, 500);
   };
 
-  // State for separate fields
+  // Input states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -426,7 +425,6 @@ export default function ExamPage() {
     setMcqQuestions(prev => [...prev, ...json.filter(q => q.options).map(q => q as Question)]);
     setCqQuestions(prev => [...prev, ...json.filter(q => q.parts).map(q => q as CQQuestion)]);
     setWrittenQuestions(prev => [...prev, ...json.filter(q => !q.options && !q.parts).map(q => q as ShortQuestion)]);
-    toast({ title: "সফল", description: "প্রশ্ন যুক্ত করা হয়েছে।" });
   };
 
   if (!flowType) {
@@ -593,6 +591,7 @@ export default function ExamPage() {
                             {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}
                           </SelectContent>
                         </Select>
+                        <Input placeholder="ব্যাখ্যা (ঐচ্ছিক)" value={mcqExplanation} onChange={(e) => setMcqExplanation(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-3">
@@ -624,7 +623,7 @@ export default function ExamPage() {
                         <Button variant="ghost" size="icon" className="h-8 w-8"><HelpCircle className="h-5 w-5" /></Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle className="font-headline">JSON ফরম্যাট উদাহরণ</DialogTitle></DialogHeader>
+                        <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ</DialogTitle></DialogHeader>
                         <div className="space-y-4">
                           <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "question": "বাংলাদেশের রাজধানী কী?",\n    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],\n    "answer": "ঢাকা"\n  }\n]`}</pre>
                         </div>
@@ -682,7 +681,7 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, flowType, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
+          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
         </main>
       </div>
       <DeveloperFooter />

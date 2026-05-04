@@ -136,7 +136,7 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header */}
+        {/* Header - Repeated on every page via CSS position: fixed */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center">
             {showLogo && logoImage && (
@@ -186,8 +186,10 @@ const PaperPreview = ({
                       
                       {(q.explanation || q.answer) && (
                         <div className="answer-content">
-                          {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
-                          {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
+                          <div className="w-full">
+                            {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
+                            {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -216,10 +218,12 @@ const PaperPreview = ({
                   </div>
                   {q.answers && (
                     <div className="answer-content">
-                      {q.answers.a && <p>ক: {q.answers.a}</p>}
-                      {q.answers.b && <p>খ: {q.answers.b}</p>}
-                      {q.answers.c && <p>গ: {q.answers.c}</p>}
-                      {q.answers.d && <p>ঘ: {q.answers.d}</p>}
+                      <div className="w-full">
+                        {q.answers.a && <p>ক: {q.answers.a}</p>}
+                        {q.answers.b && <p>খ: {q.answers.b}</p>}
+                        {q.answers.c && <p>গ: {q.answers.c}</p>}
+                        {q.answers.d && <p>ঘ: {q.answers.d}</p>}
+                      </div>
                     </div>
                   )}
                 </article>
@@ -232,13 +236,18 @@ const PaperPreview = ({
               {writtenQuestions.map((q, index) => (
                 <article key={index} className="question-item-print break-inside-avoid">
                   <p className="font-bold"><span className="mr-1">{index + 1}.</span> {q.question}</p>
-                  {q.answer && <div className="answer-content">উত্তর: {q.answer}</div>}
+                  {q.answer && (
+                    <div className="answer-content">
+                       <div className="w-full">উত্তর: {q.answer}</div>
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
           )}
         </section>
 
+        {/* Footer - Repeated on every page via CSS position: fixed */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
@@ -444,10 +453,10 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      // Handle the specific format: options as object {A, B, C, D} and correct_answer as "A"
+      // Handle formatting: options as object {A, B, C, D} and correct_answer as "A"
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options) && item.correct_answer) {
-        const opts = item.options;
-        const ansKey = item.correct_answer;
+        const opts = item.options as Record<string, string>;
+        const ansKey = item.correct_answer as string;
         newMcqs.push({
           question: item.question,
           options: [
@@ -456,7 +465,7 @@ export default function ExamPage() {
             opts.C || opts.c || "", 
             opts.D || opts.d || ""
           ],
-          answer: opts[ansKey] || opts[ansKey.toLowerCase()] || ansKey,
+          answer: opts[ansKey] || opts[ansKey.toUpperCase()] || opts[ansKey.toLowerCase()] || ansKey,
           explanation: item.explanation || undefined
         });
       } 

@@ -118,7 +118,7 @@ const PaperPreview = ({
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
-        {/* Watermarks */}
+        {/* Watermarks - Fixed for print, Absolute for preview */}
         <div className="watermark-container no-print">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -136,7 +136,7 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header - Repeated on every page via CSS position: fixed */}
+        {/* Header - Not fixed, so it only appears on the first page */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center">
             {showLogo && logoImage && (
@@ -247,7 +247,7 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer - Repeated on every page via CSS position: fixed */}
+        {/* Footer - Repeated on every page */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (

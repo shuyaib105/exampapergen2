@@ -116,7 +116,7 @@ const PaperPreview = ({
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
-        {/* Watermarks - Fixed for print, Absolute for preview */}
+        {/* Watermarks - Fixed for print via global CSS, Absolute for preview */}
         <div className="watermark-container no-print">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -134,7 +134,7 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header - Not fixed, so it only appears on the first page */}
+        {/* Header - Only on first page as it's not fixed */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center">
             {showLogo && logoImage && (
@@ -245,7 +245,7 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer - Repeated on every page */}
+        {/* Footer - Repeated on every page via fixed positioning in CSS */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
@@ -418,7 +418,7 @@ export default function ExamPage() {
       question: mcqQuestion,
       options: mcqOptions,
       answer: mcqAnswer,
-      explanation: mcqExplanation || undefined
+      explanation: mcqExplanation || ""
     };
     if (editingIndex?.type === 'MCQ') {
       const updated = [...mcqQuestions];
@@ -435,13 +435,21 @@ export default function ExamPage() {
     setEditingIndex({type, index});
     if (type === "MCQ") {
       const q = mcqQuestions[index];
-      setMcqQuestion(q.question || ""); setMcqOptions(q.options || ["", "", "", ""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || "");
+      setMcqQuestion(q.question || ""); 
+      setMcqOptions(q.options || ["", "", "", ""]); 
+      setMcqAnswer(q.answer || ""); 
+      setMcqExplanation(q.explanation || "");
     } else if (type === "CQ") {
       const q = cqQuestions[index];
-      setCqStimulus(q.stimulus || ""); setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || "");
+      setCqStimulus(q.stimulus || ""); 
+      setCqPartA(q.parts?.a || ""); 
+      setCqPartB(q.parts?.b || ""); 
+      setCqPartC(q.parts?.c || ""); 
+      setCqPartD(q.parts?.d || "");
     } else {
       const q = writtenQuestions[index];
-      setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || "");
+      setWrittenQuestion(q.question || ""); 
+      setWrittenAnswer(q.answer || "");
     }
   };
 
@@ -455,23 +463,23 @@ export default function ExamPage() {
         const opts = item.options as Record<string, string>;
         const ansKey = item.correct_answer as string;
         newMcqs.push({
-          question: item.question,
+          question: item.question || "",
           options: [
             opts.A || opts.a || "", 
             opts.B || opts.b || "", 
             opts.C || opts.c || "", 
             opts.D || opts.d || ""
           ],
-          answer: opts[ansKey] || opts[ansKey.toUpperCase()] || opts[ansKey.toLowerCase()] || ansKey,
-          explanation: item.explanation || undefined
+          answer: opts[ansKey] || opts[ansKey.toUpperCase()] || opts[ansKey.toLowerCase()] || ansKey || "",
+          explanation: item.explanation || ""
         });
       } 
       else if (Array.isArray(item.options)) {
         newMcqs.push({
-          question: item.question,
+          question: item.question || "",
           options: item.options,
           answer: item.answer || item.correct_answer || "",
-          explanation: item.explanation || undefined
+          explanation: item.explanation || ""
         });
       }
       else if (item.parts) {

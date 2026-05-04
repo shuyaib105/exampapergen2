@@ -48,8 +48,8 @@ body {
   scrollbar-width: none;
 }
 
-/* Watermark styles */
-.watermark-container, .watermark-container-print {
+/* Watermark styles for Screen */
+.watermark-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -87,7 +87,7 @@ body {
 }
 
 body[data-preview-answers="true"] .answer-content {
-  display: flex;
+  display: block;
 }
 
 /* PRINT STYLES */
@@ -103,6 +103,8 @@ body[data-preview-answers="true"] .answer-content {
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   aside, nav, button, .no-print, header:not(.exam-header-print), footer:not(.exam-footer-print) {
@@ -122,7 +124,7 @@ body[data-preview-answers="true"] .answer-content {
     margin: 0 !important;
     min-height: 0 !important;
     position: relative !important;
-    padding-bottom: 50px !important;
+    background: white !important;
   }
 
   /* Header - Only on first page */
@@ -131,24 +133,25 @@ body[data-preview-answers="true"] .answer-content {
     width: 100% !important;
     background: white !important;
     padding-bottom: 5px !important;
-    z-index: 100 !important;
-    height: auto !important;
-    border-bottom: none !important;
     position: relative !important;
+    z-index: 10 !important;
+    border-bottom: none !important;
   }
 
   /* Footer - Repeated on every page */
   .exam-footer-print {
     position: fixed !important;
     bottom: 0 !important;
-    left: 10mm !important;
-    right: 10mm !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
     background: white !important;
     padding-top: 5px !important;
     z-index: 100 !important;
     display: grid !important;
     border-top: 1px solid black !important;
     grid-template-columns: repeat(3, 1fr) !important;
+    height: 30px !important;
   }
 
   /* Watermark - Repeated on every page */
@@ -162,6 +165,7 @@ body[data-preview-answers="true"] .answer-content {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    pointer-events: none !important;
   }
 
   /* Two-column layout */
@@ -175,7 +179,7 @@ body[data-preview-answers="true"] .answer-content {
 
   .question-item-print {
     display: block !important;
-    break-inside: avoid !important;
+    break-inside: avoid-column !important;
     margin-bottom: 15px !important;
   }
 
@@ -197,19 +201,13 @@ body[data-preview-answers="true"] .answer-content {
     margin-top: 6px !important;
     border-radius: 4px !important;
     font-size: 9pt !important;
-    font-weight: normal !important;
-    width: fit-content !important;
+    width: 100% !important;
     max-width: 100% !important;
     border: 0.5px solid #bae6fd !important;
+    break-inside: avoid !important;
   }
 
-  /* Ensure text is black in the box */
   .answer-content * {
     color: #000 !important;
-  }
-
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 }

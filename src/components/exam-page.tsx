@@ -115,16 +115,9 @@ const PaperPreview = ({
 
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
-      <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative overflow-hidden flex flex-col">
+      <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative flex flex-col">
+        
         {/* Watermarks - Repeats on every page via Fixed Print CSS */}
-        <div className="watermark-container no-print">
-          {watermarkType === 'text' && watermarkText && (
-            <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
-          )}
-          {watermarkType === 'image' && watermarkImage && (
-            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: (watermarkOpacity || 0) / 100 }} />
-          )}
-        </div>
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -142,16 +135,16 @@ const PaperPreview = ({
                 <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
               </div>
             )}
-            <h1 className="text-2xl font-bold print:text-xl">{examName || "পরীক্ষার নাম"}</h1>
-            <p className="text-lg font-medium print:text-sm mt-1">{authorName || "পরিচালনায়: নাম"}</p>
+            <h1 className="text-2xl font-bold print:text-xl">{examName}</h1>
+            <p className="text-lg font-medium print:text-sm mt-1">{authorName}</p>
           </div>
           
           <div className="border-t-2 border-black my-2 w-full"></div>
           
           <div className="flex justify-between items-center px-2 font-bold text-sm meta-line-print">
-            <span>পূর্ণমান: {totalMarks || "..."}</span>
+            <span>পূর্ণমান: {totalMarks}</span>
             <span>সেট: {setName}</span>
-            <span>সময়: {examTime || "..."}</span>
+            <span>সময়: {examTime}</span>
           </div>
           
           <div className="border-t-2 border-black mt-1.5 w-full"></div>
@@ -182,14 +175,10 @@ const PaperPreview = ({
                         ))}
                       </ul>
                       
-                      {(q.explanation || q.answer) && (
-                        <div className="answer-content">
-                          <div className="w-full">
-                            {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
-                            {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
-                          </div>
-                        </div>
-                      )}
+                      <div className="answer-content">
+                        {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
+                        {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -214,16 +203,12 @@ const PaperPreview = ({
                     <p><span className="font-bold">গ)</span> {q.parts.c}</p>
                     <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
                   </div>
-                  {q.answers && (
-                    <div className="answer-content">
-                      <div className="w-full">
-                        {q.answers.a && <p>ক: {q.answers.a}</p>}
-                        {q.answers.b && <p>খ: {q.answers.b}</p>}
-                        {q.answers.c && <p>গ: {q.answers.c}</p>}
-                        {q.answers.d && <p>ঘ: {q.answers.d}</p>}
-                      </div>
-                    </div>
-                  )}
+                  <div className="answer-content">
+                    {q.answers?.a && <p>ক: {q.answers.a}</p>}
+                    {q.answers?.b && <p>খ: {q.answers.b}</p>}
+                    {q.answers?.c && <p>গ: {q.answers.c}</p>}
+                    {q.answers?.d && <p>ঘ: {q.answers.d}</p>}
+                  </div>
                 </article>
               ))}
             </div>
@@ -234,18 +219,16 @@ const PaperPreview = ({
               {writtenQuestions.map((q, index) => (
                 <article key={index} className="question-item-print break-inside-avoid">
                   <p className="font-bold"><span className="mr-1">{index + 1}.</span> {q.question}</p>
-                  {q.answer && (
-                    <div className="answer-content">
-                       <div className="w-full">উত্তর: {q.answer}</div>
-                    </div>
-                  )}
+                  <div className="answer-content">
+                    {q.answer && <div>উত্তর: {q.answer}</div>}
+                  </div>
                 </article>
               ))}
             </div>
           )}
         </section>
 
-        {/* Footer - Repeated on every page via fixed positioning in CSS */}
+        {/* Footer - Repeated on every page */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:grid grid-cols-3 items-center text-[8pt] text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
@@ -270,19 +253,6 @@ const PaperPreview = ({
                 <span>{facebookText || "Facebook"}</span>
               </a>
             )}
-          </div>
-        </footer>
-
-        {/* Browser Footer for screen only */}
-        <footer className="mt-8 pt-2 border-t border-gray-200 no-print grid grid-cols-3 items-center text-xs text-gray-600">
-           <div className="flex items-center gap-1.5 justify-start">
-            {youtubeUrl && <span className="flex items-center gap-1"><Youtube className="h-4 w-4 text-red-600" /> {youtubeText || "YouTube"}</span>}
-          </div>
-          <div className="flex items-center gap-1.5 justify-center">
-            {telegramUrl && <span className="flex items-center gap-1"><Send className="h-4 w-4 text-blue-500" /> {telegramText || "Telegram"}</span>}
-          </div>
-          <div className="flex items-center gap-1.5 justify-end">
-            {facebookUrl && <span className="flex items-center gap-1"><Facebook className="h-4 w-4 text-blue-600" /> {facebookText || "Facebook"}</span>}
           </div>
         </footer>
       </div>
@@ -375,6 +345,7 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
+    // Brief delay to ensure styles are applied
     setTimeout(() => {
       window.print();
     }, 500);
@@ -472,25 +443,21 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      // Handle User's specific format: { options: { A, B, C, D }, correct_answer: "A" }
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
         const ansKey = item.correct_answer || item.answer || "";
-        
         const optionsArray = [
           optsObj.A || optsObj.a || "",
           optsObj.B || optsObj.b || "",
           optsObj.C || optsObj.c || "",
           optsObj.D || optsObj.d || ""
         ];
-
         let finalAnswer = "";
         if (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) {
           finalAnswer = optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "";
         } else {
           finalAnswer = ansKey;
         }
-
         newMcqs.push({
           question: item.question || "",
           options: optionsArray,

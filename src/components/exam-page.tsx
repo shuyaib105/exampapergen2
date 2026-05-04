@@ -134,7 +134,7 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header - Only on first page (Relative positioning in Print CSS) */}
+        {/* Header - Only on first page */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center">
             {showLogo && logoImage && (
@@ -246,11 +246,11 @@ const PaperPreview = ({
         </section>
 
         {/* Footer - Repeated on every page via fixed positioning in CSS */}
-        <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
+        <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:grid grid-cols-3 items-center text-[8pt] text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
               <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
-                <Youtube className="h-4 w-4 text-red-600" />
+                <Youtube className="h-3 w-3 text-red-600" />
                 <span>{youtubeText || "YouTube"}</span>
               </a>
             )}
@@ -258,7 +258,7 @@ const PaperPreview = ({
           <div className="flex items-center gap-1.5 justify-center">
             {telegramUrl && (
               <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
-                <Send className="h-4 w-4 text-blue-500" />
+                <Send className="h-3 w-3 text-blue-500" />
                 <span>{telegramText || "Telegram"}</span>
               </a>
             )}
@@ -266,10 +266,23 @@ const PaperPreview = ({
           <div className="flex items-center gap-1.5 justify-end">
             {facebookUrl && (
               <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-                <Facebook className="h-4 w-4 text-blue-600" />
+                <Facebook className="h-3 w-3 text-blue-600" />
                 <span>{facebookText || "Facebook"}</span>
               </a>
             )}
+          </div>
+        </footer>
+
+        {/* Browser Footer for screen only */}
+        <footer className="mt-8 pt-2 border-t border-gray-200 no-print grid grid-cols-3 items-center text-xs text-gray-600">
+           <div className="flex items-center gap-1.5 justify-start">
+            {youtubeUrl && <span className="flex items-center gap-1"><Youtube className="h-4 w-4 text-red-600" /> {youtubeText || "YouTube"}</span>}
+          </div>
+          <div className="flex items-center gap-1.5 justify-center">
+            {telegramUrl && <span className="flex items-center gap-1"><Send className="h-4 w-4 text-blue-500" /> {telegramText || "Telegram"}</span>}
+          </div>
+          <div className="flex items-center gap-1.5 justify-end">
+            {facebookUrl && <span className="flex items-center gap-1"><Facebook className="h-4 w-4 text-blue-600" /> {facebookText || "Facebook"}</span>}
           </div>
         </footer>
       </div>
@@ -288,7 +301,6 @@ export default function ExamPage() {
   const [showLogo, setShowLogo] = useState(false);
   
   const [mcqQuestions, setMcqQuestions] = useState<Question[]>([]);
-  const [displayMcqQuestions, setDisplayMcqQuestions] = useState<Question[]>([]);
   const [cqQuestions, setCqQuestions] = useState<CQQuestion[]>([]);
   const [writtenQuestions, setWrittenQuestions] = useState<ShortQuestion[]>([]);
   
@@ -325,16 +337,17 @@ export default function ExamPage() {
   useEffect(() => {
     document.body.setAttribute('data-preview-answers', String(previewAnswers));
   }, [previewAnswers]);
-  
-  useEffect(() => {
-    setDisplayMcqQuestions(mcqQuestions);
-  }, [mcqQuestions]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string | null) => void) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setter(reader.result as string);
+      reader.onloadend = () => {
+        setter(reader.result as string);
+      };
+      reader.onerror = () => {
+        toast({ variant: "destructive", title: "ত্রুটি", description: "ইমেজ আপলোড করা সম্ভব হয়নি।" });
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -459,18 +472,29 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      if (item.options && typeof item.options === 'object' && !Array.isArray(item.options) && item.correct_answer) {
-        const opts = item.options as Record<string, string>;
-        const ansKey = item.correct_answer as string;
+      // Handle User's specific format: { options: { A, B, C, D }, correct_answer: "A" }
+      if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
+        const optsObj = item.options as Record<string, string>;
+        const ansKey = item.correct_answer || item.answer || "";
+        
+        const optionsArray = [
+          optsObj.A || optsObj.a || "",
+          optsObj.B || optsObj.b || "",
+          optsObj.C || optsObj.c || "",
+          optsObj.D || optsObj.d || ""
+        ];
+
+        let finalAnswer = "";
+        if (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) {
+          finalAnswer = optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "";
+        } else {
+          finalAnswer = ansKey;
+        }
+
         newMcqs.push({
           question: item.question || "",
-          options: [
-            opts.A || opts.a || "", 
-            opts.B || opts.b || "", 
-            opts.C || opts.c || "", 
-            opts.D || opts.d || ""
-          ],
-          answer: opts[ansKey] || opts[ansKey.toUpperCase()] || opts[ansKey.toLowerCase()] || ansKey || "",
+          options: optionsArray,
+          answer: finalAnswer,
           explanation: item.explanation || ""
         });
       } 
@@ -790,7 +814,7 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions: displayMcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
+          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
         </main>
       </div>
       <DeveloperFooter />

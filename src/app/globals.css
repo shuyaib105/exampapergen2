@@ -130,7 +130,7 @@ body[data-preview-answers="true"] .answer-content {
     display: block !important;
     width: 100% !important;
     background: white !important;
-    padding-bottom: 10px !important;
+    padding-bottom: 5px !important;
     z-index: 100 !important;
     height: auto !important;
     border-bottom: none !important;
@@ -141,13 +141,14 @@ body[data-preview-answers="true"] .answer-content {
   .exam-footer-print {
     position: fixed !important;
     bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    left: 10mm !important;
+    right: 10mm !important;
     background: white !important;
     padding-top: 5px !important;
     z-index: 100 !important;
     display: grid !important;
     border-top: 1px solid black !important;
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 
   /* Watermark - Repeated on every page */
@@ -158,6 +159,9 @@ body[data-preview-answers="true"] .answer-content {
     left: 0 !important;
     width: 100% !important;
     height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   /* Two-column layout */
@@ -187,8 +191,8 @@ body[data-preview-answers="true"] .answer-content {
   /* Answer/Explanation Styling (Light Blue Box, Black Text) */
   body[data-print-with-answers="true"] .answer-content {
     display: block !important;
-    background-color: #e0f2fe !important; /* light blue background */
-    color: #000 !important; /* black text */
+    background-color: #e0f2fe !important; 
+    color: #000 !important; 
     padding: 6px 10px !important;
     margin-top: 6px !important;
     border-radius: 4px !important;

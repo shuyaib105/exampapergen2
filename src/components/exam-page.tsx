@@ -156,13 +156,11 @@ const PaperPreview = ({
             <span>সময়: {examTime || "..."}</span>
           </div>
           
-          {/* Horizontal Line after meta data */}
           <div className="border-t-2 border-black mt-1.5 w-full"></div>
         </header>
 
         {/* Content Section */}
         <section className="mt-2 relative z-10 flex-grow">
-          {/* MCQ Section in 2 Columns */}
           {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && (
             <div className="mcq-container-print">
               {mcqQuestions.map((q, index) => (
@@ -186,7 +184,6 @@ const PaperPreview = ({
                         ))}
                       </ul>
                       
-                      {/* Black Box Explanation */}
                       {(q.explanation || q.answer) && (
                         <div className="answer-content">
                           {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
@@ -200,7 +197,6 @@ const PaperPreview = ({
             </div>
           )}
 
-          {/* CQ Section */}
           {(mode === "CQ" || mode === "BOTH") && cqQuestions.length > 0 && (
             <div className="mt-6 space-y-8 print:space-y-4">
               {cqQuestions.map((q, index) => (
@@ -218,7 +214,6 @@ const PaperPreview = ({
                     <p><span className="font-bold">গ)</span> {q.parts.c}</p>
                     <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
                   </div>
-                  {/* Black Box for CQ Answers */}
                   {q.answers && (
                     <div className="answer-content">
                       {q.answers.a && <p>ক: {q.answers.a}</p>}
@@ -232,7 +227,6 @@ const PaperPreview = ({
             </div>
           )}
 
-          {/* Written Section */}
           {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && writtenQuestions.length > 0 && (
             <div className="mt-6 space-y-4">
               {writtenQuestions.map((q, index) => (
@@ -245,7 +239,6 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print grid grid-cols-3 items-center text-xs text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
@@ -349,7 +342,6 @@ export default function ExamPage() {
           const json = JSON.parse(content);
           if (Array.isArray(json)) {
             processJsonQuestions(json);
-            toast({ title: "সফল", description: "ফাইল থেকে প্রশ্নগুলো যুক্ত করা হয়েছে।" });
           } else {
             toast({ variant: "destructive", title: "ত্রুটি", description: "JSON ফাইলটি অবশ্যই একটি অ্যারে হতে হবে।" });
           }
@@ -368,7 +360,6 @@ export default function ExamPage() {
     }, 500);
   };
 
-  // Input states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -448,9 +439,49 @@ export default function ExamPage() {
   };
 
   const processJsonQuestions = (json: any[]) => {
-    setMcqQuestions(prev => [...prev, ...json.filter(q => q.options).map(q => q as Question)]);
-    setCqQuestions(prev => [...prev, ...json.filter(q => q.parts).map(q => q as CQQuestion)]);
-    setWrittenQuestions(prev => [...prev, ...json.filter(q => !q.options && !q.parts).map(q => q as ShortQuestion)]);
+    const newMcqs: Question[] = [];
+    const newCqs: CQQuestion[] = [];
+    const newWritten: ShortQuestion[] = [];
+
+    json.forEach(item => {
+      // Handle the specific format: options as object {A, B, C, D} and correct_answer as "A"
+      if (item.options && typeof item.options === 'object' && !Array.isArray(item.options) && item.correct_answer) {
+        const opts = item.options;
+        const ansKey = item.correct_answer;
+        newMcqs.push({
+          question: item.question,
+          options: [
+            opts.A || opts.a || "", 
+            opts.B || opts.b || "", 
+            opts.C || opts.c || "", 
+            opts.D || opts.d || ""
+          ],
+          answer: opts[ansKey] || opts[ansKey.toLowerCase()] || ansKey,
+          explanation: item.explanation || undefined
+        });
+      } 
+      // Handle standard format: options as array
+      else if (Array.isArray(item.options)) {
+        newMcqs.push({
+          question: item.question,
+          options: item.options,
+          answer: item.answer || item.correct_answer || "",
+          explanation: item.explanation || undefined
+        });
+      }
+      // CQ format
+      else if (item.parts) {
+        newCqs.push(item as CQQuestion);
+      }
+      // Short/Written format
+      else if (item.question && !item.options && !item.parts) {
+        newWritten.push(item as ShortQuestion);
+      }
+    });
+
+    setMcqQuestions(prev => [...prev, ...newMcqs]);
+    setCqQuestions(prev => [...prev, ...newCqs]);
+    setWrittenQuestions(prev => [...prev, ...newWritten]);
   };
 
   if (!flowType) {
@@ -651,22 +682,19 @@ export default function ExamPage() {
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ</DialogTitle></DialogHeader>
                         <div className="space-y-4">
-                          <p className="text-sm">প্রশ্নগুলো নিচের ফরম্যাটে একটি অ্যারে হিসেবে থাকতে হবে:</p>
+                          <p className="text-sm">নতুন ফরম্যাট (অবজেক্ট ভিত্তিক অপশন):</p>
                           <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
 {`[
   {
-    "question": "বাংলাদেশের রাজধানী কী?",
-    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],
-    "answer": "ঢাকা"
-  },
-  {
-    "stimulus": "উদ্দীপক টেক্সট...",
-    "parts": {
-      "a": "জ্ঞানমূলক প্রশ্ন",
-      "b": "অনুধাবনমূলক প্রশ্ন",
-      "c": "প্রয়োগমূলক প্রশ্ন",
-      "d": "উচ্চতর দক্ষতামূলক প্রশ্ন"
-    }
+    "question": "১। I-এর মান কত?",
+    "options": {
+      "A": "2.2 A",
+      "B": "0.2 A",
+      "C": "2 A",
+      "D": "1.8 A"
+    },
+    "correct_answer": "A",
+    "explanation": "ব্যাখ্যা এখানে..."
   }
 ]`}
                           </pre>
@@ -696,7 +724,6 @@ export default function ExamPage() {
                         if (Array.isArray(json)) {
                           processJsonQuestions(json);
                           setJsonInput("");
-                          toast({ title: "সফল", description: "প্রশ্নগুলো যুক্ত করা হয়েছে।" });
                         }
                       } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" }); }
                     }}>ম্যানুয়ালি যুক্ত করুন</Button>

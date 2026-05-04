@@ -24,7 +24,8 @@ import {
   FileSignature,
   Copy,
   BookOpen,
-  HelpCircle
+  HelpCircle,
+  Upload
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -152,10 +153,10 @@ const PaperPreview = ({
           <div className="flex justify-between items-center px-2 font-bold text-sm meta-line-print">
             <span>পূর্ণমান: {totalMarks || "..."}</span>
             <span>সেট: {setName}</span>
-            <span>সময়: {examTime || "..."}</span>
+            <span>সময়: {examTime || "..."}</span>
           </div>
           
-          {/* New Horizontal Line after meta data */}
+          {/* Horizontal Line after meta data */}
           <div className="border-t-2 border-black mt-1.5 w-full"></div>
         </header>
 
@@ -335,6 +336,28 @@ export default function ExamPage() {
       const reader = new FileReader();
       reader.onloadend = () => setter(reader.result as string);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleJsonFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const content = event.target?.result as string;
+          const json = JSON.parse(content);
+          if (Array.isArray(json)) {
+            processJsonQuestions(json);
+            toast({ title: "সফল", description: "ফাইল থেকে প্রশ্নগুলো যুক্ত করা হয়েছে।" });
+          } else {
+            toast({ variant: "destructive", title: "ত্রুটি", description: "JSON ফাইলটি অবশ্যই একটি অ্যারে হতে হবে।" });
+          }
+        } catch (err) {
+          toast({ variant: "destructive", title: "ত্রুটি", description: "ফাইলটি পড়া সম্ভব হয়নি। সঠিক JSON ফরম্যাট নিশ্চিত করুন।" });
+        }
+      };
+      reader.readAsText(file);
     }
   };
 
@@ -617,7 +640,7 @@ export default function ExamPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="json">
+              <TabsContent value="json" className="space-y-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="font-headline">JSON ইনপুট</CardTitle>
@@ -628,19 +651,55 @@ export default function ExamPage() {
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ</DialogTitle></DialogHeader>
                         <div className="space-y-4">
-                          <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">{`[\n  {\n    "question": "বাংলাদেশের রাজধানী কী?",\n    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],\n    "answer": "ঢাকা"\n  }\n]`}</pre>
+                          <p className="text-sm">প্রশ্নগুলো নিচের ফরম্যাটে একটি অ্যারে হিসেবে থাকতে হবে:</p>
+                          <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+{`[
+  {
+    "question": "বাংলাদেশের রাজধানী কী?",
+    "options": ["ঢাকা", "রংপুর", "খুলনা", "সিলেট"],
+    "answer": "ঢাকা"
+  },
+  {
+    "stimulus": "উদ্দীপক টেক্সট...",
+    "parts": {
+      "a": "জ্ঞানমূলক প্রশ্ন",
+      "b": "অনুধাবনমূলক প্রশ্ন",
+      "c": "প্রয়োগমূলক প্রশ্ন",
+      "d": "উচ্চতর দক্ষতামূলক প্রশ্ন"
+    }
+  }
+]`}
+                          </pre>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-48 font-mono text-xs" />
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label>
+                      <Input type="file" accept=".json" onChange={handleJsonFileUpload} />
+                    </div>
+                    
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">অথবা টেক্সট পেস্ট করুন</span>
+                      </div>
+                    </div>
+
+                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
                     <Button className="w-full font-headline" onClick={() => {
                       try {
                         const json = JSON.parse(jsonInput);
-                        if (Array.isArray(json)) processJsonQuestions(json);
+                        if (Array.isArray(json)) {
+                          processJsonQuestions(json);
+                          setJsonInput("");
+                          toast({ title: "সফল", description: "প্রশ্নগুলো যুক্ত করা হয়েছে।" });
+                        }
                       } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" }); }
-                    }}>যুক্ত করুন</Button>
+                    }}>ম্যানুয়ালি যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -675,6 +734,15 @@ export default function ExamPage() {
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('CQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setCqQuestions(cqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
+                    </div>
+                  </div>
+                ))}
+                {writtenQuestions.map((q, i) => (
+                  <div key={`written-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
+                    <span className="truncate flex-1">Short: {q.question}</span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('WRITTEN', i)}><Edit2 className="h-3 w-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setWrittenQuestions(writtenQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
                     </div>
                   </div>
                 ))}

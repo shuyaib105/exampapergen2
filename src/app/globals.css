@@ -134,7 +134,7 @@ body[data-preview-answers="true"] .answer-content {
     z-index: 100 !important;
     height: auto !important;
     border-bottom: none !important;
-    position: relative !important; /* Not fixed, so only appears once */
+    position: relative !important;
   }
 
   /* Footer - Repeated on every page */
@@ -187,7 +187,7 @@ body[data-preview-answers="true"] .answer-content {
   /* Answer/Explanation Styling (Light Blue Box, Black Text) */
   body[data-print-with-answers="true"] .answer-content {
     display: block !important;
-    background-color: #e0f2fe !important; /* light blue */
+    background-color: #e0f2fe !important; /* light blue background */
     color: #000 !important; /* black text */
     padding: 6px 10px !important;
     margin-top: 6px !important;

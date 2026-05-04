@@ -23,7 +23,8 @@ import {
   FileSignature,
   BookOpen,
   HelpCircle,
-  Upload
+  Upload,
+  Image as ImageIcon
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,27 +61,27 @@ const DeveloperFooter = () => (
 );
 
 const PaperPreview = ({ 
-  examName, 
-  authorName, 
-  examTime, 
-  totalMarks, 
-  mcqQuestions, 
-  cqQuestions, 
-  writtenQuestions,
-  setName, 
-  mode,
-  logoImage,
-  showLogo,
-  watermarkText,
-  watermarkOpacity,
-  watermarkType,
-  watermarkImage,
-  youtubeText,
-  youtubeUrl,
-  facebookText,
-  facebookUrl,
-  telegramText,
-  telegramUrl
+  examName = "", 
+  authorName = "", 
+  examTime = "", 
+  totalMarks = "", 
+  mcqQuestions = [], 
+  cqQuestions = [], 
+  writtenQuestions = [],
+  setName = "A", 
+  mode = null,
+  logoImage = null,
+  showLogo = false,
+  watermarkText = "",
+  watermarkOpacity = 5,
+  watermarkType = "text",
+  watermarkImage = null,
+  youtubeText = "",
+  youtubeUrl = "",
+  facebookText = "",
+  facebookUrl = "",
+  telegramText = "",
+  telegramUrl = ""
 }: {
   examName: string;
   authorName: string;
@@ -129,9 +130,9 @@ const PaperPreview = ({
 
         {/* Header - Only on first page */}
         <header className="exam-header-print relative z-10 w-full mb-4">
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="flex flex-col items-center justify-center text-center relative">
             {showLogo && logoImage && (
-              <div className="absolute left-0 top-0 h-14 w-14">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-14 w-14 no-print sm:flex hidden">
                 <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
               </div>
             )}
@@ -263,6 +264,8 @@ const PaperPreview = ({
 export default function ExamPage() {
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [mode, setMode] = useState<AppMode>(null);
+  
+  // States initialized with empty strings to avoid controlled/uncontrolled errors
   const [examName, setExamName] = useState("উদ্ভিদ শারীরতত্ত্ব");
   const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২৫ মিনিট");
@@ -316,7 +319,7 @@ export default function ExamPage() {
         setter(reader.result as string);
       };
       reader.onerror = () => {
-        toast({ variant: "destructive", title: "ত্রুটি", description: "ইমেজ আপলোড করা সম্ভব হয়নি।" });
+        toast({ variant: "destructive", title: "Error", description: "Failed to upload image." });
       };
       reader.readAsDataURL(file);
     }
@@ -333,10 +336,10 @@ export default function ExamPage() {
           if (Array.isArray(json)) {
             processJsonQuestions(json);
           } else {
-            toast({ variant: "destructive", title: "ত্রুটি", description: "JSON ফাইলটি অবশ্যই একটি অ্যারে হতে হবে।" });
+            toast({ variant: "destructive", title: "Error", description: "JSON file must be an array." });
           }
         } catch (err) {
-          toast({ variant: "destructive", title: "ত্রুটি", description: "ফাইলটি পড়া সম্ভব হয়নি। সঠিক JSON ফরম্যাট নিশ্চিত করুন।" });
+          toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." });
         }
       };
       reader.readAsText(file);
@@ -351,6 +354,7 @@ export default function ExamPage() {
     }, 500);
   };
 
+  // Manual Question Entry States
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -443,6 +447,7 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
+      // Robust mapping for the specific options object format requested
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
         const ansKey = item.correct_answer || item.answer || "";
@@ -452,12 +457,14 @@ export default function ExamPage() {
           optsObj.C || optsObj.c || "",
           optsObj.D || optsObj.d || ""
         ];
+        
         let finalAnswer = "";
         if (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) {
           finalAnswer = optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "";
         } else {
           finalAnswer = ansKey;
         }
+
         newMcqs.push({
           question: item.question || "",
           options: optionsArray,
@@ -573,6 +580,7 @@ export default function ExamPage() {
                   <div className="space-y-1">
                     <Label>লোগো আপলোড</Label>
                     <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} />
+                    {logoImage && <div className="mt-2 h-10 w-10 border rounded p-1"><img src={logoImage} className="max-w-full max-h-full object-contain" /></div>}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -610,9 +618,15 @@ export default function ExamPage() {
                   {watermarkType === "text" ? (
                     <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} />
                   ) : (
-                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
+                    <div className="space-y-2">
+                      <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
+                      {watermarkImage && <div className="h-10 w-10 border rounded p-1"><img src={watermarkImage} className="max-w-full max-h-full object-contain" /></div>}
+                    </div>
                   )}
-                  <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                  <div className="space-y-1">
+                    <Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label>
+                    <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -684,7 +698,7 @@ export default function ExamPage() {
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ</DialogTitle></DialogHeader>
                         <div className="space-y-4">
-                          <p className="text-sm">নতুন ফরম্যাট (অবজেক্ট ভিত্তিক অপশন):</p>
+                          <p className="text-sm font-bold">নতুন অবজেক্ট ফরম্যাট (Options Object):</p>
                           <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
 {`[
   {
@@ -727,7 +741,7 @@ export default function ExamPage() {
                           processJsonQuestions(json);
                           setJsonInput("");
                         }
-                      } catch (e) { toast({ variant: "destructive", title: "ত্রুটি", description: "ভুল JSON ফরম্যাট।" }); }
+                      } catch (e) { toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." }); }
                     }}>ম্যানুয়ালি যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
@@ -759,7 +773,7 @@ export default function ExamPage() {
                 ))}
                 {cqQuestions.map((q, i) => (
                   <div key={`cq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">CQ: {q.parts?.a || "প্রশ্ন"}</span>
+                    <span className="truncate flex-1">CQ: {q.parts?.a || "Question"}</span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('CQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setCqQuestions(cqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
@@ -781,7 +795,11 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl}} />
+          <PaperPreview {...{
+            examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, 
+            setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, 
+            watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl
+          }} />
         </main>
       </div>
       <DeveloperFooter />

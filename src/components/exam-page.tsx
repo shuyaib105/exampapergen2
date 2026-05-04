@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Printer, 
-  CheckCircle, 
   FileText, 
   ListChecks, 
   ArrowLeft, 
@@ -22,7 +21,6 @@ import {
   Send,
   FileSpreadsheet,
   FileSignature,
-  Copy,
   BookOpen,
   HelpCircle,
   Upload
@@ -453,7 +451,6 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      // Handle formatting: options as object {A, B, C, D} and correct_answer as "A"
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options) && item.correct_answer) {
         const opts = item.options as Record<string, string>;
         const ansKey = item.correct_answer as string;
@@ -469,7 +466,6 @@ export default function ExamPage() {
           explanation: item.explanation || undefined
         });
       } 
-      // Handle standard format: options as array
       else if (Array.isArray(item.options)) {
         newMcqs.push({
           question: item.question,
@@ -478,11 +474,9 @@ export default function ExamPage() {
           explanation: item.explanation || undefined
         });
       }
-      // CQ format
       else if (item.parts) {
         newCqs.push(item as CQQuestion);
       }
-      // Short/Written format
       else if (item.question && !item.options && !item.parts) {
         newWritten.push(item as ShortQuestion);
       }
@@ -560,11 +554,11 @@ export default function ExamPage() {
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName} onChange={(e) => setExamName(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1"><Label>সময়</Label><Input value={examTime} onChange={(e) => setExamTime(e.target.value)} /></div>
-                    <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} /></div>
+                    <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
+                    <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                   </div>
                   <div className="space-y-1"><Label>ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
                 </AccordionContent>
@@ -590,18 +584,18 @@ export default function ExamPage() {
                   <div className="space-y-3">
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-red-600"><Youtube className="h-4 w-4" /> ইউটিউব</Label>
-                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} />
                     </div>
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-blue-500"><Send className="h-4 w-4" /> টেলিগ্রাম</Label>
-                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText} onChange={(e) => setTelegramText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} />
+                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} />
                     </div>
                     <div className="p-3 border rounded bg-gray-50 space-y-2">
                       <Label className="flex items-center gap-2 text-blue-600"><Facebook className="h-4 w-4" /> ফেসবুক</Label>
-                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText} onChange={(e) => setFacebookText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} />
+                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} />
+                      <Input placeholder="লিংক..." value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} />
                     </div>
                   </div>
                 </AccordionContent>
@@ -610,12 +604,12 @@ export default function ExamPage() {
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ওয়াটারমার্ক</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <RadioGroup value={watermarkType} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
+                  <RadioGroup value={watermarkType || "text"} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
                   {watermarkType === "text" ? (
-                    <Input placeholder="টেক্সট..." value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} />
+                    <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} />
                   ) : (
                     <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
                   )}
@@ -641,38 +635,38 @@ export default function ExamPage() {
                         <TabsTrigger value="written">Short</TabsTrigger>
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
                         <div className="grid grid-cols-2 gap-2">
                           {mcqOptions.map((opt, i) => (
-                            <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt} onChange={(e) => { 
+                            <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { 
                               const newOpts = [...mcqOptions]; 
                               newOpts[i] = e.target.value; 
                               setMcqOptions(newOpts); 
                             }} />
                           ))}
                         </div>
-                        <Select value={mcqAnswer} onValueChange={setMcqAnswer}>
+                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}>
                           <SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger>
                           <SelectContent>
                             {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <Input placeholder="ব্যাখ্যা (ঐচ্ছিক)" value={mcqExplanation} onChange={(e) => setMcqExplanation(e.target.value)} />
+                        <Input placeholder="ব্যাখ্যা (ঐচ্ছিক)" value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-3">
-                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
+                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
                         <div className="grid grid-cols-1 gap-2">
-                          <Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} />
-                          <Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} />
-                          <Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} />
-                          <Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} />
+                          <Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} />
+                          <Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} />
+                          <Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} />
+                          <Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} />
                         </div>
                         <Button className="w-full font-headline" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={writtenQuestion} onChange={(e) => setWrittenQuestion(e.target.value)} />
-                        <Textarea placeholder="উত্তর..." value={writtenAnswer} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Input placeholder="প্রশ্ন..." value={writtenQuestion || ""} onChange={(e) => setWrittenQuestion(e.target.value)} />
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
@@ -726,7 +720,7 @@ export default function ExamPage() {
                       </div>
                     </div>
 
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
+                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
                     <Button className="w-full font-headline" onClick={() => {
                       try {
                         const json = JSON.parse(jsonInput);

@@ -81,7 +81,8 @@ const PaperPreview = ({
   facebookText = "",
   facebookUrl = "",
   telegramText = "",
-  telegramUrl = ""
+  telegramUrl = "",
+  flowType = null
 }: {
   examName: string;
   authorName: string;
@@ -104,6 +105,7 @@ const PaperPreview = ({
   facebookUrl: string;
   telegramText: string;
   telegramUrl: string;
+  flowType: FlowType;
 }) => {
   const ensureAbsoluteUrl = (url: string) => {
     if (!url) return "";
@@ -142,13 +144,16 @@ const PaperPreview = ({
           
           <div className="border-t-2 border-black my-2 w-full"></div>
           
-          <div className="flex justify-between items-center px-2 font-bold text-sm meta-line-print">
-            <span>পূর্ণমান: {totalMarks}</span>
-            <span>সেট: {setName}</span>
-            <span>সময়: {examTime}</span>
-          </div>
-          
-          <div className="border-t-2 border-black mt-1.5 w-full"></div>
+          {flowType === "EXAM" && (
+            <>
+              <div className="flex justify-between items-center px-2 font-bold text-sm meta-line-print">
+                <span>পূর্ণমান: {totalMarks}</span>
+                <span>সেট: {setName}</span>
+                <span>সময়: {examTime}</span>
+              </div>
+              <div className="border-t-2 border-black mt-1.5 w-full"></div>
+            </>
+          )}
         </header>
 
         {/* Content Section */}
@@ -562,10 +567,14 @@ export default function ExamPage() {
                 <AccordionContent className="p-4 space-y-4">
                   <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
                   <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
-                    <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
-                  </div>
+                  
+                  {flowType === "EXAM" && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
+                    </div>
+                  )}
+                  
                   <div className="space-y-1"><Label>ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
@@ -798,7 +807,8 @@ export default function ExamPage() {
           <PaperPreview {...{
             examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, 
             setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, 
-            watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl
+            watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl,
+            flowType
           }} />
         </main>
       </div>

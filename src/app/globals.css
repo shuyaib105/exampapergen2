@@ -89,6 +89,11 @@ body {
 body[data-preview-answers="true"] .answer-content,
 body[data-preview-answers="true"] .answer-content-written {
   display: block;
+  background-color: #e0f2fe;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  border: 1px solid #bae6fd;
 }
 
 /* PRINT STYLES */
@@ -193,27 +198,28 @@ body[data-preview-answers="true"] .answer-content-written {
     margin-top: 3px !important;
   }
 
-  /* General Answer Styling */
-  body[data-print-with-answers="true"] .answer-content {
+  /* General Answer Styling with Blue Box */
+  body[data-print-with-answers="true"] .answer-content,
+  body[data-print-with-answers="true"] .answer-content-written {
     display: block !important;
     background-color: #e0f2fe !important; 
     color: #000 !important; 
     padding: 6px 10px !important;
     margin-top: 6px !important;
     border-radius: 4px !important;
-    font-size: 9pt !important;
-    width: 100% !important;
-    max-width: 100% !important;
     border: 0.5px solid #bae6fd !important;
     break-inside: avoid !important;
+    width: 100% !important;
   }
 
-  /* Written Answer Styling - Matches Question Font */
+  /* MCQ specific - keep it slightly smaller if desired, or let it inherit */
+  body[data-print-with-answers="true"] .answer-content {
+    font-size: 9pt !important;
+  }
+
+  /* Written Answer - ensure it matches question font size */
   body[data-print-with-answers="true"] .answer-content-written {
-    display: block !important;
-    margin-top: 4px !important;
     color: #000 !important;
-    break-inside: avoid !important;
   }
 
   .answer-content *, .answer-content-written * {

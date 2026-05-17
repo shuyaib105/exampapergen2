@@ -23,8 +23,7 @@ import {
   FileSignature,
   BookOpen,
   HelpCircle,
-  Upload,
-  Image as ImageIcon
+  Upload
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -120,7 +119,7 @@ const PaperPreview = ({
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative flex flex-col">
         
-        {/* Watermarks - Repeats on every page via Fixed Print CSS */}
+        {/* Watermarks */}
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -166,12 +165,6 @@ const PaperPreview = ({
                     <span className="font-bold mr-1.5">{index + 1}.</span>
                     <div className="flex-1">
                       <p className="font-bold mb-1 leading-snug">{q.question}</p>
-                      {q.image && (
-                        <div className="mb-2 flex justify-center">
-                          <img src={q.image} alt="Question" className="max-h-32 object-contain" />
-                        </div>
-                      )}
-                      
                       <ul className="options-grid-print">
                         {q.options.map((option, optIndex) => (
                           <li key={optIndex} className="flex items-start space-x-1.5 print-option-li">
@@ -180,7 +173,6 @@ const PaperPreview = ({
                           </li>
                         ))}
                       </ul>
-                      
                       <div className="answer-content">
                         {q.answer && <div className="font-bold">সঠিক উত্তর: {q.answer}</div>}
                         {q.explanation && <div>ব্যাখ্যা: {q.explanation}</div>}
@@ -198,22 +190,11 @@ const PaperPreview = ({
                 <article key={index} className="question-item-print break-inside-avoid">
                   <p className="font-bold mb-2">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
                   {q.stimulus && <div className="mb-3 italic text-gray-700 bg-gray-50 p-3 rounded print:bg-white print:p-0">{q.stimulus}</div>}
-                  {q.stimulusImage && (
-                    <div className={cn("mb-3 flex", q.stimulusImageAlign === 'right' ? 'justify-end' : q.stimulusImageAlign === 'left' ? 'justify-start' : 'justify-center')}>
-                      <img src={q.stimulusImage} alt="Stimulus" className="max-h-64 object-contain" style={{ width: `${q.stimulusImageWidth || 100}%` }} />
-                    </div>
-                  )}
                   <div className="grid grid-cols-1 gap-y-2 pl-4">
                     <p><span className="font-bold">ক)</span> {q.parts.a}</p>
                     <p><span className="font-bold">খ)</span> {q.parts.b}</p>
                     <p><span className="font-bold">গ)</span> {q.parts.c}</p>
                     <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
-                  </div>
-                  <div className="answer-content">
-                    {q.answers?.a && <p>ক: {q.answers.a}</p>}
-                    {q.answers?.b && <p>খ: {q.answers.b}</p>}
-                    {q.answers?.c && <p>গ: {q.answers.c}</p>}
-                    {q.answers?.d && <p>ঘ: {q.answers.d}</p>}
                   </div>
                 </article>
               ))}
@@ -224,9 +205,9 @@ const PaperPreview = ({
             <div className="mt-6 space-y-4">
               {writtenQuestions.map((q, index) => (
                 <article key={index} className="question-item-print break-inside-avoid">
-                  <p className="font-bold"><span className="mr-1">{index + 1}.</span> {q.question}</p>
+                  <p className="mb-1"><span className="font-bold mr-1">{index + 1}.</span> {q.question}</p>
                   <div className="answer-content">
-                    {q.answer && <div>উত্তর: {q.answer}</div>}
+                    {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
                   </div>
                 </article>
               ))}
@@ -234,11 +215,11 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer - Repeated on every page */}
+        {/* Footer */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:grid grid-cols-3 items-center text-[8pt] text-gray-600 relative z-10">
           <div className="flex items-center gap-1.5 justify-start">
             {youtubeUrl && (
-              <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-red-600 transition-colors">
+              <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
                 <Youtube className="h-3 w-3 text-red-600" />
                 <span>{youtubeText || "YouTube"}</span>
               </a>
@@ -246,7 +227,7 @@ const PaperPreview = ({
           </div>
           <div className="flex items-center gap-1.5 justify-center">
             {telegramUrl && (
-              <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-500 transition-colors">
+              <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
                 <Send className="h-3 w-3 text-blue-500" />
                 <span>{telegramText || "Telegram"}</span>
               </a>
@@ -254,7 +235,7 @@ const PaperPreview = ({
           </div>
           <div className="flex items-center gap-1.5 justify-end">
             {facebookUrl && (
-              <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+              <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
                 <Facebook className="h-3 w-3 text-blue-600" />
                 <span>{facebookText || "Facebook"}</span>
               </a>
@@ -270,7 +251,6 @@ export default function ExamPage() {
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [mode, setMode] = useState<AppMode>(null);
   
-  // States initialized with empty strings to avoid controlled/uncontrolled errors
   const [examName, setExamName] = useState("উদ্ভিদ শারীরতত্ত্ব");
   const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২৫ মিনিট");
@@ -320,12 +300,7 @@ export default function ExamPage() {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setter(reader.result as string);
-      };
-      reader.onerror = () => {
-        toast({ variant: "destructive", title: "Error", description: "Failed to upload image." });
-      };
+      reader.onloadend = () => setter(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -340,11 +315,9 @@ export default function ExamPage() {
           const json = JSON.parse(content);
           if (Array.isArray(json)) {
             processJsonQuestions(json);
-          } else {
-            toast({ variant: "destructive", title: "Error", description: "JSON file must be an array." });
           }
         } catch (err) {
-          toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." });
+          toast({ variant: "destructive", title: "Error", description: "Invalid JSON file." });
         }
       };
       reader.readAsText(file);
@@ -353,24 +326,19 @@ export default function ExamPage() {
 
   const handleExport = (withAnswers: boolean) => {
     document.body.setAttribute('data-print-with-answers', String(withAnswers));
-    // Brief delay to ensure styles are applied
-    setTimeout(() => {
-      window.print();
-    }, 500);
+    setTimeout(() => window.print(), 500);
   };
 
-  // Manual Question Entry States
+  // Manual states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
   const [mcqExplanation, setMcqExplanation] = useState("");
-
   const [cqStimulus, setCqStimulus] = useState("");
   const [cqPartA, setCqPartA] = useState("");
   const [cqPartB, setCqPartB] = useState("");
   const [cqPartC, setCqPartC] = useState("");
   const [cqPartD, setCqPartD] = useState("");
-
   const [writtenQuestion, setWrittenQuestion] = useState("");
   const [writtenAnswer, setWrittenAnswer] = useState("");
 
@@ -390,10 +358,7 @@ export default function ExamPage() {
 
   const handleAddCq = () => {
     if (!cqPartA || !cqPartB) return;
-    const newQ: CQQuestion = {
-      stimulus: cqStimulus,
-      parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD },
-    };
+    const newQ: CQQuestion = { stimulus: cqStimulus, parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD } };
     if (editingIndex?.type === 'CQ') {
       const updated = [...cqQuestions];
       updated[editingIndex.index] = newQ;
@@ -407,12 +372,7 @@ export default function ExamPage() {
 
   const handleAddMcq = () => {
     if (!mcqQuestion || mcqOptions.some(o => !o) || !mcqAnswer) return;
-    const newQ: Question = {
-      question: mcqQuestion,
-      options: mcqOptions,
-      answer: mcqAnswer,
-      explanation: mcqExplanation || ""
-    };
+    const newQ: Question = { question: mcqQuestion, options: mcqOptions, answer: mcqAnswer, explanation: mcqExplanation || "" };
     if (editingIndex?.type === 'MCQ') {
       const updated = [...mcqQuestions];
       updated[editingIndex.index] = newQ;
@@ -428,21 +388,13 @@ export default function ExamPage() {
     setEditingIndex({type, index});
     if (type === "MCQ") {
       const q = mcqQuestions[index];
-      setMcqQuestion(q.question || ""); 
-      setMcqOptions(q.options || ["", "", "", ""]); 
-      setMcqAnswer(q.answer || ""); 
-      setMcqExplanation(q.explanation || "");
+      setMcqQuestion(q.question || ""); setMcqOptions(q.options || ["", "", "", ""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || "");
     } else if (type === "CQ") {
       const q = cqQuestions[index];
-      setCqStimulus(q.stimulus || ""); 
-      setCqPartA(q.parts?.a || ""); 
-      setCqPartB(q.parts?.b || ""); 
-      setCqPartC(q.parts?.c || ""); 
-      setCqPartD(q.parts?.d || "");
+      setCqStimulus(q.stimulus || ""); setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || "");
     } else {
       const q = writtenQuestions[index];
-      setWrittenQuestion(q.question || ""); 
-      setWrittenAnswer(q.answer || "");
+      setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || "");
     }
   };
 
@@ -452,7 +404,7 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      // Robust mapping for the specific options object format requested
+      // Handle MCQ with options object
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
         const ansKey = item.correct_answer || item.answer || "";
@@ -462,34 +414,25 @@ export default function ExamPage() {
           optsObj.C || optsObj.c || "",
           optsObj.D || optsObj.d || ""
         ];
-        
         let finalAnswer = "";
         if (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) {
           finalAnswer = optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "";
         } else {
           finalAnswer = ansKey;
         }
-
-        newMcqs.push({
-          question: item.question || "",
-          options: optionsArray,
-          answer: finalAnswer,
-          explanation: item.explanation || ""
-        });
+        newMcqs.push({ question: item.question || "", options: optionsArray, answer: finalAnswer, explanation: item.explanation || "" });
       } 
       else if (Array.isArray(item.options)) {
-        newMcqs.push({
-          question: item.question || "",
-          options: item.options,
-          answer: item.answer || item.correct_answer || "",
-          explanation: item.explanation || ""
-        });
+        newMcqs.push({ question: item.question || "", options: item.options, answer: item.answer || item.correct_answer || "", explanation: item.explanation || "" });
       }
       else if (item.parts) {
         newCqs.push(item as CQQuestion);
       }
       else if (item.question && !item.options && !item.parts) {
-        newWritten.push(item as ShortQuestion);
+        newWritten.push({
+          question: item.question || "",
+          answer: item.answer || item.correct_answer || ""
+        });
       }
     });
 
@@ -559,7 +502,7 @@ export default function ExamPage() {
       <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
         <aside className="w-full lg:w-[420px] p-4 sm:p-6 border-b lg:border-r print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
-            <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> মোড পরিবর্তন</Button>
+            <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
             
             <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
@@ -574,46 +517,15 @@ export default function ExamPage() {
                       <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
-                  
-                  <div className="space-y-1"><Label>ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={16} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
+                  <div className="space-y-1"><Label>ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={24} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="logo" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">লোগো সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label className="font-semibold">লোগো দেখান</Label>
-                    <Switch checked={showLogo} onCheckedChange={setShowLogo} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>লোগো আপলোড</Label>
-                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} />
-                    {logoImage && <div className="mt-2 h-10 w-10 border rounded p-1"><img src={logoImage} className="max-w-full max-h-full object-contain" /></div>}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
-                <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-3">
-                    <div className="p-3 border rounded bg-gray-50 space-y-2">
-                      <Label className="flex items-center gap-2 text-red-600"><Youtube className="h-4 w-4" /> ইউটিউব</Label>
-                      <Input placeholder="ইউটিউব টেক্সট..." value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} />
-                    </div>
-                    <div className="p-3 border rounded bg-gray-50 space-y-2">
-                      <Label className="flex items-center gap-2 text-blue-500"><Send className="h-4 w-4" /> টেলিগ্রাম</Label>
-                      <Input placeholder="টেলিগ্রাম টেক্সট..." value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} />
-                    </div>
-                    <div className="p-3 border rounded bg-gray-50 space-y-2">
-                      <Label className="flex items-center gap-2 text-blue-600"><Facebook className="h-4 w-4" /> ফেসবুক</Label>
-                      <Input placeholder="ফেসবুক টেক্সট..." value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} />
-                      <Input placeholder="লিংক..." value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} />
-                    </div>
-                  </div>
+                  <div className="flex items-center justify-between mb-2"><Label>লোগো দেখান</Label><Switch checked={showLogo} onCheckedChange={setShowLogo} /></div>
+                  <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} />
                 </AccordionContent>
               </AccordionItem>
 
@@ -624,27 +536,14 @@ export default function ExamPage() {
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
-                  {watermarkType === "text" ? (
-                    <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} />
-                  ) : (
-                    <div className="space-y-2">
-                      <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />
-                      {watermarkImage && <div className="h-10 w-10 border rounded p-1"><img src={watermarkImage} className="max-w-full max-h-full object-contain" /></div>}
-                    </div>
-                  )}
-                  <div className="space-y-1">
-                    <Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label>
-                    <Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} />
-                  </div>
+                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
+                  <div className="space-y-1"><Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label><Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
 
             <Tabs defaultValue="manual" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="manual" className="font-headline">ম্যানুয়াল</TabsTrigger>
-                <TabsTrigger value="json" className="font-headline">JSON</TabsTrigger>
-              </TabsList>
+              <TabsList className="grid w-full grid-cols-2 mb-4"><TabsTrigger value="manual" className="font-headline">ম্যানুয়াল</TabsTrigger><TabsTrigger value="json" className="font-headline">JSON</TabsTrigger></TabsList>
               
               <TabsContent value="manual">
                 <Card>
@@ -658,32 +557,13 @@ export default function ExamPage() {
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        <div className="grid grid-cols-2 gap-2">
-                          {mcqOptions.map((opt, i) => (
-                            <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { 
-                              const newOpts = [...mcqOptions]; 
-                              newOpts[i] = e.target.value; 
-                              setMcqOptions(newOpts); 
-                            }} />
-                          ))}
-                        </div>
-                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}>
-                          <SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger>
-                          <SelectContent>
-                            {mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Input placeholder="ব্যাখ্যা (ঐচ্ছিক)" value={mcqExplanation || ""} onChange={(e) => setMcqExplanation(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
+                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}</SelectContent></Select>
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-3">
                         <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
-                        <div className="grid grid-cols-1 gap-2">
-                          <Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} />
-                          <Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} />
-                          <Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} />
-                          <Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} />
-                        </div>
+                        <div className="grid grid-cols-1 gap-2"><Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} /><Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} /><Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} /><Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} /></div>
                         <Button className="w-full font-headline" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
@@ -698,60 +578,49 @@ export default function ExamPage() {
 
               <TabsContent value="json" className="space-y-4">
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="font-headline">JSON ইনপুট</CardTitle>
                     <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><HelpCircle className="h-5 w-5" /></Button>
-                      </DialogTrigger>
+                      <DialogTrigger asChild><Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button></DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ</DialogTitle></DialogHeader>
-                        <div className="space-y-4">
-                          <p className="text-sm font-bold">নতুন অবজেক্ট ফরম্যাট (Options Object):</p>
-                          <pre className="bg-gray-100 p-3 rounded text-[10px] overflow-x-auto">
+                        <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ (Templates)</DialogTitle></DialogHeader>
+                        <div className="space-y-6">
+                          <div>
+                            <p className="text-sm font-bold mb-2">১. এমসিকিউ (MCQ):</p>
+                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
 {`[
   {
-    "question": "১। I-এর মান কত?",
+    "question": "১। বাংলাদেশের রাজধানীর নাম কি?",
     "options": {
-      "A": "2.2 A",
-      "B": "0.2 A",
-      "C": "2 A",
-      "D": "1.8 A"
+      "A": "ঢাকা",
+      "B": "খুলনা",
+      "C": "রংপুর",
+      "D": "সিলেট"
     },
-    "correct_answer": "A",
-    "explanation": "ব্যাখ্যা এখানে..."
+    "correct_answer": "A"
   }
 ]`}
-                          </pre>
+                            </pre>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold mb-2">২. সংক্ষিপ্ত প্রশ্ন (Short Question):</p>
+                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
+{`[
+  {
+    "question": "বাংলাদেশের রাজধানীর নাম কি?",
+    "answer": "ঢাকা"
+  }
+]`}
+                            </pre>
+                          </div>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label>
-                      <Input type="file" accept=".json" onChange={handleJsonFileUpload} />
-                    </div>
-                    
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">অথবা টেক্সট পেস্ট করুন</span>
-                      </div>
-                    </div>
-
+                    <div className="space-y-2"><Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label><Input type="file" accept=".json" onChange={handleJsonFileUpload} /></div>
                     <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
-                    <Button className="w-full font-headline" onClick={() => {
-                      try {
-                        const json = JSON.parse(jsonInput);
-                        if (Array.isArray(json)) {
-                          processJsonQuestions(json);
-                          setJsonInput("");
-                        }
-                      } catch (e) { toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." }); }
-                    }}>ম্যানুয়ালি যুক্ত করুন</Button>
+                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) { processJsonQuestions(j); setJsonInput(""); } } catch(e) {} }}>ম্যানুয়ালি যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -762,10 +631,7 @@ export default function ExamPage() {
                 <Button className="w-full font-headline" onClick={() => handleExport(true)}><Printer className="mr-2 h-4 w-4" /> উত্তরসহ PDF</Button>
                 <Button variant="secondary" className="w-full font-headline" onClick={() => handleExport(false)}><FileText className="mr-2 h-4 w-4" /> উত্তর ছাড়া PDF</Button>
               </div>
-              <div className="flex items-center justify-between rounded-lg border p-3 bg-white">
-                <Label className="text-sm font-bold">উত্তর প্রিভিউ</Label>
-                <Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} />
-              </div>
+              <div className="flex items-center justify-between border p-3 bg-white rounded-lg"><Label className="font-bold">উত্তর প্রিভিউ</Label><Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} /></div>
             </div>
 
             <div className="space-y-2">
@@ -774,25 +640,16 @@ export default function ExamPage() {
                 {mcqQuestions.map((q, i) => (
                   <div key={`mcq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
                     <span className="truncate flex-1">MCQ: {q.question}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('MCQ', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setMcqQuestions(mcqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
-                ))}
-                {cqQuestions.map((q, i) => (
-                  <div key={`cq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">CQ: {q.parts?.a || "Question"}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('CQ', i)}><Edit2 className="h-3 w-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setCqQuestions(cqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
                     </div>
                   </div>
                 ))}
                 {writtenQuestions.map((q, i) => (
                   <div key={`written-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
                     <span className="truncate flex-1">Short: {q.question}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('WRITTEN', i)}><Edit2 className="h-3 w-3" /></Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setWrittenQuestions(writtenQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
                     </div>

@@ -23,7 +23,8 @@ import {
   FileSignature,
   BookOpen,
   HelpCircle,
-  Upload
+  Upload,
+  Settings2
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -43,6 +44,7 @@ import {
 type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
 type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
+type FooterMode = "social" | "plain";
 
 const DeveloperFooter = () => (
   <footer className="DeveloperFooter_wrapper mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
@@ -81,7 +83,10 @@ const PaperPreview = ({
   facebookUrl = "",
   telegramText = "",
   telegramUrl = "",
-  flowType = null
+  footerPlainText = "",
+  footerMode = "social",
+  flowType = null,
+  headerFontSize = 24
 }: {
   examName: string;
   authorName: string;
@@ -104,7 +109,10 @@ const PaperPreview = ({
   facebookUrl: string;
   telegramText: string;
   telegramUrl: string;
+  footerPlainText: string;
+  footerMode: FooterMode;
   flowType: FlowType;
+  headerFontSize: number;
 }) => {
   const ensureAbsoluteUrl = (url: string) => {
     if (!url) return "";
@@ -137,7 +145,7 @@ const PaperPreview = ({
                 <img src={logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />
               </div>
             )}
-            <h1 className="text-2xl font-bold print:text-xl">{examName}</h1>
+            <h1 className="font-bold print:leading-tight" style={{ fontSize: `${headerFontSize}px` }}>{examName}</h1>
             <p className="text-lg font-medium print:text-sm mt-1">{authorName}</p>
           </div>
           
@@ -221,31 +229,39 @@ const PaperPreview = ({
         </section>
 
         {/* Footer */}
-        <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:grid grid-cols-3 items-center text-[8pt] text-gray-600 relative z-10">
-          <div className="flex items-center gap-1.5 justify-start">
-            {youtubeUrl && (
-              <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
-                <Youtube className="h-3 w-3 text-red-600" />
-                <span>{youtubeText || "YouTube"}</span>
-              </a>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 justify-center">
-            {telegramUrl && (
-              <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
-                <Send className="h-3 w-3 text-blue-500" />
-                <span>{telegramText || "Telegram"}</span>
-              </a>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 justify-end">
-            {facebookUrl && (
-              <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
-                <Facebook className="h-3 w-3 text-blue-600" />
-                <span>{facebookText || "Facebook"}</span>
-              </a>
-            )}
-          </div>
+        <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:block text-[8pt] text-gray-600 relative z-10">
+          {footerMode === 'plain' ? (
+            <div className="w-full text-center py-1 font-bold">
+              {footerPlainText}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 items-center w-full">
+              <div className="flex items-center gap-1.5 justify-start">
+                {youtubeUrl && (
+                  <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                    <Youtube className="h-3 w-3 text-red-600" />
+                    <span>{youtubeText || "YouTube"}</span>
+                  </a>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 justify-center">
+                {telegramUrl && (
+                  <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                    <Send className="h-3 w-3 text-blue-500" />
+                    <span>{telegramText || "Telegram"}</span>
+                  </a>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 justify-end">
+                {facebookUrl && (
+                  <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                    <Facebook className="h-3 w-3 text-blue-600" />
+                    <span>{facebookText || "Facebook"}</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </footer>
       </div>
     </div>
@@ -271,6 +287,7 @@ export default function ExamPage() {
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
+  const [headerFontSize, setHeaderFontSize] = useState(24);
   const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ' | 'WRITTEN', index: number} | null>(null);
 
   const [watermarkType, setWatermarkType] = useState<WatermarkType>("text");
@@ -278,6 +295,8 @@ export default function ExamPage() {
   const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
   const [watermarkOpacity, setWatermarkOpacity] = useState(5);
 
+  const [footerMode, setFooterMode] = useState<FooterMode>("social");
+  const [footerPlainText, setFooterPlainText] = useState("");
   const [youtubeText, setYoutubeText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("");
@@ -294,6 +313,7 @@ export default function ExamPage() {
   const dynamicPrintStyles = `
     @media print {
       #printable-area .question-item-print { font-size: ${printFontSize}px !important; }
+      #printable-area .answer-content-written { font-size: ${printFontSize}px !important; }
     }
   `;
 
@@ -409,7 +429,6 @@ export default function ExamPage() {
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
-      // Handle MCQ with options object
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
         const ansKey = item.correct_answer || item.answer || "";
@@ -457,7 +476,7 @@ export default function ExamPage() {
                   <FileSpreadsheet className="h-12 w-12" />
                 </div>
                 <CardTitle className="text-2xl font-headline">PDF Sheet</CardTitle>
-                <CardDescription>প্রশ্ন সাজান</CardDescription>
+                <CardDescription>প্রশ্ন সাজান (সেট/পূর্ণমান ছাড়া)</CardDescription>
               </CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("EXAM")}>
@@ -466,7 +485,7 @@ export default function ExamPage() {
                   <FileSignature className="h-12 w-12" />
                 </div>
                 <CardTitle className="text-2xl font-headline">প্রশ্নপত্র তৈরি</CardTitle>
-                <CardDescription>প্রফেশনাল প্রশ্ন</CardDescription>
+                <CardDescription>প্রফেশনাল ফুল প্রশ্ন (সেট/পূর্ণমান সহ)</CardDescription>
               </CardHeader>
             </Card>
           </div>
@@ -522,7 +541,8 @@ export default function ExamPage() {
                       <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
-                  <div className="space-y-1"><Label>ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={24} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
+                  <div className="space-y-1"><Label>প্রশ্ন ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={40} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
+                  <div className="space-y-1"><Label>হেডার ফন্ট সাইজ ({headerFontSize}px)</Label><Slider min={12} max={60} step={1} value={[headerFontSize]} onValueChange={(v) => setHeaderFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -543,6 +563,26 @@ export default function ExamPage() {
                   </RadioGroup>
                   {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
                   <div className="space-y-1"><Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label><Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} /></div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
+                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
+                <AccordionContent className="p-4 space-y-4">
+                  <RadioGroup value={footerMode} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex gap-4 mb-2">
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
+                  </RadioGroup>
+
+                  {footerMode === 'social' ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
+                    </div>
+                  ) : (
+                    <Input placeholder="ফুটার টেক্সট (সেন্টার)..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -670,7 +710,7 @@ export default function ExamPage() {
             examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, 
             setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, 
             watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl,
-            flowType
+            footerPlainText, footerMode, flowType, headerFontSize
           }} />
         </main>
       </div>

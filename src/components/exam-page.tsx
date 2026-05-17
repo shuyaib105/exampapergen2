@@ -158,7 +158,7 @@ const PaperPreview = ({
         {/* Content Section */}
         <section className="mt-2 relative z-10 flex-grow">
           {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && (
-            <div className="mcq-container-print">
+            <div className="two-column-container-print">
               {mcqQuestions.map((q, index) => (
                 <article key={index} className="mb-5 question-item-print break-inside-avoid">
                   <div className="flex items-start">
@@ -202,12 +202,17 @@ const PaperPreview = ({
           )}
 
           {(mode === "WRITTEN" || mode === "MCQ_WRITTEN") && writtenQuestions.length > 0 && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 two-column-container-print">
               {writtenQuestions.map((q, index) => (
-                <article key={index} className="question-item-print break-inside-avoid">
-                  <p className="mb-1"><span className="font-bold mr-1">{index + 1}.</span> {q.question}</p>
-                  <div className="answer-content-written">
-                    {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
+                <article key={index} className="mb-5 question-item-print break-inside-avoid">
+                  <div className="flex items-start">
+                    <span className="font-bold mr-1.5">{index + 1}.</span>
+                    <div className="flex-1">
+                      <p className="mb-1 leading-snug font-bold">{q.question}</p>
+                      <div className="answer-content-written">
+                        {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
+                      </div>
+                    </div>
                   </div>
                 </article>
               ))}

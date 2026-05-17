@@ -175,7 +175,7 @@ body[data-preview-answers="true"] .answer-content-written {
   }
 
   /* Two-column layout */
-  .mcq-container-print {
+  .two-column-container-print {
     display: block !important;
     column-count: 2 !important;
     column-gap: 30px !important;
@@ -217,9 +217,10 @@ body[data-preview-answers="true"] .answer-content-written {
     font-size: 9pt !important;
   }
 
-  /* Written Answer - ensure it matches question font size */
+  /* Written Answer - ensure it matches question font size exactly */
   body[data-print-with-answers="true"] .answer-content-written {
     color: #000 !important;
+    font-size: inherit !important;
   }
 
   .answer-content *, .answer-content-written * {

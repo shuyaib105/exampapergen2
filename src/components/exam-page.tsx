@@ -206,7 +206,7 @@ const PaperPreview = ({
               {writtenQuestions.map((q, index) => (
                 <article key={index} className="question-item-print break-inside-avoid">
                   <p className="mb-1"><span className="font-bold mr-1">{index + 1}.</span> {q.question}</p>
-                  <div className="answer-content">
+                  <div className="answer-content-written">
                     {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
                   </div>
                 </article>

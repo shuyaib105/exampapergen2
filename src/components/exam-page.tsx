@@ -349,7 +349,6 @@ export default function ExamPage() {
     setTimeout(() => window.print(), 500);
   };
 
-  // Input states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -404,14 +403,16 @@ export default function ExamPage() {
     const newMcqs: Question[] = []; const newCqs: CQQuestion[] = []; const newWritten: ShortQuestion[] = [];
     json.forEach(item => {
       if (!item) return;
-      if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
-        const optsObj = item.options as Record<string, string>;
-        const ansKey = String(item.correct_answer || item.answer || "");
-        const optionsArray = [optsObj.A || optsObj.a || "", optsObj.B || optsObj.b || "", optsObj.C || optsObj.c || "", optsObj.D || optsObj.d || ""];
-        let finalAnswer = (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) ? (optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "") : ansKey;
-        newMcqs.push({ question: item.question || "", options: optionsArray, answer: finalAnswer, explanation: item.explanation || "" });
-      } else if (Array.isArray(item.options)) {
-        newMcqs.push({ question: item.question || "", options: item.options, answer: item.answer || item.correct_answer || "", explanation: item.explanation || "" });
+      if (item.options) {
+        if (typeof item.options === 'object' && !Array.isArray(item.options)) {
+          const optsObj = item.options as Record<string, string>;
+          const ansKey = String(item.correct_answer || item.answer || "");
+          const optionsArray = [optsObj.A || optsObj.a || "", optsObj.B || optsObj.b || "", optsObj.C || optsObj.c || "", optsObj.D || optsObj.d || ""];
+          let finalAnswer = (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) ? (optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || ansKey) : ansKey;
+          newMcqs.push({ question: item.question || "", options: optionsArray, answer: finalAnswer, explanation: item.explanation || "" });
+        } else if (Array.isArray(item.options)) {
+          newMcqs.push({ question: item.question || "", options: item.options, answer: item.answer || item.correct_answer || "", explanation: item.explanation || "" });
+        }
       } else if (item.parts) {
         newCqs.push(item as CQQuestion);
       } else if (item.question) {
@@ -419,7 +420,8 @@ export default function ExamPage() {
       }
     });
     setMcqQuestions(prev => [...prev, ...newMcqs]); setCqQuestions(prev => [...prev, ...newCqs]); setWrittenQuestions(prev => [...prev, ...newWritten]);
-  }, []);
+    toast({ title: "সফল!", description: `${newMcqs.length + newCqs.length + newWritten.length} টি প্রশ্ন যুক্ত করা হয়েছে।` });
+  }, [toast]);
 
   if (!flowType) {
     return (
@@ -562,7 +564,7 @@ export default function ExamPage() {
                     <Dialog><DialogTrigger asChild><Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button></DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle className="font-headline">JSON টেমপ্লেট</DialogTitle></DialogHeader>
                         <div className="space-y-6">
-                          <p className="text-sm font-bold">সংক্ষিপ্ত প্রশ্ন টেমপ্লেট:</p>
+                          <p className="text-sm font-bold">সংক্ষিপ্ত প্রশ্ন টেমপ্লেট (নতুন):</p>
                           <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">{`[
   {
     "question": "বাংলাদেশের রাজধানীর নাম কি?",
@@ -584,7 +586,7 @@ export default function ExamPage() {
                   <CardContent className="space-y-4">
                     <Input type="file" accept=".json" onChange={handleJsonFileUpload} />
                     <Textarea placeholder="JSON অ্যারে..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
-                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) processJsonQuestions(j); setJsonInput(""); } catch(e) {} }}>যুক্ত করুন</Button>
+                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) processJsonQuestions(j); setJsonInput(""); } catch(e) { toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." }); } }}>যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -608,4 +610,3 @@ export default function ExamPage() {
     </>
   );
 }
-

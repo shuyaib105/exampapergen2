@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -45,7 +44,7 @@ import {
 type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
 type FlowType = "SHEET" | "EXAM" | null;
 type WatermarkType = "text" | "image";
-type FooterMode = "social" | "plain";
+type FooterMode = "social" | "plain" | "ribbon";
 
 const DeveloperFooter = () => (
   <footer className="DeveloperFooter_wrapper mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
@@ -85,7 +84,7 @@ const PaperPreview = ({
   telegramText = "",
   telegramUrl = "",
   footerPlainText = "",
-  footerMode = "social",
+  footerMode = "ribbon",
   flowType = null,
   headerFontSize = 24,
   printFontSize = 11
@@ -242,34 +241,40 @@ const PaperPreview = ({
         </section>
 
         {/* Footer - Repeated on every page */}
-        <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:block text-[8pt] text-gray-600 relative z-10">
-          {footerMode === 'plain' ? (
-            <div className="w-full text-center py-1 font-bold">
+        <footer className="mt-8 exam-footer-print hidden print:block relative z-10">
+          {footerMode === 'ribbon' ? (
+            <div className="footer-ribbon-bar">
+              <div className="footer-ribbon-stripes"></div>
+              <div className="footer-ribbon-text">{footerPlainText || examName}</div>
+              <div className="footer-ribbon-page"></div>
+            </div>
+          ) : footerMode === 'plain' ? (
+            <div className="w-full text-center py-2 font-bold border-t border-black bg-white">
               {footerPlainText}
             </div>
           ) : (
-            <div className="grid grid-cols-3 items-center w-full">
-              <div className="flex items-center gap-1.5 justify-start">
+            <div className="social-footer-grid bg-white">
+              <div className="flex items-center gap-1.5 justify-center">
                 {youtubeUrl && (
-                  <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                  <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                     <Youtube className="h-3 w-3 text-red-600" />
-                    <span>{youtubeText || "YouTube"}</span>
+                    <span className="text-[8pt]">{youtubeText || "YouTube"}</span>
                   </a>
                 )}
               </div>
               <div className="flex items-center gap-1.5 justify-center">
                 {telegramUrl && (
-                  <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                  <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                     <Send className="h-3 w-3 text-blue-500" />
-                    <span>{telegramText || "Telegram"}</span>
+                    <span className="text-[8pt]">{telegramText || "Telegram"}</span>
                   </a>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 justify-end">
+              <div className="flex items-center gap-1.5 justify-center">
                 {facebookUrl && (
-                  <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                  <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                     <Facebook className="h-3 w-3 text-blue-600" />
-                    <span>{facebookText || "Facebook"}</span>
+                    <span className="text-[8pt]">{facebookText || "Facebook"}</span>
                   </a>
                 )}
               </div>
@@ -308,8 +313,8 @@ export default function ExamPage() {
   const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
   const [watermarkOpacity, setWatermarkOpacity] = useState(5);
 
-  const [footerMode, setFooterMode] = useState<FooterMode>("social");
-  const [footerPlainText, setFooterPlainText] = useState("");
+  const [footerMode, setFooterMode] = useState<FooterMode>("ribbon");
+  const [footerPlainText, setFooterPlainText] = useState("রেটিনা গাইড");
   const [youtubeText, setYoutubeText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("");
@@ -538,13 +543,13 @@ export default function ExamPage() {
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName} onChange={(e) => setExamName(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
                   
                   {flowType === "EXAM" && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime} onChange={(e) => setExamTime(e.target.value)} /></div>
-                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
                   <div className="space-y-1"><Label>প্রশ্ন ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={40} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
@@ -563,11 +568,11 @@ export default function ExamPage() {
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ওয়াটারমার্ক</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <RadioGroup value={watermarkType} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
+                  <RadioGroup value={watermarkType || "text"} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
-                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
+                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
                   <div className="space-y-1"><Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label><Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
@@ -575,19 +580,20 @@ export default function ExamPage() {
               <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <RadioGroup value={footerMode} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex gap-4 mb-2">
+                  <RadioGroup value={footerMode || "ribbon"} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex flex-col gap-2 mb-2">
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="ribbon" id="fm-ribbon" /><Label htmlFor="fm-ribbon">মডার্ন রিবন (ছবি অনুযায়ী)</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
                   </RadioGroup>
 
                   {footerMode === 'social' ? (
                     <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
                     </div>
                   ) : (
-                    <Input placeholder="ফুটার টেক্সট (সেন্টার)..." value={footerPlainText} onChange={(e) => setFooterPlainText(e.target.value)} />
+                    <Input placeholder="ফুটার টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
                   )}
                 </AccordionContent>
               </AccordionItem>
@@ -607,19 +613,19 @@ export default function ExamPage() {
                         <TabsTrigger value="written">Short</TabsTrigger>
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
-                        <Select value={mcqAnswer} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}</SelectContent></Select>
+                        <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
+                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}</SelectContent></Select>
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-3">
-                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
-                        <div className="grid grid-cols-1 gap-2"><Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} /><Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} /><Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} /><Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} /></div>
+                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
+                        <div className="grid grid-cols-1 gap-2"><Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} /><Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} /><Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} /><Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} /></div>
                         <Button className="w-full font-headline" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={writtenQuestion} onChange={(e) => setWrittenQuestion(e.target.value)} />
-                        <Textarea placeholder="উত্তর..." value={writtenAnswer} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Input placeholder="প্রশ্ন..." value={writtenQuestion || ""} onChange={(e) => setWrittenQuestion(e.target.value)} />
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
@@ -670,7 +676,7 @@ export default function ExamPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2"><Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label><Input type="file" accept=".json" onChange={handleJsonFileUpload} /></div>
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
+                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
                     <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) { processJsonQuestions(j); setJsonInput(""); } } catch(e) {} }}>ম্যানুয়ালি যুক্ত করুন</Button>
                   </CardContent>
                 </Card>

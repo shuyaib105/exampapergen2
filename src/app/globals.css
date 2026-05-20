@@ -152,12 +152,56 @@ body[data-preview-answers="true"] .answer-content-written {
     right: 0 !important;
     width: 100% !important;
     background: white !important;
-    padding-top: 5px !important;
     z-index: 100 !important;
+    display: block !important;
+  }
+
+  /* Ribbon Footer Specific */
+  .footer-ribbon-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background-color: #1e293b !important;
+    color: white !important;
+    height: 32px !important;
+    padding: 0 15px !important;
+    position: relative !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .footer-ribbon-stripes {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 50px !important;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.8) 30%, rgba(255,255,255,0.8) 35%, transparent 35%, transparent 45%, rgba(255,255,255,0.8) 45%, rgba(255,255,255,0.8) 50%, transparent 50%) !important;
+  }
+
+  .footer-ribbon-text {
+    flex: 1 !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 10pt !important;
+    color: white !important;
+  }
+
+  .footer-ribbon-page::after {
+    content: counter(page);
+    font-weight: bold !important;
+    font-size: 10pt !important;
+  }
+
+  /* Social Footer fallback */
+  .social-footer-grid {
     display: grid !important;
-    border-top: 1px solid black !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    height: 30px !important;
+    width: 100% !important;
+    background: white !important;
+    border-top: 1px solid black !important;
+    padding: 5px 0 !important;
+    text-align: center !important;
   }
 
   /* Watermark - Repeated on every page */
@@ -212,12 +256,10 @@ body[data-preview-answers="true"] .answer-content-written {
     width: 100% !important;
   }
 
-  /* MCQ specific - keep it slightly smaller if desired, or let it inherit */
   body[data-print-with-answers="true"] .answer-content {
     font-size: 9pt !important;
   }
 
-  /* Written Answer - ensure it matches question font size exactly */
   body[data-print-with-answers="true"] .answer-content-written {
     color: #000 !important;
     font-size: inherit !important;

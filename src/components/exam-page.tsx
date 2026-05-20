@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Question, CQQuestion, ShortQuestion } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,7 +87,8 @@ const PaperPreview = ({
   footerPlainText = "",
   footerMode = "social",
   flowType = null,
-  headerFontSize = 24
+  headerFontSize = 24,
+  printFontSize = 11
 }: {
   examName: string;
   authorName: string;
@@ -114,6 +115,7 @@ const PaperPreview = ({
   footerMode: FooterMode;
   flowType: FlowType;
   headerFontSize: number;
+  printFontSize: number;
 }) => {
   const ensureAbsoluteUrl = (url: string) => {
     if (!url) return "";
@@ -128,8 +130,18 @@ const PaperPreview = ({
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative flex flex-col">
         
-        {/* Watermarks */}
+        {/* Watermarks - Repeated on every page */}
         <div className="watermark-container-print hidden print:flex">
+          {watermarkType === 'text' && watermarkText && (
+            <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
+          )}
+          {watermarkType === 'image' && watermarkImage && (
+            <img src={watermarkImage} alt="Watermark" className="watermark-image-el" style={{ opacity: (watermarkOpacity || 0) / 100 }} />
+          )}
+        </div>
+
+        {/* Screen Preview Watermark */}
+        <div className="watermark-container print:hidden">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
           )}
@@ -165,7 +177,7 @@ const PaperPreview = ({
         </header>
 
         {/* Content Section */}
-        <section className="mt-2 relative z-10 flex-grow">
+        <section className="mt-2 relative z-10 flex-grow" style={{ fontSize: `${printFontSize}px` }}>
           {(mode === "MCQ" || mode === "BOTH" || mode === "MCQ_WRITTEN") && mcqQuestions.length > 0 && (
             <div className="two-column-container-print">
               {mcqQuestions.map((q, index) => (
@@ -175,7 +187,7 @@ const PaperPreview = ({
                     <div className="flex-1">
                       <p className="font-bold mb-1 leading-snug">{q.question}</p>
                       <ul className="options-grid-print">
-                        {q.options.map((option, optIndex) => (
+                        {q.options?.map((option, optIndex) => (
                           <li key={optIndex} className="flex items-start space-x-1.5 print-option-li">
                             <span className="font-medium">{optionLabels[optIndex]})</span>
                             <span className="flex-1">{option}</span>
@@ -200,10 +212,10 @@ const PaperPreview = ({
                   <p className="font-bold mb-2">{index + 1}. নিচের উদ্দীপকটি পড় এবং প্রশ্নগুলোর উত্তর দাও:</p>
                   {q.stimulus && <div className="mb-3 italic text-gray-700 bg-gray-50 p-3 rounded print:bg-white print:p-0">{q.stimulus}</div>}
                   <div className="grid grid-cols-1 gap-y-2 pl-4">
-                    <p><span className="font-bold">ক)</span> {q.parts.a}</p>
-                    <p><span className="font-bold">খ)</span> {q.parts.b}</p>
-                    <p><span className="font-bold">গ)</span> {q.parts.c}</p>
-                    <p><span className="font-bold">ঘ)</span> {q.parts.d}</p>
+                    <p><span className="font-bold">ক)</span> {q.parts?.a}</p>
+                    <p><span className="font-bold">খ)</span> {q.parts?.b}</p>
+                    <p><span className="font-bold">গ)</span> {q.parts?.c}</p>
+                    <p><span className="font-bold">ঘ)</span> {q.parts?.d}</p>
                   </div>
                 </article>
               ))}
@@ -218,7 +230,7 @@ const PaperPreview = ({
                     <span className="font-bold mr-1.5">{index + 1}.</span>
                     <div className="flex-1">
                       <p className="mb-1 leading-snug font-bold">{q.question}</p>
-                      <div className="answer-content-written">
+                      <div className="answer-content-written" style={{ fontSize: 'inherit' }}>
                         {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
                       </div>
                     </div>
@@ -229,7 +241,7 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer */}
+        {/* Footer - Repeated on every page */}
         <footer className="mt-8 pt-2 border-t border-black exam-footer-print hidden print:block text-[8pt] text-gray-600 relative z-10">
           {footerMode === 'plain' ? (
             <div className="w-full text-center py-1 font-bold">
@@ -311,13 +323,6 @@ export default function ExamPage() {
     document.title = examName || "ExamPaperGen";
   }, [examName]);
 
-  const dynamicPrintStyles = `
-    @media print {
-      #printable-area .question-item-print { font-size: ${printFontSize}px !important; }
-      #printable-area .answer-content-written { font-size: ${printFontSize}px !important; }
-    }
-  `;
-
   useEffect(() => {
     document.body.setAttribute('data-preview-answers', String(previewAnswers));
   }, [previewAnswers]);
@@ -355,7 +360,6 @@ export default function ExamPage() {
     setTimeout(() => window.print(), 500);
   };
 
-  // Manual states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -424,15 +428,17 @@ export default function ExamPage() {
     }
   };
 
-  const processJsonQuestions = (json: any[]) => {
+  const processJsonQuestions = useCallback((json: any[]) => {
+    if (!Array.isArray(json)) return;
     const newMcqs: Question[] = [];
     const newCqs: CQQuestion[] = [];
     const newWritten: ShortQuestion[] = [];
 
     json.forEach(item => {
+      if (!item) return;
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
-        const ansKey = item.correct_answer || item.answer || "";
+        const ansKey = String(item.correct_answer || item.answer || "");
         const optionsArray = [
           optsObj.A || optsObj.a || "",
           optsObj.B || optsObj.b || "",
@@ -464,7 +470,7 @@ export default function ExamPage() {
     setMcqQuestions(prev => [...prev, ...newMcqs]);
     setCqQuestions(prev => [...prev, ...newCqs]);
     setWrittenQuestions(prev => [...prev, ...newWritten]);
-  };
+  }, []);
 
   if (!flowType) {
     return (
@@ -523,7 +529,6 @@ export default function ExamPage() {
 
   return (
     <>
-      <style>{dynamicPrintStyles}</style>
       <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground font-body">
         <aside className="w-full lg:w-[420px] p-4 sm:p-6 border-b lg:border-r print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
@@ -533,13 +538,13 @@ export default function ExamPage() {
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
-                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName} onChange={(e) => setExamName(e.target.value)} /></div>
+                  <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} /></div>
                   
                   {flowType === "EXAM" && (
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
-                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>সময়</Label><Input value={examTime} onChange={(e) => setExamTime(e.target.value)} /></div>
+                      <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
                   <div className="space-y-1"><Label>প্রশ্ন ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={40} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
@@ -558,11 +563,11 @@ export default function ExamPage() {
               <AccordionItem value="watermark" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ওয়াটারমার্ক</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <RadioGroup value={watermarkType || "text"} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
+                  <RadioGroup value={watermarkType} onValueChange={(val) => setWatermarkType(val as WatermarkType)} className="flex gap-4">
                     <div className="flex items-center space-x-2"><RadioGroupItem value="text" id="wt-text" /><Label htmlFor="wt-text">টেক্সট</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="image" id="wt-image" /><Label htmlFor="wt-image">ইমেজ</Label></div>
                   </RadioGroup>
-                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText || ""} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
+                  {watermarkType === "text" ? <Input placeholder="টেক্সট..." value={watermarkText} onChange={(e) => setWatermarkText(e.target.value)} /> : <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setWatermarkImage)} />}
                   <div className="space-y-1"><Label className="text-xs">অপাাসিটি ({watermarkOpacity}%)</Label><Slider min={0} max={50} value={[watermarkOpacity]} onValueChange={(v) => setWatermarkOpacity(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
@@ -577,12 +582,12 @@ export default function ExamPage() {
 
                   {footerMode === 'social' ? (
                     <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
+                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
                     </div>
                   ) : (
-                    <Input placeholder="ফুটার টেক্সট (সেন্টার)..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                    <Input placeholder="ফুটার টেক্সট (সেন্টার)..." value={footerPlainText} onChange={(e) => setFooterPlainText(e.target.value)} />
                   )}
                 </AccordionContent>
               </AccordionItem>
@@ -602,19 +607,19 @@ export default function ExamPage() {
                         <TabsTrigger value="written">Short</TabsTrigger>
                       </TabsList>
                       <TabsContent value="mcq" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
-                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
-                        <Select value={mcqAnswer || ""} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}</SelectContent></Select>
+                        <Input placeholder="প্রশ্ন..." value={mcqQuestion} onChange={(e) => setMcqQuestion(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
+                        <Select value={mcqAnswer} onValueChange={setMcqAnswer}><SelectTrigger><SelectValue placeholder="সঠিক উত্তর" /></SelectTrigger><SelectContent>{mcqOptions.map((opt, i) => opt && <SelectItem key={i} value={opt}>{['ক', 'খ', 'গ', 'ঘ'][i]}) {opt}</SelectItem>)}</SelectContent></Select>
                         <Button className="w-full font-headline" onClick={handleAddMcq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="cq" className="space-y-3">
-                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus || ""} onChange={(e) => setCqStimulus(e.target.value)} />
-                        <div className="grid grid-cols-1 gap-2"><Input placeholder="ক) প্রশ্ন" value={cqPartA || ""} onChange={(e) => setCqPartA(e.target.value)} /><Input placeholder="খ) প্রশ্ন" value={cqPartB || ""} onChange={(e) => setCqPartB(e.target.value)} /><Input placeholder="গ) প্রশ্ন" value={cqPartC || ""} onChange={(e) => setCqPartC(e.target.value)} /><Input placeholder="ঘ) প্রশ্ন" value={cqPartD || ""} onChange={(e) => setCqPartD(e.target.value)} /></div>
+                        <Textarea placeholder="উদ্দীপক..." value={cqStimulus} onChange={(e) => setCqStimulus(e.target.value)} />
+                        <div className="grid grid-cols-1 gap-2"><Input placeholder="ক) প্রশ্ন" value={cqPartA} onChange={(e) => setCqPartA(e.target.value)} /><Input placeholder="খ) প্রশ্ন" value={cqPartB} onChange={(e) => setCqPartB(e.target.value)} /><Input placeholder="গ) প্রশ্ন" value={cqPartC} onChange={(e) => setCqPartC(e.target.value)} /><Input placeholder="ঘ) প্রশ্ন" value={cqPartD} onChange={(e) => setCqPartD(e.target.value)} /></div>
                         <Button className="w-full font-headline" onClick={handleAddCq}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                       <TabsContent value="written" className="space-y-3">
-                        <Input placeholder="প্রশ্ন..." value={writtenQuestion || ""} onChange={(e) => setWrittenQuestion(e.target.value)} />
-                        <Textarea placeholder="উত্তর..." value={writtenAnswer || ""} onChange={(e) => setWrittenAnswer(e.target.value)} />
+                        <Input placeholder="প্রশ্ন..." value={writtenQuestion} onChange={(e) => setWrittenQuestion(e.target.value)} />
+                        <Textarea placeholder="উত্তর..." value={writtenAnswer} onChange={(e) => setWrittenAnswer(e.target.value)} />
                         <Button className="w-full font-headline" onClick={handleAddWritten}>{editingIndex ? "আপডেট" : "যুক্ত করুন"}</Button>
                       </TabsContent>
                     </Tabs>
@@ -665,7 +670,7 @@ export default function ExamPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2"><Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label><Input type="file" accept=".json" onChange={handleJsonFileUpload} /></div>
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
+                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
                     <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) { processJsonQuestions(j); setJsonInput(""); } } catch(e) {} }}>ম্যানুয়ালি যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
@@ -711,7 +716,7 @@ export default function ExamPage() {
             examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, 
             setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, 
             watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl,
-            footerPlainText, footerMode, flowType, headerFontSize
+            footerPlainText, footerMode, flowType, headerFontSize, printFontSize
           }} />
         </main>
       </div>

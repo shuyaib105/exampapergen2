@@ -84,6 +84,7 @@ const PaperPreview = ({
   telegramText = "",
   telegramUrl = "",
   footerPlainText = "",
+  ribbonRightText = "",
   footerMode = "ribbon",
   flowType = null,
   headerFontSize = 24,
@@ -111,6 +112,7 @@ const PaperPreview = ({
   telegramText: string;
   telegramUrl: string;
   footerPlainText: string;
+  ribbonRightText: string;
   footerMode: FooterMode;
   flowType: FlowType;
   headerFontSize: number;
@@ -239,7 +241,11 @@ const PaperPreview = ({
               <div className="ribbon-left">{footerPlainText || examName}</div>
               <div className="ribbon-divider"></div>
               <div className="ribbon-right">
-                <span className="ribbon-page-num"></span>
+                {ribbonRightText ? (
+                  <span>{ribbonRightText}</span>
+                ) : (
+                  <span className="ribbon-page-num"></span>
+                )}
               </div>
             </div>
           ) : footerMode === 'plain' ? (
@@ -294,6 +300,7 @@ export default function ExamPage() {
 
   const [footerMode, setFooterMode] = useState<FooterMode>("ribbon");
   const [footerPlainText, setFooterPlainText] = useState("রেটিনা গাইড");
+  const [ribbonRightText, setRibbonRightText] = useState("");
   const [youtubeText, setYoutubeText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("");
@@ -501,7 +508,16 @@ export default function ExamPage() {
                     <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
                   </RadioGroup>
-                  <Input placeholder="ফুটার মেইন টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                  <div className="space-y-2">
+                    <Label>মেইন টেক্সট (বাম দিক)</Label>
+                    <Input placeholder="ফুটার মেইন টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                  </div>
+                  {footerMode === 'ribbon' && (
+                    <div className="space-y-2 pt-1">
+                      <Label>ডান দিকের টেক্সট (খালি রাখলে পেজ নাম্বার দেখাবে)</Label>
+                      <Input placeholder="ডান দিকের টেক্সট..." value={ribbonRightText || ""} onChange={(e) => setRibbonRightText(e.target.value)} />
+                    </div>
+                  )}
                   {footerMode === 'social' && (
                     <div className="space-y-3 pt-2">
                       <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
@@ -545,7 +561,23 @@ export default function ExamPage() {
                   <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="font-headline">JSON ইনপুট</CardTitle>
                     <Dialog><DialogTrigger asChild><Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button></DialogTrigger>
                       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle className="font-headline">JSON টেমপ্লেট</DialogTitle></DialogHeader>
-                        <div className="space-y-6"><pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">{`[ { "question": "...", "answer": "..." } ]`}</pre></div>
+                        <div className="space-y-6">
+                          <p className="text-sm font-bold">সংক্ষিপ্ত প্রশ্ন টেমপ্লেট:</p>
+                          <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">{`[
+  {
+    "question": "বাংলাদেশের রাজধানীর নাম কি?",
+    "answer": "ঢাকা"
+  }
+]`}</pre>
+                          <p className="text-sm font-bold">MCQ টেমপ্লেট:</p>
+                          <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">{`[
+  {
+    "question": "...",
+    "options": ["ক", "খ", "গ", "ঘ"],
+    "answer": "সঠিক উত্তর"
+  }
+]`}</pre>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
@@ -569,10 +601,11 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{ examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl, footerPlainText, footerMode, flowType, headerFontSize, printFontSize }} />
+          <PaperPreview {...{ examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl, footerPlainText, ribbonRightText, footerMode, flowType, headerFontSize, printFontSize }} />
         </main>
       </div>
       <DeveloperFooter />
     </>
   );
 }
+

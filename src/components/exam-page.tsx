@@ -47,7 +47,7 @@ type WatermarkType = "text" | "image";
 type FooterMode = "social" | "plain" | "ribbon";
 
 const DeveloperFooter = () => (
-  <footer className="DeveloperFooter_wrapper mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
+  <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
     <span>Developed By</span>
     <a 
       href="https://t.me/shu_yaib" 
@@ -116,20 +116,13 @@ const PaperPreview = ({
   headerFontSize: number;
   printFontSize: number;
 }) => {
-  const ensureAbsoluteUrl = (url: string) => {
-    if (!url) return "";
-    const trimmed = url.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    return `https://${trimmed}`;
-  };
-
   const optionLabels = ['ক', 'খ', 'গ', 'ঘ'];
 
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative flex flex-col">
         
-        {/* Watermarks - Repeated on every page */}
+        {/* Watermarks */}
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -139,7 +132,6 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Screen Preview Watermark */}
         <div className="watermark-container print:hidden">
           {watermarkType === 'text' && watermarkText && (
             <div className="watermark-text" style={{ opacity: (watermarkOpacity || 0) / 100 }}>{watermarkText}</div>
@@ -149,7 +141,7 @@ const PaperPreview = ({
           )}
         </div>
 
-        {/* Header - Only on first page */}
+        {/* Header - First Page Only */}
         <header className="exam-header-print relative z-10 w-full mb-4">
           <div className="flex flex-col items-center justify-center text-center relative">
             {showLogo && logoImage && (
@@ -240,43 +232,30 @@ const PaperPreview = ({
           )}
         </section>
 
-        {/* Footer - Repeated on every page */}
+        {/* Footer - Repeated on Every Page */}
         <footer className="mt-8 exam-footer-print hidden print:block relative z-10">
           {footerMode === 'ribbon' ? (
-            <div className="footer-ribbon-bar">
-              <div className="footer-ribbon-stripes"></div>
-              <div className="footer-ribbon-text">{footerPlainText || examName}</div>
-              <div className="footer-ribbon-page"></div>
+            <div className="footer-ribbon-container">
+              <div className="ribbon-left">{footerPlainText || examName}</div>
+              <div className="ribbon-divider"></div>
+              <div className="ribbon-right">
+                <span className="ribbon-page-num"></span>
+              </div>
             </div>
           ) : footerMode === 'plain' ? (
             <div className="w-full text-center py-2 font-bold border-t border-black bg-white">
               {footerPlainText}
             </div>
           ) : (
-            <div className="social-footer-grid bg-white">
+            <div className="grid grid-cols-3 w-full border-t border-black py-2 bg-white">
               <div className="flex items-center gap-1.5 justify-center">
-                {youtubeUrl && (
-                  <a href={ensureAbsoluteUrl(youtubeUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                    <Youtube className="h-3 w-3 text-red-600" />
-                    <span className="text-[8pt]">{youtubeText || "YouTube"}</span>
-                  </a>
-                )}
+                {youtubeUrl && <><Youtube className="h-3 w-3 text-red-600" /><span className="text-[8pt]">{youtubeText || "YouTube"}</span></>}
               </div>
               <div className="flex items-center gap-1.5 justify-center">
-                {telegramUrl && (
-                  <a href={ensureAbsoluteUrl(telegramUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                    <Send className="h-3 w-3 text-blue-500" />
-                    <span className="text-[8pt]">{telegramText || "Telegram"}</span>
-                  </a>
-                )}
+                {telegramUrl && <><Send className="h-3 w-3 text-blue-500" /><span className="text-[8pt]">{telegramText || "Telegram"}</span></>}
               </div>
               <div className="flex items-center gap-1.5 justify-center">
-                {facebookUrl && (
-                  <a href={ensureAbsoluteUrl(facebookUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                    <Facebook className="h-3 w-3 text-blue-600" />
-                    <span className="text-[8pt]">{facebookText || "Facebook"}</span>
-                  </a>
-                )}
+                {facebookUrl && <><Facebook className="h-3 w-3 text-blue-600" /><span className="text-[8pt]">{facebookText || "Facebook"}</span></>}
               </div>
             </div>
           )}
@@ -349,9 +328,7 @@ export default function ExamPage() {
         try {
           const content = event.target?.result as string;
           const json = JSON.parse(content);
-          if (Array.isArray(json)) {
-            processJsonQuestions(json);
-          }
+          if (Array.isArray(json)) processJsonQuestions(json);
         } catch (err) {
           toast({ variant: "destructive", title: "Error", description: "Invalid JSON file." });
         }
@@ -365,6 +342,7 @@ export default function ExamPage() {
     setTimeout(() => window.print(), 500);
   };
 
+  // Input states
   const [mcqQuestion, setMcqQuestion] = useState("");
   const [mcqOptions, setMcqOptions] = useState(["", "", "", ""]);
   const [mcqAnswer, setMcqAnswer] = useState("");
@@ -377,104 +355,63 @@ export default function ExamPage() {
   const [writtenQuestion, setWrittenQuestion] = useState("");
   const [writtenAnswer, setWrittenAnswer] = useState("");
 
+  const handleAddMcq = () => {
+    if (!mcqQuestion) return;
+    const newQ: Question = { question: mcqQuestion, options: mcqOptions, answer: mcqAnswer, explanation: mcqExplanation };
+    if (editingIndex?.type === 'MCQ') {
+      const updated = [...mcqQuestions]; updated[editingIndex.index] = newQ; setMcqQuestions(updated); setEditingIndex(null);
+    } else setMcqQuestions([...mcqQuestions, newQ]);
+    setMcqQuestion(""); setMcqOptions(["", "", "", ""]); setMcqAnswer(""); setMcqExplanation("");
+  };
+
+  const handleAddCq = () => {
+    if (!cqPartA) return;
+    const newQ: CQQuestion = { stimulus: cqStimulus, parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD } };
+    if (editingIndex?.type === 'CQ') {
+      const updated = [...cqQuestions]; updated[editingIndex.index] = newQ; setCqQuestions(updated); setEditingIndex(null);
+    } else setCqQuestions([...cqQuestions, newQ]);
+    setCqStimulus(""); setCqPartA(""); setCqPartB(""); setCqPartC(""); setCqPartD("");
+  };
+
   const handleAddWritten = () => {
     if (!writtenQuestion) return;
     const newQ: ShortQuestion = { question: writtenQuestion, answer: writtenAnswer };
     if (editingIndex?.type === 'WRITTEN') {
-      const updated = [...writtenQuestions];
-      updated[editingIndex.index] = newQ;
-      setWrittenQuestions(updated);
-      setEditingIndex(null);
-    } else {
-      setWrittenQuestions([...writtenQuestions, newQ]);
-    }
+      const updated = [...writtenQuestions]; updated[editingIndex.index] = newQ; setWrittenQuestions(updated); setEditingIndex(null);
+    } else setWrittenQuestions([...writtenQuestions, newQ]);
     setWrittenQuestion(""); setWrittenAnswer("");
-  };
-
-  const handleAddCq = () => {
-    if (!cqPartA || !cqPartB) return;
-    const newQ: CQQuestion = { stimulus: cqStimulus, parts: { a: cqPartA, b: cqPartB, c: cqPartC, d: cqPartD } };
-    if (editingIndex?.type === 'CQ') {
-      const updated = [...cqQuestions];
-      updated[editingIndex.index] = newQ;
-      setCqQuestions(updated);
-      setEditingIndex(null);
-    } else {
-      setCqQuestions([...cqQuestions, newQ]);
-    }
-    setCqStimulus(""); setCqPartA(""); setCqPartB(""); setCqPartC(""); setCqPartD("");
-  };
-
-  const handleAddMcq = () => {
-    if (!mcqQuestion || mcqOptions.some(o => !o) || !mcqAnswer) return;
-    const newQ: Question = { question: mcqQuestion, options: mcqOptions, answer: mcqAnswer, explanation: mcqExplanation || "" };
-    if (editingIndex?.type === 'MCQ') {
-      const updated = [...mcqQuestions];
-      updated[editingIndex.index] = newQ;
-      setMcqQuestions(updated);
-      setEditingIndex(null);
-    } else {
-      setMcqQuestions([...mcqQuestions, newQ]);
-    }
-    setMcqQuestion(""); setMcqOptions(["", "", "", ""]); setMcqAnswer(""); setMcqExplanation("");
   };
 
   const handleEdit = (type: 'MCQ' | 'CQ' | 'WRITTEN', index: number) => {
     setEditingIndex({type, index});
     if (type === "MCQ") {
-      const q = mcqQuestions[index];
-      setMcqQuestion(q.question || ""); setMcqOptions(q.options || ["", "", "", ""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || "");
+      const q = mcqQuestions[index]; setMcqQuestion(q.question || ""); setMcqOptions(q.options || ["","","",""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || "");
     } else if (type === "CQ") {
-      const q = cqQuestions[index];
-      setCqStimulus(q.stimulus || ""); setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || "");
+      const q = cqQuestions[index]; setCqStimulus(q.stimulus || ""); setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || "");
     } else {
-      const q = writtenQuestions[index];
-      setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || "");
+      const q = writtenQuestions[index]; setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || "");
     }
   };
 
   const processJsonQuestions = useCallback((json: any[]) => {
-    if (!Array.isArray(json)) return;
-    const newMcqs: Question[] = [];
-    const newCqs: CQQuestion[] = [];
-    const newWritten: ShortQuestion[] = [];
-
+    const newMcqs: Question[] = []; const newCqs: CQQuestion[] = []; const newWritten: ShortQuestion[] = [];
     json.forEach(item => {
       if (!item) return;
       if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
         const optsObj = item.options as Record<string, string>;
         const ansKey = String(item.correct_answer || item.answer || "");
-        const optionsArray = [
-          optsObj.A || optsObj.a || "",
-          optsObj.B || optsObj.b || "",
-          optsObj.C || optsObj.c || "",
-          optsObj.D || optsObj.d || ""
-        ];
-        let finalAnswer = "";
-        if (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) {
-          finalAnswer = optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "";
-        } else {
-          finalAnswer = ansKey;
-        }
+        const optionsArray = [optsObj.A || optsObj.a || "", optsObj.B || optsObj.b || "", optsObj.C || optsObj.c || "", optsObj.D || optsObj.d || ""];
+        let finalAnswer = (ansKey.length === 1 && /[A-Da-d]/.test(ansKey)) ? (optsObj[ansKey.toUpperCase()] || optsObj[ansKey.toLowerCase()] || "") : ansKey;
         newMcqs.push({ question: item.question || "", options: optionsArray, answer: finalAnswer, explanation: item.explanation || "" });
-      } 
-      else if (Array.isArray(item.options)) {
+      } else if (Array.isArray(item.options)) {
         newMcqs.push({ question: item.question || "", options: item.options, answer: item.answer || item.correct_answer || "", explanation: item.explanation || "" });
-      }
-      else if (item.parts) {
+      } else if (item.parts) {
         newCqs.push(item as CQQuestion);
-      }
-      else if (item.question && !item.options && !item.parts) {
-        newWritten.push({
-          question: item.question || "",
-          answer: item.answer || item.correct_answer || ""
-        });
+      } else if (item.question) {
+        newWritten.push({ question: item.question, answer: item.answer || item.correct_answer || "" });
       }
     });
-
-    setMcqQuestions(prev => [...prev, ...newMcqs]);
-    setCqQuestions(prev => [...prev, ...newCqs]);
-    setWrittenQuestions(prev => [...prev, ...newWritten]);
+    setMcqQuestions(prev => [...prev, ...newMcqs]); setCqQuestions(prev => [...prev, ...newCqs]); setWrittenQuestions(prev => [...prev, ...newWritten]);
   }, []);
 
   if (!flowType) {
@@ -484,18 +421,14 @@ export default function ExamPage() {
           <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("SHEET")}>
               <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                  <FileSpreadsheet className="h-12 w-12" />
-                </div>
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><FileSpreadsheet className="h-12 w-12" /></div>
                 <CardTitle className="text-2xl font-headline">PDF Sheet</CardTitle>
                 <CardDescription>প্রশ্ন সাজান (সেট/পূর্ণমান ছাড়া)</CardDescription>
               </CardHeader>
             </Card>
             <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setFlowType("EXAM")}>
               <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                  <FileSignature className="h-12 w-12" />
-                </div>
+                <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><FileSignature className="h-12 w-12" /></div>
                 <CardTitle className="text-2xl font-headline">প্রশ্নপত্র তৈরি</CardTitle>
                 <CardDescription>প্রফেশনাল ফুল প্রশ্ন (সেট/পূর্ণমান সহ)</CardDescription>
               </CardHeader>
@@ -513,18 +446,10 @@ export default function ExamPage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
           <Button variant="ghost" onClick={() => setFlowType(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
           <div className="max-w-5xl w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}>
-              <CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ মোড</CardTitle></CardHeader>
-            </Card>
-            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}>
-              <CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">CQ মোড</CardTitle></CardHeader>
-            </Card>
-            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}>
-              <CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader>
-            </Card>
-            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}>
-              <CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ ও CQ</CardTitle></CardHeader>
-            </Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("MCQ")}><CardHeader className="text-center"><ListChecks className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ মোড</CardTitle></CardHeader></Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("CQ")}><CardHeader className="text-center"><FileText className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">CQ মোড</CardTitle></CardHeader></Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("WRITTEN")}><CardHeader className="text-center"><BookOpen className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">সংক্ষিপ্ত প্রশ্ন</CardTitle></CardHeader></Card>
+            <Card className="hover:border-primary cursor-pointer transition-all hover:shadow-xl group" onClick={() => setMode("BOTH")}><CardHeader className="text-center"><LayoutGrid className="h-10 w-10 mx-auto mb-4" /><CardTitle className="font-headline">MCQ ও CQ</CardTitle></CardHeader></Card>
           </div>
         </div>
         <DeveloperFooter />
@@ -545,23 +470,14 @@ export default function ExamPage() {
                 <AccordionContent className="p-4 space-y-4">
                   <div className="space-y-1"><Label>পরীক্ষার নাম</Label><Input value={examName || ""} onChange={(e) => setExamName(e.target.value)} /></div>
                   <div className="space-y-1"><Label>পরিচালনায়</Label><Input value={authorName || ""} onChange={(e) => setAuthorName(e.target.value)} /></div>
-                  
                   {flowType === "EXAM" && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1"><Label>সময়</Label><Input value={examTime || ""} onChange={(e) => setExamTime(e.target.value)} /></div>
                       <div className="space-y-1"><Label>পূর্ণমান</Label><Input value={totalMarks || ""} onChange={(e) => setTotalMarks(e.target.value)} /></div>
                     </div>
                   )}
-                  <div className="space-y-1"><Label>প্রশ্ন ফন্ট সাইজ ({printFontSize}px)</Label><Slider min={8} max={40} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
-                  <div className="space-y-1"><Label>হেডার ফন্ট সাইজ ({headerFontSize}px)</Label><Slider min={12} max={60} step={1} value={[headerFontSize]} onValueChange={(v) => setHeaderFontSize(v[0])} /></div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="logo" className="border rounded-lg bg-white overflow-hidden shadow-sm">
-                <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">লোগো সেটিংস</AccordionTrigger>
-                <AccordionContent className="p-4 space-y-4">
-                  <div className="flex items-center justify-between mb-2"><Label>লোগো দেখান</Label><Switch checked={showLogo} onCheckedChange={setShowLogo} /></div>
-                  <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setLogoImage)} />
+                  <div className="space-y-1"><Label>প্রশ্ন সাইজ ({printFontSize}px)</Label><Slider min={8} max={40} step={0.5} value={[printFontSize]} onValueChange={(v) => setPrintFontSize(v[0])} /></div>
+                  <div className="space-y-1"><Label>হেডার সাইজ ({headerFontSize}px)</Label><Slider min={12} max={60} step={1} value={[headerFontSize]} onValueChange={(v) => setHeaderFontSize(v[0])} /></div>
                 </AccordionContent>
               </AccordionItem>
 
@@ -581,19 +497,17 @@ export default function ExamPage() {
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
                   <RadioGroup value={footerMode || "ribbon"} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex flex-col gap-2 mb-2">
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="ribbon" id="fm-ribbon" /><Label htmlFor="fm-ribbon">মডার্ন রিবন (ছবি অনুযায়ী)</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="ribbon" id="fm-ribbon" /><Label htmlFor="fm-ribbon">প্রফেশনাল রিবন (বইয়ের মতো)</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
                     <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
                   </RadioGroup>
-
-                  {footerMode === 'social' ? (
-                    <div className="space-y-3">
+                  <Input placeholder="ফুটার মেইন টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                  {footerMode === 'social' && (
+                    <div className="space-y-3 pt-2">
                       <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
                       <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
                       <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
                     </div>
-                  ) : (
-                    <Input placeholder="ফুটার টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
                   )}
                 </AccordionContent>
               </AccordionItem>
@@ -601,17 +515,11 @@ export default function ExamPage() {
 
             <Tabs defaultValue="manual" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4"><TabsTrigger value="manual" className="font-headline">ম্যানুয়াল</TabsTrigger><TabsTrigger value="json" className="font-headline">JSON</TabsTrigger></TabsList>
-              
               <TabsContent value="manual">
-                <Card>
-                  <CardHeader><CardTitle className="font-headline">{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
+                <Card><CardHeader><CardTitle className="font-headline">{editingIndex ? "এডিট করুন" : "নতুন প্রশ্ন"}</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <Tabs defaultValue="mcq">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="mcq">MCQ</TabsTrigger>
-                        <TabsTrigger value="cq">CQ</TabsTrigger>
-                        <TabsTrigger value="written">Short</TabsTrigger>
-                      </TabsList>
+                      <TabsList className="grid w-full grid-cols-3"><TabsTrigger value="mcq">MCQ</TabsTrigger><TabsTrigger value="cq">CQ</TabsTrigger><TabsTrigger value="written">Short</TabsTrigger></TabsList>
                       <TabsContent value="mcq" className="space-y-3">
                         <Input placeholder="প্রশ্ন..." value={mcqQuestion || ""} onChange={(e) => setMcqQuestion(e.target.value)} />
                         <div className="grid grid-cols-2 gap-2">{mcqOptions.map((opt, i) => <Input key={i} placeholder={`বিকল্প ${['ক', 'খ', 'গ', 'ঘ'][i]}`} value={opt || ""} onChange={(e) => { const n = [...mcqOptions]; n[i] = e.target.value; setMcqOptions(n); }} />)}</div>
@@ -632,52 +540,19 @@ export default function ExamPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-
               <TabsContent value="json" className="space-y-4">
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="font-headline">JSON ইনপুট</CardTitle>
-                    <Dialog>
-                      <DialogTrigger asChild><Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button></DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle className="font-headline">JSON উদাহরণ (Templates)</DialogTitle></DialogHeader>
-                        <div className="space-y-6">
-                          <div>
-                            <p className="text-sm font-bold mb-2">১. এমসিকিউ (MCQ):</p>
-                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
-{`[
-  {
-    "question": "১। বাংলাদেশের রাজধানীর নাম কি?",
-    "options": {
-      "A": "ঢাকা",
-      "B": "খুলনা",
-      "C": "রংপুর",
-      "D": "সিলেট"
-    },
-    "correct_answer": "A"
-  }
-]`}
-                            </pre>
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold mb-2">২. সংক্ষিপ্ত প্রশ্ন (Short Question):</p>
-                            <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">
-{`[
-  {
-    "question": "বাংলাদেশের রাজধানীর নাম কি?",
-    "answer": "ঢাকা"
-  }
-]`}
-                            </pre>
-                          </div>
-                        </div>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="font-headline">JSON ইনপুট</CardTitle>
+                    <Dialog><DialogTrigger asChild><Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5" /></Button></DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto"><DialogHeader><DialogTitle className="font-headline">JSON টেমপ্লেট</DialogTitle></DialogHeader>
+                        <div className="space-y-6"><pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto">{`[ { "question": "...", "answer": "..." } ]`}</pre></div>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2"><Label className="flex items-center gap-2"><Upload className="h-4 w-4" /> JSON ফাইল আপলোড</Label><Input type="file" accept=".json" onChange={handleJsonFileUpload} /></div>
-                    <Textarea placeholder="JSON অ্যারে পেস্ট করুন..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
-                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) { processJsonQuestions(j); setJsonInput(""); } } catch(e) {} }}>ম্যানুয়ালি যুক্ত করুন</Button>
+                    <Input type="file" accept=".json" onChange={handleJsonFileUpload} />
+                    <Textarea placeholder="JSON অ্যারে..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
+                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) processJsonQuestions(j); setJsonInput(""); } catch(e) {} }}>যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -690,40 +565,11 @@ export default function ExamPage() {
               </div>
               <div className="flex items-center justify-between border p-3 bg-white rounded-lg"><Label className="font-bold">উত্তর প্রিভিউ</Label><Switch checked={previewAnswers} onCheckedChange={setPreviewAnswers} /></div>
             </div>
-
-            <div className="space-y-2">
-              <Label className="text-xs font-bold font-headline">প্রশ্ন তালিকা</Label>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 scrollbar-hide">
-                {mcqQuestions.map((q, i) => (
-                  <div key={`mcq-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">MCQ: {q.question}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('MCQ', i)}><Edit2 className="h-3 w-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setMcqQuestions(mcqQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
-                ))}
-                {writtenQuestions.map((q, i) => (
-                  <div key={`written-${i}`} className="flex items-center justify-between p-2 bg-white border rounded text-xs group">
-                    <span className="truncate flex-1">Short: {q.question}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEdit('WRITTEN', i)}><Edit2 className="h-3 w-3" /></Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setWrittenQuestions(writtenQuestions.filter((_, idx) => idx !== i))}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{
-            examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, 
-            setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, 
-            watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl,
-            footerPlainText, footerMode, flowType, headerFontSize, printFontSize
-          }} />
+          <PaperPreview {...{ examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl, footerPlainText, footerMode, flowType, headerFontSize, printFontSize }} />
         </main>
       </div>
       <DeveloperFooter />

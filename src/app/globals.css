@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,6 +39,10 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-handwriting {
+  font-family: 'Caveat', cursive;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -134,7 +139,7 @@ body[data-preview-answers="true"] .answer-content-written {
   .footer-ribbon-container {
     display: flex !important;
     width: 100% !important;
-    height: 35px !important;
+    height: 40px !important;
     align-items: stretch !important;
     overflow: hidden !important;
     border: 1px solid #013a5b !important;
@@ -148,12 +153,12 @@ body[data-preview-answers="true"] .answer-content-written {
     align-items: center !important;
     padding: 0 20px !important;
     font-weight: bold !important;
-    font-size: 10pt !important;
-    flex: 1 !important;
+    font-size: 11pt !important;
+    flex: 1.2 !important;
   }
 
   .ribbon-divider {
-    width: 60px !important;
+    width: 70px !important;
     position: relative !important;
     background: #013a5b !important;
   }
@@ -176,8 +181,8 @@ body[data-preview-answers="true"] .answer-content-written {
     align-items: center !important;
     justify-content: flex-end !important;
     padding: 0 20px !important;
-    font-weight: bold !important;
-    font-size: 10pt !important;
+    font-weight: 500 !important;
+    font-size: 14pt !important;
     flex: 1 !important;
   }
 

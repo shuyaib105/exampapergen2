@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -224,7 +225,7 @@ const PaperPreview = ({
                     <div className="flex-1">
                       <p className="mb-1 leading-snug font-bold">{q.question}</p>
                       <div className="answer-content-written" style={{ fontSize: 'inherit' }}>
-                        {q.answer && <div className="text-gray-800">উত্তর: {q.answer}</div>}
+                        {q.answer && <div className="text-gray-800 font-bold">উত্তর: {q.answer}</div>}
                       </div>
                     </div>
                   </div>
@@ -242,7 +243,7 @@ const PaperPreview = ({
               <div className="ribbon-divider"></div>
               <div className="ribbon-right">
                 {ribbonRightText ? (
-                  <span>{ribbonRightText}</span>
+                  <span className="font-handwriting">{ribbonRightText}</span>
                 ) : (
                   <span className="ribbon-page-num"></span>
                 )}
@@ -300,7 +301,7 @@ export default function ExamPage() {
 
   const [footerMode, setFooterMode] = useState<FooterMode>("ribbon");
   const [footerPlainText, setFooterPlainText] = useState("রেটিনা গাইড");
-  const [ribbonRightText, setRibbonRightText] = useState("");
+  const [ribbonRightText, setRibbonRightText] = useState("A dream today , a doctor Tomorrow");
   const [youtubeText, setYoutubeText] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [facebookText, setFacebookText] = useState("");
@@ -386,17 +387,6 @@ export default function ExamPage() {
       const updated = [...writtenQuestions]; updated[editingIndex.index] = newQ; setWrittenQuestions(updated); setEditingIndex(null);
     } else setWrittenQuestions([...writtenQuestions, newQ]);
     setWrittenQuestion(""); setWrittenAnswer("");
-  };
-
-  const handleEdit = (type: 'MCQ' | 'CQ' | 'WRITTEN', index: number) => {
-    setEditingIndex({type, index});
-    if (type === "MCQ") {
-      const q = mcqQuestions[index]; setMcqQuestion(q.question || ""); setMcqOptions(q.options || ["","","",""]); setMcqAnswer(q.answer || ""); setMcqExplanation(q.explanation || "");
-    } else if (type === "CQ") {
-      const q = cqQuestions[index]; setCqStimulus(q.stimulus || ""); setCqPartA(q.parts?.a || ""); setCqPartB(q.parts?.b || ""); setCqPartC(q.parts?.c || ""); setCqPartD(q.parts?.d || "");
-    } else {
-      const q = writtenQuestions[index]; setWrittenQuestion(q.question || ""); setWrittenAnswer(q.answer || "");
-    }
   };
 
   const processJsonQuestions = useCallback((json: any[]) => {
@@ -516,7 +506,7 @@ export default function ExamPage() {
                   </div>
                   {footerMode === 'ribbon' && (
                     <div className="space-y-2 pt-1">
-                      <Label>ডান দিকের টেক্সট (খালি রাখলে পেজ নাম্বার দেখাবে)</Label>
+                      <Label>ডান দিকের টেক্সট (ছবি অনুযায়ী মোটিভেশনাল টেক্সট)</Label>
                       <Input placeholder="ডান দিকের টেক্সট..." value={ribbonRightText || ""} onChange={(e) => setRibbonRightText(e.target.value)} />
                     </div>
                   )}

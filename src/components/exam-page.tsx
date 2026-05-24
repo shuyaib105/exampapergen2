@@ -9,12 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Printer, 
-  FileText, 
-  ListChecks, 
-  ArrowLeft, 
-  Trash2, 
+import {
+  Printer,
+  FileText,
+  ListChecks,
+  ArrowLeft,
+  Trash2,
   Edit2,
   LayoutGrid,
   Youtube,
@@ -34,12 +34,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
 
 type AppMode = "MCQ" | "CQ" | "WRITTEN" | "BOTH" | "MCQ_WRITTEN" | null;
@@ -50,10 +50,10 @@ type FooterMode = "social" | "plain" | "ribbon";
 const DeveloperFooter = () => (
   <footer className="mt-auto py-8 text-center text-sm text-muted-foreground flex items-center justify-center gap-2 no-print">
     <span>Developed By</span>
-    <a 
-      href="https://t.me/shu_yaib" 
-      target="_blank" 
-      rel="noopener noreferrer" 
+    <a
+      href="https://t.me/shu_yaib"
+      target="_blank"
+      rel="noopener noreferrer"
       className="flex items-center gap-1.5 font-bold text-primary hover:underline transition-all font-body"
     >
       <Send className="h-4 w-4" />
@@ -62,15 +62,15 @@ const DeveloperFooter = () => (
   </footer>
 );
 
-const PaperPreview = ({ 
-  examName = "", 
-  authorName = "", 
-  examTime = "", 
-  totalMarks = "", 
-  mcqQuestions = [], 
-  cqQuestions = [], 
+const PaperPreview = ({
+  examName = "",
+  authorName = "",
+  examTime = "",
+  totalMarks = "",
+  mcqQuestions = [],
+  cqQuestions = [],
   writtenQuestions = [],
-  setName = "A", 
+  setName = "A",
   mode = null,
   logoImage = null,
   showLogo = false,
@@ -87,6 +87,7 @@ const PaperPreview = ({
   footerPlainText = "",
   ribbonRightText = "",
   footerMode = "ribbon",
+  showFooter = true,
   flowType = null,
   headerFontSize = 24,
   printFontSize = 11
@@ -115,6 +116,7 @@ const PaperPreview = ({
   footerPlainText: string;
   ribbonRightText: string;
   footerMode: FooterMode;
+  showFooter: boolean;
   flowType: FlowType;
   headerFontSize: number;
   printFontSize: number;
@@ -124,7 +126,7 @@ const PaperPreview = ({
   return (
     <div id="printable-area-wrapper" className="w-full flex justify-center">
       <div id="printable-area" className="w-full max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-lg shadow-lg print:shadow-none print:rounded-none print:p-0 min-h-[11in] print:min-h-0 relative flex flex-col">
-        
+
         {/* Watermarks */}
         <div className="watermark-container-print hidden print:flex">
           {watermarkType === 'text' && watermarkText && (
@@ -155,9 +157,9 @@ const PaperPreview = ({
             <h1 className="font-bold print:leading-tight" style={{ fontSize: `${headerFontSize}px` }}>{examName}</h1>
             <p className="text-lg font-medium print:text-sm mt-1">{authorName}</p>
           </div>
-          
+
           <div className="border-t-2 border-black my-2 w-full"></div>
-          
+
           {flowType === "EXAM" && (
             <>
               <div className="flex justify-between items-center px-2 font-bold text-sm meta-line-print">
@@ -236,37 +238,35 @@ const PaperPreview = ({
         </section>
 
         {/* Footer - Repeated on Every Page */}
-        <footer className="mt-8 exam-footer-print hidden print:block relative z-10">
-          {footerMode === 'ribbon' ? (
-            <div className="footer-ribbon-container">
-              <div className="ribbon-left">{footerPlainText || examName}</div>
-              <div className="ribbon-divider"></div>
-              <div className="ribbon-right">
-                {ribbonRightText ? (
-                  <span className="font-handwriting">{ribbonRightText}</span>
-                ) : (
-                  <span className="ribbon-page-num"></span>
-                )}
+        {showFooter && (
+          <footer className="mt-8 exam-footer-print hidden print:block relative z-10">
+            {footerMode === 'ribbon' ? (
+              <div className="footer-ribbon-container">
+                <div className="ribbon-left">{footerPlainText || examName}</div>
+                <div className="ribbon-divider"></div>
+                <div className="ribbon-right">
+                  <span className="font-handwriting">{ribbonRightText || "A dream today , a doctor Tomorrow"}</span>
+                </div>
               </div>
-            </div>
-          ) : footerMode === 'plain' ? (
-            <div className="w-full text-center py-2 font-bold border-t border-black bg-white">
-              {footerPlainText}
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 w-full border-t border-black py-2 bg-white">
-              <div className="flex items-center gap-1.5 justify-center">
-                {youtubeUrl && <><Youtube className="h-3 w-3 text-red-600" /><span className="text-[8pt]">{youtubeText || "YouTube"}</span></>}
+            ) : footerMode === 'plain' ? (
+              <div className="w-full text-center py-2 font-bold border-t border-black bg-white">
+                {footerPlainText}
               </div>
-              <div className="flex items-center gap-1.5 justify-center">
-                {telegramUrl && <><Send className="h-3 w-3 text-blue-500" /><span className="text-[8pt]">{telegramText || "Telegram"}</span></>}
+            ) : (
+              <div className="grid grid-cols-3 w-full border-t border-black py-2 bg-white">
+                <div className="flex items-center gap-1.5 justify-center">
+                  {youtubeUrl && <><Youtube className="h-3 w-3 text-red-600" /><span className="text-[8pt]">{youtubeText || "YouTube"}</span></>}
+                </div>
+                <div className="flex items-center gap-1.5 justify-center">
+                  {telegramUrl && <><Send className="h-3 w-3 text-blue-500" /><span className="text-[8pt]">{telegramText || "Telegram"}</span></>}
+                </div>
+                <div className="flex items-center gap-1.5 justify-center">
+                  {facebookUrl && <><Facebook className="h-3 w-3 text-blue-600" /><span className="text-[8pt]">{facebookText || "Facebook"}</span></>}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 justify-center">
-                {facebookUrl && <><Facebook className="h-3 w-3 text-blue-600" /><span className="text-[8pt]">{facebookText || "Facebook"}</span></>}
-              </div>
-            </div>
-          )}
-        </footer>
+            )}
+          </footer>
+        )}
       </div>
     </div>
   );
@@ -275,30 +275,31 @@ const PaperPreview = ({
 export default function ExamPage() {
   const [flowType, setFlowType] = useState<FlowType>(null);
   const [mode, setMode] = useState<AppMode>(null);
-  
+
   const [examName, setExamName] = useState("উদ্ভিদ শারীরতত্ত্ব");
   const [authorName, setAuthorName] = useState("Md Jubayer | রংপুর মেডিকেল কলেজ");
   const [examTime, setExamTime] = useState("২৫ মিনিট");
   const [totalMarks, setTotalMarks] = useState("২৫");
   const [logoImage, setLogoImage] = useState<string | null>(null);
   const [showLogo, setShowLogo] = useState(false);
-  
+
   const [mcqQuestions, setMcqQuestions] = useState<Question[]>([]);
   const [cqQuestions, setCqQuestions] = useState<CQQuestion[]>([]);
   const [writtenQuestions, setWrittenQuestions] = useState<ShortQuestion[]>([]);
-  
+
   const [jsonInput, setJsonInput] = useState("");
   const [previewAnswers, setPreviewAnswers] = useState(false);
   const [selectedSet, setSelectedSet] = useState("A");
   const [printFontSize, setPrintFontSize] = useState(11);
   const [headerFontSize, setHeaderFontSize] = useState(24);
-  const [editingIndex, setEditingIndex] = useState<{type: 'MCQ' | 'CQ' | 'WRITTEN', index: number} | null>(null);
+  const [editingIndex, setEditingIndex] = useState<{ type: 'MCQ' | 'CQ' | 'WRITTEN', index: number } | null>(null);
 
   const [watermarkType, setWatermarkType] = useState<WatermarkType>("text");
   const [watermarkText, setWatermarkText] = useState("");
   const [watermarkImage, setWatermarkImage] = useState<string | null>(null);
   const [watermarkOpacity, setWatermarkOpacity] = useState(5);
 
+  const [showFooter, setShowFooter] = useState(true);
   const [footerMode, setFooterMode] = useState<FooterMode>("ribbon");
   const [footerPlainText, setFooterPlainText] = useState("রেটিনা গাইড");
   const [ribbonRightText, setRibbonRightText] = useState("A dream today , a doctor Tomorrow");
@@ -462,7 +463,7 @@ export default function ExamPage() {
         <aside className="w-full lg:w-[420px] p-4 sm:p-6 border-b lg:border-r print:hidden no-print overflow-y-auto max-h-screen scrollbar-hide">
           <div className="space-y-6">
             <Button variant="ghost" onClick={() => setMode(null)}><ArrowLeft className="mr-2 h-4 w-4" /> আগের ধাপে ফিরে যান</Button>
-            
+
             <Accordion type="multiple" defaultValue={["basic"]} className="space-y-4">
               <AccordionItem value="basic" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">বেসিক সেটিংস</AccordionTrigger>
@@ -495,26 +496,35 @@ export default function ExamPage() {
               <AccordionItem value="footer" className="border rounded-lg bg-white overflow-hidden shadow-sm">
                 <AccordionTrigger className="px-4 py-3 font-bold text-lg font-headline">ফুটার সেটিংস</AccordionTrigger>
                 <AccordionContent className="p-4 space-y-4">
-                  <RadioGroup value={footerMode || "ribbon"} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex flex-col gap-2 mb-2">
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="ribbon" id="fm-ribbon" /><Label htmlFor="fm-ribbon">প্রফেশনাল রিবন (বইয়ের মতো)</Label></div>
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
-                  </RadioGroup>
-                  <div className="space-y-2">
-                    <Label>মেইন টেক্সট (বাম দিক)</Label>
-                    <Input placeholder="ফুটার মেইন টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                  <div className="flex items-center justify-between border-b pb-4 mb-2">
+                    <Label className="font-bold text-primary">ফুটার সক্রিয় করুন</Label>
+                    <Switch checked={showFooter} onCheckedChange={setShowFooter} />
                   </div>
-                  {footerMode === 'ribbon' && (
-                    <div className="space-y-2 pt-1">
-                      <Label>ডান দিকের টেক্সট (ছবি অনুযায়ী মোটিভেশনাল টেক্সট)</Label>
-                      <Input placeholder="ডান দিকের টেক্সট..." value={ribbonRightText || ""} onChange={(e) => setRibbonRightText(e.target.value)} />
-                    </div>
-                  )}
-                  {footerMode === 'social' && (
-                    <div className="space-y-3 pt-2">
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
-                      <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
+                  
+                  {showFooter && (
+                    <div className="space-y-4 pt-2">
+                      <RadioGroup value={footerMode || "ribbon"} onValueChange={(v) => setFooterMode(v as FooterMode)} className="flex flex-col gap-2 mb-2">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="ribbon" id="fm-ribbon" /><Label htmlFor="fm-ribbon">প্রফেশনাল রিবন (বইয়ের মতো)</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="social" id="fm-social" /><Label htmlFor="fm-social">সোশ্যাল লিংক</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="plain" id="fm-plain" /><Label htmlFor="fm-plain">সেন্টার টেক্সট</Label></div>
+                      </RadioGroup>
+                      <div className="space-y-2">
+                        <Label>মেইন টেক্সট (বাম দিক)</Label>
+                        <Input placeholder="ফুটার মেইন টেক্সট..." value={footerPlainText || ""} onChange={(e) => setFooterPlainText(e.target.value)} />
+                      </div>
+                      {footerMode === 'ribbon' && (
+                        <div className="space-y-2 pt-1">
+                          <Label>ডান দিকের টেক্সট (পেজ নাম্বারের বদলে)</Label>
+                          <Input placeholder="ডান দিকের টেক্সট..." value={ribbonRightText || ""} onChange={(e) => setRibbonRightText(e.target.value)} />
+                        </div>
+                      )}
+                      {footerMode === 'social' && (
+                        <div className="space-y-3 pt-2">
+                          <div className="grid grid-cols-2 gap-2"><Input placeholder="Youtube" value={youtubeText || ""} onChange={(e) => setYoutubeText(e.target.value)} /><Input placeholder="Link" value={youtubeUrl || ""} onChange={(e) => setYoutubeUrl(e.target.value)} /></div>
+                          <div className="grid grid-cols-2 gap-2"><Input placeholder="Facebook" value={facebookText || ""} onChange={(e) => setFacebookText(e.target.value)} /><Input placeholder="Link" value={facebookUrl || ""} onChange={(e) => setFacebookUrl(e.target.value)} /></div>
+                          <div className="grid grid-cols-2 gap-2"><Input placeholder="Telegram" value={telegramText || ""} onChange={(e) => setTelegramText(e.target.value)} /><Input placeholder="Link" value={telegramUrl || ""} onChange={(e) => setTelegramUrl(e.target.value)} /></div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </AccordionContent>
@@ -576,7 +586,7 @@ export default function ExamPage() {
                   <CardContent className="space-y-4">
                     <Input type="file" accept=".json" onChange={handleJsonFileUpload} />
                     <Textarea placeholder="JSON অ্যারে..." value={jsonInput || ""} onChange={(e) => setJsonInput(e.target.value)} className="h-32 font-mono text-xs" />
-                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) processJsonQuestions(j); setJsonInput(""); } catch(e) { toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." }); } }}>যুক্ত করুন</Button>
+                    <Button className="w-full font-headline" onClick={() => { try { const j = JSON.parse(jsonInput); if (Array.isArray(j)) processJsonQuestions(j); setJsonInput(""); } catch (e) { toast({ variant: "destructive", title: "Error", description: "Invalid JSON format." }); } }}>যুক্ত করুন</Button>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -593,7 +603,7 @@ export default function ExamPage() {
         </aside>
 
         <main className="flex-1 p-4 sm:p-8 bg-gray-100/50 overflow-y-auto print:bg-white print:p-0">
-          <PaperPreview {...{ examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl, footerPlainText, ribbonRightText, footerMode, flowType, headerFontSize, printFontSize }} />
+          <PaperPreview {...{ examName, authorName, examTime, totalMarks, mcqQuestions, cqQuestions, writtenQuestions, setName: selectedSet, mode, logoImage, showLogo, watermarkText, watermarkOpacity, watermarkType, watermarkImage, youtubeText, youtubeUrl, facebookText, facebookUrl, telegramText, telegramUrl, footerPlainText, ribbonRightText, footerMode, showFooter, flowType, headerFontSize, printFontSize }} />
         </main>
       </div>
       <DeveloperFooter />
